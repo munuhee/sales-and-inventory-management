@@ -1,0 +1,59 @@
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+<aside class="sidebar position-fixed top-0 left-0 overflow-auto h-100 float-left" id="show-side-navigation1">
+    <i class="fa fa-bars close-aside d-md-none d-lg-none" data-close="show-side-navigation1"></i>
+    <div class="sidebar-header d-flex justify-content-center align-items-center px-3 py-4">
+      <a href="{% url 'user-profile' %}">
+        <img
+          class="rounded-pill img-fluid"
+          id = "sidebar-img"
+          width="65"
+          src="{{request.user.profile.profile_picture.url}}"
+          alt="">
+        </a>
+        <div class="ms-2">
+          <h5 class="fs-6 mb-0 text-white">{{user.username}} <i class="fa fa-badge-check"></i></h5>
+          <span class="badge badge-pill bg-soft-success text-success me-2">
+            {% if user.profile.role == 'AD' %}
+            Admin
+            {% elif user.profile.role == 'EX' %}
+            Executive
+            {% else %}
+            Operative
+        {% endif %}
+          </span>
+        </div>
+    </div>
+    <ul class="categories list-unstyled">
+      <li>
+        <i class="fa fa-home fa-fw"></i><a href="{% url 'dashboard' %}"> Dashboard</a>
+      </li>
+      <li class="">
+        <i class="fa fa-folder"></i><a href="{% url 'productslist' %}"> Products</a>
+      </li>
+      <li>
+        <i  class="fa fa-shopping-bag fa-fw"></i><a href="{% url 'saleslist' %}"> Sales Orders</a>
+      </li>
+      <li>
+        <i class="fa fa-shopping-cart"></i><a href="{% url 'purchaseslist' %}"> Purchase Orders</a>
+      </li>
+      <li>
+        <i class="fa-solid fa-box"></i><a href="#"> Package</a>
+      </li>
+      <li>
+        <i class="fa-solid fa-receipt"></i><a href="#"> Invoices</a>
+      </li>
+      <li>
+        <i class="fa-solid fa-money-bills"></i><a href="#"> Bills</a>
+      </li>
+      <li>
+        <i class="fa-solid fa-truck-field"></i><a href="#"> Vendors</a>
+      </li>
+      <li>
+        <i class="fa-solid fa-people-group"></i><a href="#"> Staff</a>
+      </li>
+      <li class="">
+        <a class="btn btn-sm btn-danger" href="{% url 'user-logout' %}"><i class="fa fa-sign-out"></i> Logout</a>
+      </li>
+    </ul>
+  </aside>

@@ -1,0 +1,75 @@
+{% extends "store/base.html" %}{% load static %}{% block title %}Staff{%endblock title%}{% block content %}
+    <div class="table-responsive col p-5">
+        <style>
+            input[type="text"],[type="email"],select{
+                box-sizing: border-box;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                display: inline-block;
+                padding: 6px 20px;
+                margin: 8px 0;
+            }
+            button[type="submit"]{
+              padding: 6px 20px;
+              margin: 8px 0;
+          }
+          </style>
+          <form method="GET" class="container">
+            {{filter.form}}
+            <button type="submit" class="btn btn-success fa fa-search"> Search</button>
+          </form>
+        <table class="table table-hover table-nowrap">
+            <thead class="thead-light">
+                <tr>
+                    <th scope="col">Id</th>
+                    <th scope="col">Profile Image</th>
+                    <th scope="col">username</th>
+                    <th scope="col">Phone Number</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Role</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for profile in profiles %}
+                <tr>
+                    <th scope="row">
+                        {{profile.id}}
+                    </th>
+                    <td>
+                        <img alt="..." src="{{profile.profile_picture.url}}" class="avatar avatar-sm rounded-circle me-2">
+                    </td>
+                    <td>
+                        {{profile.user.username}}
+                    </td>
+                    <td>
+                    {{profile.telephone}}
+                    </td>
+                    <td>
+                        {% if profile.status == 'A' %}
+                            <span class="badge badge-pill bg-soft-success text-success me-2">
+                                Active
+                            </span>
+                            {% elif profile.status == 'OL' %}
+                            <span class="badge badge-pill bg-soft-warning text-warning me-2">
+                                On_leave
+                            </span>
+                            {% else %}
+                            <span class="badge badge-pill bg-soft-danger text-danger me-2">
+                            Inactive
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        {% if profile.role == 'AD' %}
+                            Admin
+                            {% elif profile.role == 'EX' %}
+                            Executive
+                            {% else %}
+                            Operative
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

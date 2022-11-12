@@ -1,0 +1,222 @@
+{% extends "store/base.html" %}{% load static %}{% block title %}Dashboard{%endblock title%}{% block content %}
+<!-- Dashboard -->
+<div class="d-flex flex-column flex-lg-row h-lg-full bg-surface-secondary">
+    {% load static %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
+    <!-- Main content -->
+    <div class="h-screen flex-grow-1 overflow-y-lg-auto">
+        <!-- Main -->
+        <main class="py-6 bg-surface-secondary">
+            <div class="container-fluid">
+                <!-- Card stats -->
+                <div class="row g-6 mb-6">
+                    <div class="col-xl-3 col-sm-6 col-12" id="products">
+                        <a href="{%  url 'productslist' %}">
+                        <div class="card shadow border-0">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col">
+                                        <span class="h6 font-semibold text-muted text-sm d-block mb-2">Products</span>
+                                        <span class="h3 font-bold mb-0">{{items_count}}</span>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="icon icon-shape bg-tertiary text-white text-lg rounded-circle">
+                                            <i class="fa fa-credit-card"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-2 mb-0 text-sm">
+                                    <span class="badge badge-pill bg-soft-success text-success me-2">
+                                        <i class="fa fa-arrow-up me-1"></i>13%
+                                    </span>
+                                    <span class="text-nowrap text-xs text-muted">Since last month</span>
+                                </div>
+                            </div>
+                        </div>
+                        </a>
+                    </div>
+                    <div class="col-xl-3 col-sm-6 col-12" id="profiles">
+                        <a href="">
+                            <div class="card shadow border-0">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col">
+                                            <span class="h6 font-semibold text-muted text-sm d-block mb-2">Staff</span>
+                                            <span class="h3 font-bold mb-0">{{profiles_count}}</span>
+                                        </div>
+                                        <div class="col-auto">
+                                            <div class="icon icon-shape bg-primary text-white text-lg rounded-circle">
+                                                <i class="fa fa-group"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2 mb-0 text-sm">
+                                        <span class="badge badge-pill bg-soft-success text-success me-2">
+                                            <i class="fa fa-arrow-up me-1"></i>30%
+                                        </span>
+                                        <span class="text-nowrap text-xs text-muted">Since last month</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-xl-3 col-sm-6 col-12" id="deliveries">
+                        <a href="">
+                            <div class="card shadow border-0">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col">
+                                            <span class="h6 font-semibold text-muted text-sm d-block mb-2">Pending deliveries</span>
+                                            <span class="h3 font-bold mb-0">{{delivery.count}}</span>
+                                        </div>
+                                        <div class="col-auto">
+                                            <div class="icon icon-shape bg-info text-white text-lg rounded-circle">
+                                                <i class="fa fa-truck"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2 mb-0 text-sm">
+                                        <span class="badge badge-pill bg-soft-danger text-danger me-2">
+                                            <i class="fa fa-arrow-down me-1"></i>-5%
+                                        </span>
+                                        <span class="text-nowrap text-xs text-muted">Since last month</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-xl-3 col-sm-6 col-12" id="sales">
+                        <a href="{% url 'saleslist' %}">
+                            <div class="card shadow border-0">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col">
+                                            <span class="h6 font-semibold text-muted text-sm d-block mb-2">Sales</span>
+                                            <span class="h3 font-bold mb-0">{{sales.count}}</span>
+                                        </div>
+                                        <div class="col-auto">
+                                            <div class="icon icon-shape bg-warning text-white text-lg rounded-circle">
+                                                <i class="fa fa-shopping-cart"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2 mb-0 text-sm">
+                                        <span class="badge badge-pill bg-soft-success text-success me-2">
+                                            <i class="fa fa-arrow-up me-1"></i>10%
+                                        </span>
+                                        <span class="text-nowrap text-xs text-muted">Since last month</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                {% include 'store/charts.html' %}
+                <div class="row">
+                    <div class="card shadow border-0 mb-7 col-md-6 col-lg-6">
+                        <div class="card-header">
+                            <h5 class="mb-0 font-bold">Products</h5>
+                        </div>
+                        <div class="table-responsive able-sm">
+                            <table class="table table-hover table-nowrap">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th scope="col">Product Name</th>
+                                        <th scope="col">Quantity</th>
+                                        <th scope="col">Price</th>
+                                        <th scope="col">Category</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in items %}
+                                    <tr>
+                                        <td>
+                                            {{item.name}}
+                                        </td>
+                                        <td>
+                                            {{item.quantity}}
+                                        </td>
+                                        <td>
+                                            {{ item.selling_price }}
+                                        </td>
+                                        <td>
+                                            {{item.category}}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center">
+                            <a class="btn btn-success btn-sm" href="{% url 'productslist' %}">View all</a>
+                        </div>
+                    </div>
+                    <div class="card shadow border-0 mb-7 col-md-6 col-lg-6">
+                        <div class="card-header">
+                            <h5 class="mb-0 font-bold">Staff</h5>
+                        </div>
+                        <div class="table-responsive table-sm">
+                            <table class="table table-hover table-nowrap">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th scope="col">Profile Image</th>
+                                        <th scope="col">username</th>
+                                        <th scope="col">Phone Number</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Role</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for profile in profiles %}
+                                    <tr>
+                                        <td>
+                                            <img alt="..." src="{{profile.profile_picture.url}}" class="avatar avatar-sm rounded-circle me-2">
+                                        </td>
+                                        <td>
+                                            {{profile.user.username}}
+                                        </td>
+                                        <td>
+                                        {{profile.telephone}}
+                                        </td>
+                                        <td>
+                                            {% if profile.status == 'A' %}
+                                                <span class="badge badge-pill bg-soft-success text-success me-2">
+                                                    Active
+                                                </span>
+                                                {% elif profile.status == 'OL' %}
+                                                <span class="badge badge-pill bg-soft-warning text-warning me-2">
+                                                    On_leave
+                                                </span>
+                                                {% else %}
+                                                <span class="badge badge-pill bg-soft-danger text-danger me-2">
+                                                Inactive
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end">
+                                            {% if profile.role == 'AD' %}
+                                                Admin
+                                                {% elif profile.role == 'EX' %}
+                                                Executive
+                                                {% else %}
+                                                Operative
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center">
+                            <a class="btn btn-success btn-sm" href="{% url 'saleslist' %}">View all</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script type="text/javascript" src="{% static 'js/main.js' %}"></script>
+</div>
+{% endblock content %}
