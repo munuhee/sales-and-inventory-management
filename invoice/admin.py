@@ -3,5 +3,5 @@ from .models import Invoice
 
 @admin.register(Invoice)
 class InvoiceAdmin(admin.ModelAdmin):
-    fields = ('date','customer_name','contact_number','item','price_per_item','quantity')
+    fields = ('customer_name','contact_number','item','price_per_item','quantity')
     list_display = ('date','customer_name','contact_number','item','price_per_item','quantity', 'total')

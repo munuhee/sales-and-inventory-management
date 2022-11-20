@@ -32,8 +32,8 @@ class InvoiceListView(LoginRequiredMixin, ExportMixin, tables.SingleTableView):
 
 class InvoiceCreateView(LoginRequiredMixin,CreateView):
     model = Invoice
-    template_name = 'invoice/productcreate.html'
-    fields = ['date','customer_name','contact_number','item','price_per_item','quantity', 'total']
+    template_name = 'invoice/invoicecreate.html'
+    fields = ['customer_name','contact_number','item','price_per_item','quantity']
     success_url = '/invoices'
 
     def form_valid(self, form):
@@ -42,9 +42,10 @@ class InvoiceCreateView(LoginRequiredMixin,CreateView):
 class InvoiceUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Invoice
     template_name = 'invoice/invoiceupdate.html'
-    fields = ['date','customer_name','contact_number','item','price_per_item','quantity', 'total']
-    success_url = '/invoices'
+    fields = ['customer_name','contact_number','item','price_per_item','quantity']
 
+    def get_success_url(self):
+        return reverse('invoicelist')
     def form_valid(self, form):
         return super().form_valid(form)
 

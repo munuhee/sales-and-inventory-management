@@ -5,7 +5,7 @@ from django_extensions.db.fields import AutoSlugField
 
 class Invoice(models.Model):
     slug = AutoSlugField(unique=True , populate_from='date')
-    date = models.DateTimeField(auto_now=False, auto_now_add=False, blank=False, null=False)
+    date = models.DateTimeField(auto_now=True, blank=False, null=False)
     customer_name = models.CharField(max_length=30, blank=False, null=False)
     contact_number = models.CharField(max_length=13, blank=False, null=False)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)

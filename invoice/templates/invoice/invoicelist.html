@@ -42,17 +42,16 @@
             <tbody>
             {% for invoice in invoices %}
               <tr>
-                'date','customer_name','contact_number','item','price_per_item','quantity', 'total'
                 <th scope="row"><a> {{invoice.id}}</a></th>
-                <td>{{invoice.customer_name}}</td>
-                <td>{{invoice.contact_number}</td>
+                <td><a href="{% url 'invoice-detail' invoice.slug %}">{{invoice.customer_name}}</a></td>
+                <td>{{invoice.contact_number}}</td>
                 <td>{{invoice.item.name}}</td>
                 <td>{{invoice.price_per_item}}</td>
                 <th scope="col">{{invoice.quantity}}</th>
                 <td>{{invoice.total}}</td>
                 <td>
                   <a class="text-info" href="{% url 'invoice-update' invoice.slug %}"><i class="fa-solid fa-pen"></i></a>
-                  <a class="text-danger float-end" href="{% url 'invoice-delete' invoice.slug %}"><i class="fa-solid fa-trash"></i></a>
+                  <a class="text-danger float-end" href="{% url 'invoice-delete' invoice.pk %}"><i class="fa-solid fa-trash"></i></a>
                 </td>
               </tr>
             {% endfor %}
