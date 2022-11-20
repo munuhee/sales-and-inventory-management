@@ -1,0 +1,428 @@
+{% extends "store/base.html" %} {% load static %}{% block title %}Transaction detail{% endblock %}
+{% block content %}
+<style>
+	@import "compass/css3";
+	::selection {
+		background: #333;
+		color: #fff;
+   }
+	section .receipt {
+		margin: 0;
+		font-size: 12px;
+		position: relative;
+		font-family: 'courier';
+   }
+	* {
+		margin: 0;
+   }
+	.serif {
+		font-family: serif;
+   }
+	.sans-serif {
+		font-family: 'sans-serif';
+   }
+	.bold {
+		font-weight: 700;
+   }
+	.x-bold {
+		font-weight: 900;
+		text-shadow: 0px 0px 1px #000;
+   }
+	.hr, .hr-sm, .hr-lg {
+		border-bottom: 1.5px dashed #333;
+		margin: 10px 0;
+   }
+	.hr-sm {
+		width: 30%;
+		float: right;
+   }
+	.hr-lg {
+		width: 100%;
+   }
+	.col2 {
+		display: flex;
+		width: 100%;
+		justify-content: space-between;
+   }
+	.container-ticket {
+		background: #e6e6e6;
+		width: 100%;
+		min-height: 100vh;
+		display: flex;
+		justify-content: center;
+		padding: 50px 0;
+		box-sizing: border-box;
+   }
+	.container-ticket .ticket {
+		cursor: default;
+		position: relative;
+		width: 300px;
+		padding: 10px 20px;
+		background: #fff url(https://static.licdn.com/scds/common/u/images/apps/payments/textures/texture_paper_304x128_v1.png);
+		box-shadow: 0px 5px 10px rgba(0, 0, 0, .1);
+   }
+	.container-ticket .ticket .head-ticket {
+		text-align: center;
+		padding: 0px 17px;
+   }
+	.container-ticket .ticket .head-ticket p {
+		font-size: 14px;
+   }
+	.container-ticket .ticket .head-ticket p:nth-child(1) {
+		font-size: 18px;
+   }
+	.container-ticket .ticket .head-ticket p:nth-child(6), .container-ticket .ticket .head-ticket p:nth-child(7) {
+		font-size: 12px;
+		text-align: left;
+   }
+	.container-ticket .ticket .head-ticket .code-barre {
+		height: 50px;
+		display: flex;
+		justify-content: space-between;
+		margin-left: -17px;
+		margin-right: -17px;
+		margin-top: 5px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span {
+		height: 100%;
+		width: 10px;
+		display: inline-block;
+		background: #333;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(1) {
+		width: 7px;
+		margin-right: 2px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(2) {
+		width: 3px;
+		margin-right: 2px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(3) {
+		width: 7px;
+		margin-right: 1px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(4) {
+		width: 2px;
+		margin-right: 1px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(5) {
+		width: 7px;
+		margin-right: 2px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(6) {
+		width: 5px;
+		margin-right: 2px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(7) {
+		width: 2px;
+		margin-right: 2px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(8) {
+		width: 5px;
+		margin-right: 1px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(9) {
+		width: 3px;
+		margin-right: 2px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(10) {
+		width: 6px;
+		margin-right: 2px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(11) {
+		width: 1px;
+		margin-right: 1px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(12) {
+		width: 7px;
+		margin-right: 2px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(13) {
+		width: 3px;
+		margin-right: 1px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(14) {
+		width: 3px;
+		margin-right: 2px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(15) {
+		width: 6px;
+		margin-right: 2px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(16) {
+		width: 4px;
+		margin-right: 2px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(17) {
+		width: 7px;
+		margin-right: 1px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(18) {
+		width: 3px;
+		margin-right: 1px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(19) {
+		width: 7px;
+		margin-right: 2px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(20) {
+		width: 7px;
+		margin-right: 2px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(21) {
+		width: 3px;
+		margin-right: 1px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(22) {
+		width: 2px;
+		margin-right: 2px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(23) {
+		width: 6px;
+		margin-right: 1px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(24) {
+		width: 5px;
+		margin-right: 2px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(25) {
+		width: 6px;
+		margin-right: 1px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(26) {
+		width: 3px;
+		margin-right: 1px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(27) {
+		width: 6px;
+		margin-right: 1px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(28) {
+		width: 6px;
+		margin-right: 1px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(29) {
+		width: 5px;
+		margin-right: 1px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(30) {
+		width: 2px;
+		margin-right: 1px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(31) {
+		width: 5px;
+		margin-right: 1px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(32) {
+		width: 3px;
+		margin-right: 2px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(33) {
+		width: 6px;
+		margin-right: 1px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(34) {
+		width: 1px;
+		margin-right: 1px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(35) {
+		width: 2px;
+		margin-right: 1px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(36) {
+		width: 3px;
+		margin-right: 1px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(37) {
+		width: 3px;
+		margin-right: 1px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(38) {
+		width: 5px;
+		margin-right: 2px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(39) {
+		width: 7px;
+		margin-right: 1px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(40) {
+		width: 4px;
+		margin-right: 1px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(41) {
+		width: 7px;
+		margin-right: 1px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(42) {
+		width: 4px;
+		margin-right: 1px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(43) {
+		width: 6px;
+		margin-right: 1px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(44) {
+		width: 4px;
+		margin-right: 1px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(45) {
+		width: 6px;
+		margin-right: 2px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(46) {
+		width: 3px;
+		margin-right: 2px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(47) {
+		width: 7px;
+		margin-right: 1px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(48) {
+		width: 4px;
+		margin-right: 2px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(49) {
+		width: 1px;
+		margin-right: 1px;
+   }
+	.container-ticket .ticket .head-ticket .code-barre span:nth-child(50) {
+		width: 7px;
+		margin-right: 1px;
+   }
+	.container-ticket .ticket .body-ticket {
+		padding: 0px 17px;
+   }
+	.container-ticket .ticket .body-ticket .produits {
+		margin: 30px 0;
+   }
+	.container-ticket .ticket .body-ticket .carte {
+		text-align: justify;
+		text-align-last: center;
+   }
+	.container-ticket .ticket .body-ticket .carte .title-carte {
+		font-size: 15px;
+		font-weight: 600;
+		letter-spacing: -2px;
+   }
+	.container-ticket .ticket .footer-ticket {
+		padding: 0px 17px;
+   }
+	.container-ticket .ticket .footer-ticket .title-footer {
+		font-size: 16px;
+		font-weight: 900;
+		text-shadow: 0px 1px 0px rgba(0, 0, 0, .5);
+		text-align: center;
+		letter-spacing: 2px;
+   }
+</style>
+
+<section class="receipt container-ticket">
+
+<div>
+	<a class="btn btn-succcess"><i class="fa fa-print"></i> Print</a>
+<div>
+	<div class="ticket">
+		<div class="head-ticket">
+			<p class="x-bold">InventoryMS</p>
+			<p class="bold">Tom Mboya Street, Tudor</p>
+			<p class="bold">Tel: 0746341598</p>
+			<br>
+			<p class="bold">P.O BOX. 90420-80100 MSA</p>
+			<p>Date :{{sale.transaction_date|date:"Y/m/d    H:m:s"}}</p>
+			<p>Receipt code : IMS{{sale.id}}{{sale.slug|upper}}</p>
+			<div class="code-barre">
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+			</div>
+		</div>
+		<div class="body-ticket">
+			<div class="produits">
+				<div class="col2">
+					<p>{{sale.item.name|upper}}</p>
+					<p class="prix"><b>Ksh {{sale.price}}</b></p>
+				</div>
+				<div class="hr-sm"></div>
+				<div class="col2">
+					<p>Quantity</p>
+					<p class="prix"><b>{{sale.quantity}}</b></p>
+				</div>
+				<div class="col2">
+					<p>Total</p>
+					<p class="prix"><b>{{sale.total_value}}<b></p>
+				</div>
+				<br>
+				<div class="col2">
+					<p>Payment Method</p>
+					<p class="prix"><b>{{sale.payment_method}}<b></p>
+				</div>
+				<div class="col2">
+					<p>Amount recived</p>
+					<p class="prix"><b>Ksh {{sale.amount_received}}</b></p>
+				</div>
+				<div class="col2">
+					<p>Balance</p>
+					<p class="prix"><b>{{sale.balance}}</b></p>
+				</div>
+			</div>
+			<div class="hr-lg"></div>
+			<div class="carte">
+				<p class="title-carte">Customer: {{sale.customer_name}}</p>
+				<br>
+				<p>Served by: {{sale.profile}}</p>
+			</div>
+			<div class="hr-lg"></div>
+		</div>
+		<div class="footer-ticket">
+			<p class="title-footer">THANK YOU</p>
+		</div>
+	</div>
+</section>
+{% endblock %}

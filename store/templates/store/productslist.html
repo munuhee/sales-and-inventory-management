@@ -50,8 +50,8 @@
                 <th scope="col">{{item.expiring_date}}</th>
                 <td>{{item.vendor}}</td>
                 <td>
-                  <a class="text-info" href="#"><i class="fa-solid fa-pen"></i></a>
-                  <a class="text-danger float-end" href="#"><i class="fa-solid fa-trash"></i></a>
+                  <a class="text-info" href="{% url 'product-update' item.slug %}"><i class="fa-solid fa-pen"></i></a>
+                  <a class="text-danger float-end" href="{% url 'product-delete' item.slug %}"><i class="fa-solid fa-trash"></i></a>
                 </td>
               </tr>
             {% endfor %}

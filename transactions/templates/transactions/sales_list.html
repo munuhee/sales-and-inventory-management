@@ -20,32 +20,32 @@
           <i class="fa-solid fa-download"></i>
           Export to Excel
         </a>
-        <table class="table table-sm table-responsive">
+        <table class="table table-sm table-responsive overflow-x-hidden" id="dtVerticalScrollExample" cellspacing="0"
+        width="100%">
             <thead>
               <tr class="table-success">
-                <th scope="col">ID <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Item <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Quantity <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Price per item <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Total price <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Amount Recieved <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Balance <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Payment Method <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Customer Name <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Date <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Served by <i class="fa-sharp fa-solid fa-sort"></i></th>
+                <th scope="col" class="th-sm">ID <i class="fa-sharp fa-solid fa-sort"></i></th>
+                <th scope="col" class="th-sm">Item <i class="fa-sharp fa-solid fa-sort"></i></th>
+                <th scope="col" class="th-sm">Quantity <i class="fa-sharp fa-solid fa-sort"></i></th>
+                <th scope="col" class="th-sm">Price per item <i class="fa-sharp fa-solid fa-sort"></i></th>
+                <th scope="col" class="th-sm">Total price <i class="fa-sharp fa-solid fa-sort"></i></th>
+                <th scope="col" class="th-sm">Payment Method <i class="fa-sharp fa-solid fa-sort"></i></th>
+                <th scope="col" class="th-sm">Customer Name <i class="fa-sharp fa-solid fa-sort"></i></th>
+                <th scope="col" class="th-sm">Date <i class="fa-sharp fa-solid fa-sort"></i></th>
+                <th scope="col" class="th-sm">Served by <i class="fa-sharp fa-solid fa-sort"></i></th>
+                <th scope="col" class="th-sm"> Action</th>
               </tr>
             </thead>
             <tbody>
             {% for sale in sales %}
               <tr>
                 <th scope="row">{{sale.id}}</th>
-                <td>{{sale.item.name}}</td>
+
+                <td><a href="{% url 'sale-detail' sale.pk %}">{{sale.item.name}}</a></td>
+
                 <td>{{sale.quantity}}</td>
                 <td>{{sale.price}}</td>
                 <td>{{sale.total_value}}</td>
-                <td>{{sale.amount_received}}</td>
-                <td>{{sale.balance}}</td>
                 <td>
                   {% if sale.payment_method == 'MP' %}
                     <span class="badge badge-pill bg-soft-success text-success me-2">
@@ -60,14 +60,18 @@
                       VOOMA
                     </span>
                   {% else %}
-                    <span class="badge badge-pill bg-soft-secondary text-secondary me-2">
+                    <span class="badge badge-pill bg-soft-info text-info me-2">
                       BANK
                     </span>
                   {% endif %}
                 </td>
                 <td>{{sale.customer_name}}</td>
-                <td>{{sale.transaction_date}}</td>
+                <td>{{sale.transaction_date|date:"Y/m/d - H:m:s"}}</td>
                 <td>{{sale.profile.user.username}}</td>
+                <td>
+                  <a class="text-info" href=""><i class="fa-solid fa-pen"></i></a>
+                  <a class="text-danger float-end" href=""><i class="fa-solid fa-trash"></i></a>
+                </td>
               </tr>
             {% endfor %}
             </tbody>

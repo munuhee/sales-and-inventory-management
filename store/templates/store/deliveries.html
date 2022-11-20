@@ -1,0 +1,91 @@
+{% extends "store/base.html" %}{% load render_table from django_tables2 %}{% load querystring from django_tables2 %}{% load static %}{% block title %}Deliveries{%endblock title%}{% block content %}
+    <div class="col container p-5">
+      <style>
+        input[type="text"],select{
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            display: inline-block;
+            padding: 6px 20px;
+            margin: 8px 0;
+        }
+        button[type="submit"]{
+          padding: 6px 20px;
+          margin: 8px 0;
+      }
+      </style>
+      {% comment %} <form method="GET" class="container">
+        {{filter.form}}
+        <button type="submit" class="btn btn-sm btn-success fa fa-search"> Search</button>
+      </form> {% endcomment %}
+      <div>
+        <a class="btn btn-sm btn-success" href="{% url 'delivery-create' %}">Add delivery</a>
+        <a class="float-end btn btn-sm btn-success" href="{% querystring '_export'='xlsx' %}">
+          <i class="fa-solid fa-download"></i>
+          Export to Excel
+        </a>
+      </div>
+      <div class="m-2">
+        <table class= "table table-sm table-responsive">
+            <thead>
+              <tr class="table-success">
+                <th scope="col"><a href="{% querystring table.prefixed_order_by_field=column.order_by_alias.next %}">ID <i class="fa-sharp fa-solid fa-sort"></i></a></th>
+                <th scope="col">Name <i class="fa-sharp fa-solid fa-sort"></i></th>
+                <th scope="col">Customer Name <i class="fa-sharp fa-solid fa-sort"></i></th>
+                <th scope="col">Contact <i class="fa-sharp fa-solid fa-sort"></i></th>
+                <th scope="col">Address <i class="fa-sharp fa-solid fa-sort"></i></th>
+                <th scope="col">Delivery Date <i class="fa-sharp fa-solid fa-sort"></i></th>
+                <th scope="col">Delivery Status <i class="fa-sharp fa-solid fa-sort"></i></th>
+                <th scope="col">Action <i class="fa-sharp fa-solid fa-sort"></i></th>
+              </tr>
+            </thead>
+            <tbody>
+            {% for delivery in deliveries %}
+              <tr>
+                <th scope="row"><a> {{delivery.id}}</a></th>
+                <td>{{delivery.item.name}}</td>
+                <td>{{delivery.customer_name}}</td>
+                <td>{{delivery.phone_number}}</td>
+                <td>{{delivery.location}}</td>
+                <th scope="col">{{delivery.date}}</th>
+                <th scope="col">
+                    {% if delivery.is_delivered == True %}
+                        <span class="badge badge-pill bg-soft-warning text-success me-2">
+                            Delivered
+                        </span></th>
+                    {% else %}
+                        <span class="badge badge-pill bg-soft-warning text-danger me-2">
+                            Pending
+                        </span></th>
+                    {% endif %}
+                <td>
+                  <a class="text-info" href="#"><i class="fa-solid fa-pen"></i></a>
+                  <a class="text-danger float-end" href="#"><i class="fa-solid fa-trash"></i></a>
+                </td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+          <div class="paginator">
+            {% if is_paginated %}
+            <ul class="pagination ">
+                {% if page_obj.has_previous %}
+                <li><a class="btn btn-sm accent-1 btn-outline-success " href="?page={{ page_obj.previous_page_number }} ">&laquo;</a></li>
+                {% else %}
+                <li class="disabled "><span class="btn btn-sm btn-outline-success ">&laquo;</span></li>
+                {% endif %} {% for i in paginator.page_range %} {% if page_obj.number == i %}
+                <li class="active "><span class="btn btn-sm btn-success ">{{ i }} <span class="sr-only ">(current)</span></span>
+                </li>
+                {% else %}
+                <li><a href="?page={{ i }} " class="btn btn-sm btn-outline-success ">{{ i }}</a></li>
+                {% endif %} {% endfor %} {% if page_obj.has_next %}
+                <li><a href="?page={{ page_obj.next_page_number }} " class="btn btn-sm btn-outline-success ">&raquo;</a></li>
+                {% else %}
+                <li class="disabled "><span class="btn btn-sm btn-outline-success ">&raquo;</span></li>
+                {% endif %}
+            </ul>
+            {% endif %}
+        </div>
+    </div>
+  {% endblock content %}

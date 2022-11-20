@@ -1,0 +1,22 @@
+{% extends "store/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block title %}Add delivery{%endblock title%}{% block content %}
+<div class="col container p-5">
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <section class="section-bg" id="plans">
+            <fieldset class="form-group">
+                <header class="section-header">
+                    <h4>Add delivery record</h4>
+                    <hr>
+                </header>
+                {{ form.media }} {{ form|crispy }}
+            </fieldset>
+        </section>
+        <div class="form-group mt-4">
+            <button class="btn btn-success btn-sm" type="submit">Submit</button>
+        </div>
+    </form>
+</div>
+{% endblock content %}

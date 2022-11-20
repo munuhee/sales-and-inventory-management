@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from .models import *
+from django.urls import reverse
 from accounts.models import Profile
 from transactions.models import Sale
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -9,7 +10,7 @@ from django_tables2 import SingleTableView
 import django_tables2 as tables
 from django_tables2.export.views import ExportMixin
 from django_tables2.export.export import TableExport
-from .tables import ItemTable
+from .tables import ItemTable, DeliveryTable
 from django.views.generic import (
     ListView,
     DetailView,
@@ -68,8 +69,7 @@ def dashboard(request):
     }
     return render(request, 'store/dashboard.html', context)
 
-ii
-class ProductListView(ExportMixin, tables.SingleTableView):
+class ProductListView(LoginRequiredMixin, ExportMixin, tables.SingleTableView):
     model = Item
     table_class = ItemTable
     template_name = 'store/productslist.html'
@@ -77,7 +77,7 @@ class ProductListView(ExportMixin, tables.SingleTableView):
     paginate_by = 10
     SingleTableView.table_pagination = False
 
-class ProductDetailView(FormMixin, DetailView):
+class ProductDetailView(LoginRequiredMixin, FormMixin, DetailView):
     model = Item
     template_name = 'store/productdetail.html'
 
@@ -97,15 +97,63 @@ class ProductUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Item
     template_name = 'store/productupdate.html'
     fields = ['name','category','quantity','selling_price', 'expiring_date', 'vendor']
+    success_url = '/products'
 
     def form_valid(self, form):
         return super().form_valid(form)
+
+    def test_func(self):
+        if self.request.user.is_superuser:
+            return True
+        else:
+            return False
 
 
 class ProductDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Item
     template_name = 'store/productdelete.html'
     success_url = '/products'
+
+
+    def test_func(self):
+        item = self.get_object()
+        if self.request.user.is_superuser:
+            return True
+        else:
+            return False
+
+# Delivery
+class DeliveryListView(LoginRequiredMixin, ExportMixin, tables.SingleTableView):
+    model = Delivery
+    pagination = 10
+    template_name = 'store/deliveries.html'
+    context_object_name = 'deliveries'
+
+class DeliveryDetailView(LoginRequiredMixin, DetailView):
+    model = Delivery
+    template_name = 'store/deliverydetail.html'
+class DeliveryCreateView(LoginRequiredMixin, CreateView):
+    model = Delivery
+    field = ['item', 'customer_name', 'phone_number', 'location', 'date','is_delivered']
+    template_name = 'store/deliveriescreate'
+    success_url = '/deliveries'
+
+    def form_valid(self, form):
+        return super().form_valid(form)
+
+class DeliveryUpdateView(LoginRequiredMixin, UpdateView):
+    model = Delivery
+    field = ['item', 'customer_name', 'phone_number', 'location', 'date','is_delivered']
+    template_name = 'store/deliveryupdate.html'
+
+    def form_valid(self, form):
+        return super().form_valid(form)
+
+
+class DeliveryDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Delivery
+    template_name = 'store/productdelete.html'
+    success_url = '/deliveries'
 
     def test_func(self):
         item = self.get_object()

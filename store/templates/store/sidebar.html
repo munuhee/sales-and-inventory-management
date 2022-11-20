@@ -38,19 +38,19 @@
         <i class="fa fa-shopping-cart"></i><a href="{% url 'purchaseslist' %}"> Purchase Orders</a>
       </li>
       <li>
-        <i class="fa-solid fa-box"></i><a href="#"> Package</a>
+        <i class="fa-solid fa-box"></i><a href="{% url 'deliveries' %}"> Package</a>
       </li>
       <li>
-        <i class="fa-solid fa-receipt"></i><a href="#"> Invoices</a>
+        <i class="fa-solid fa-receipt"></i><a href="{% url 'invoicelist' %}"> Invoices</a>
       </li>
       <li>
-        <i class="fa-solid fa-money-bills"></i><a href="#"> Bills</a>
+        <i class="fa-solid fa-money-bills"></i><a href="{% url 'bill_list' %}"> Bills</a>
       </li>
       <li>
         <i class="fa-solid fa-truck-field"></i><a href="#"> Vendors</a>
       </li>
       <li>
-        <i class="fa-solid fa-people-group"></i><a href="#"> Staff</a>
+        <i class="fa-solid fa-people-group"></i><a href="{% url 'profile_list' %}"> Staff</a>
       </li>
       <li class="">
         <a class="btn btn-sm btn-danger" href="{% url 'user-logout' %}"><i class="fa fa-sign-out"></i> Logout</a>

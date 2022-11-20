@@ -1,8 +1,23 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import Group
+from .models import Profile
 from django.contrib.auth.decorators import login_required
 from .forms import CreateUserForm, UserUpdateForm, ProfileUpdateForm
+from django.urls import reverse
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django_tables2 import SingleTableView
+import django_tables2 as tables
+from django_tables2.export.views import ExportMixin
+from django_tables2.export.export import TableExport
+from .tables import ProfileTable
+from django.views.generic import (
+    ListView,
+    DetailView,
+    CreateView,
+    UpdateView,
+    DeleteView
+    )
 
 # Create your views here.
 
@@ -46,3 +61,59 @@ def profile_update(request):
         'p_form': p_form,
     }
     return render(request, 'accounts/profile_update.html', context)
+
+class ProfileListView(LoginRequiredMixin, ExportMixin, tables.SingleTableView):
+    model = Profile
+    template_name = 'accounts/stafflist.html'
+    context_object_name = 'profiles'
+    pagination = 10
+    table_class = ProfileTable
+    SingleTableView.table_pagination = False
+
+class ProfileCreateView(LoginRequiredMixin, CreateView):
+    model = Profile
+    template_name = 'accounts/staffcreate'
+    fields = ['user','role']
+
+    def form_valid(self, form):
+        return super().form_valid(form)
+
+    def test_func(self):
+        if self.request.user.is_superuser:
+            return True
+        else:
+            return False
+
+class ProfileUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Profile
+    template_name = 'accounts/staffupdate.html'
+    fields = ['user','role']
+    success_url = '/profiles'
+
+    def form_valid(self, form):
+        return super().form_valid(form)
+    def test_func(self):
+        if self.request.user.is_superuser:
+            return True
+        else:
+            return False
+
+    def test_func(self):
+        profiles = Profile.objects.all()
+        if self.request.user.profiles.role == 'AD' & self.request.user.profiles.role == 'EX':
+            return True
+        else:
+            return False
+
+
+class ProfileDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Profile
+    template_name = 'accounts/staffdelete.html'
+    success_url = '/products'
+
+
+    def test_func(self):
+        if self.request.user.is_superuser:
+            return True
+        else:
+            return False

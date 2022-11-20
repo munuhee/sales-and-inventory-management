@@ -4,8 +4,8 @@ from .models import *
 
 @admin.register(Sale)
 class SaleAdmin(admin.ModelAdmin):
-    fields = ('item', 'customer_name', 'transaction_date','payment_method', 'quantity', 'price', 'amount_received')
-    list_display = ('item', 'customer_name', 'transaction_date', 'payment_method', 'quantity', 'price', 'total_value', 'amount_received', 'balance', 'profile')
+    fields = ('item', 'customer_name','payment_method', 'quantity', 'price', 'amount_received')
+    list_display = ('item', 'slug', 'customer_name', 'transaction_date', 'payment_method', 'quantity', 'price', 'total_value', 'amount_received', 'balance', 'profile')
 
 @admin.register(Purchase)
 class PurchaseAdmin(admin.ModelAdmin):

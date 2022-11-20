@@ -16,13 +16,13 @@ from .views import (
 )
 
 urlpatterns = [
-    path('purchases/',PurchaseListView.as_view(), name="purchaseslist"),
+    path('purchases/', PurchaseListView.as_view(), name="purchaseslist"),
     path('purchase/<slug:slug>/', PurchaseDetailView.as_view(), name='purchase-detail'),
     path('new-purchase/', PurchaseCreateView.as_view(), name='purchase-create'),
     path('purchase/<slug:slug>/update/', PurchaseUpdateView.as_view(), name='purchase-update'),
     path('purchase/<slug:slug>/delete/', PurchaseDeleteView.as_view(), name='purchase-delete'),
     path('sales/',SaleListView.as_view(), name="saleslist"),
-    path('sale/<slug:slug>/', SaleDetailView.as_view(), name='sale-detail'),
+    path('sale/<int:pk>/', SaleDetailView.as_view(), name='sale-detail'),
     path('new-sale/', SaleCreateView.as_view(), name='sale-create'),
     path('sale/<slug:slug>/update/', SaleUpdateView.as_view(), name='sale-update'),
     path('sale/<slug:slug>/delete/', SaleDeleteView.as_view(), name='sale-delete'),

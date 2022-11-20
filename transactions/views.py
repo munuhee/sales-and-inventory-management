@@ -6,9 +6,11 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic.edit import FormMixin
 from django_tables2 import SingleTableView
 import django_tables2 as tables
+from django.urls import reverse
 from django_tables2.export.views import ExportMixin
 from django_tables2.export.export import TableExport
 from .tables import PurchaseTable, SaleTable
+from accounts.models import Profile
 from django.views.generic import (
     ListView,
     DetailView,
@@ -35,29 +37,34 @@ class PurchaseDetailView(FormMixin, DetailView):
 
 class PurchaseCreateView(LoginRequiredMixin, CreateView):
     model = Purchase
-    template_name = 'transactions/purchase_create.html'
-    fields = ['name','category','quantity','selling_price', 'expiring_date', 'vendor']
-    success_url = '/sales'
+    template_name = 'transactions/purchasescreate.html'
+    fields = ['item', 'description', 'vendor', 'order_date', 'delivery_date', 'quantity', 'price', 'delivery_status']
 
     def form_valid(self, form):
         return super().form_valid(form)
+    def get_success_url(self):
+        return reverse('purchaseslist')
 
 class PurchaseUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Purchase
-    template_name = 'transactions/purchase_update.html'
-    fields = ['name','category','quantity','selling_price', 'expiring_date', 'vendor']
+    template_name = 'transactions/purchaseupdate.html'
+    fields = ['item', 'description', 'vendor', 'order_date', 'delivery_date', 'quantity', 'price', 'delivery_status']
 
     def form_valid(self, form):
         return super().form_valid(form)
+    def get_success_url(self):
+        return reverse('purchase-update')
 
 
 class PurchaseDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Purchase
-    template_name = 'transactions/purchase_delete.html'
-    success_url = '/purchases'
+    template_name = 'transactions/purchasedelete.html'
 
     def test_func(self):
         purchase = self.get_object()
+
+    def get_success_url(self):
+            return reverse('purchase-update')
 
 #Sales Order
 class SaleListView(ExportMixin, tables.SingleTableView):
@@ -68,35 +75,49 @@ class SaleListView(ExportMixin, tables.SingleTableView):
     paginate_by = 10
     SingleTableView.table_pagination = False
 
-class SaleDetailView(FormMixin, DetailView):
+class SaleDetailView(DetailView):
     model = Sale
-    template_name = 'transactions/sale_detail.html'
+    template_name = 'transactions/saledetail.html'
 
-    def get_success_url(self):
-        return reverse('sale-detail', kwargs={'slug': self.object.slug})
 
 class SaleCreateView(LoginRequiredMixin, CreateView):
     model = Sale
-    template_name = 'transactions/sale_create.html'
-    fields = ['item', 'description', 'vendor', 'delivery_date', 'quantity', 'price']
-    success_url = '/sales'
+    template_name = 'transactions/salescreate.html'
+    fields = ['item', 'customer_name', 'payment_method', 'quantity', 'price', 'amount_received']
+
+    def get_success_url(self):
+        return reverse('saleslist')
 
     def form_valid(self, form):
+        form.instance.profile = self.request.user.profile
         return super().form_valid(form)
+    def test_func(self):
+        profile_list = Profile.objects.all()
+        if self.request.user.profile in profile_list:
+            return False
+        else:
+            return True
+
+
 
 class SaleUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Sale
     template_name = 'transactions/sale_update.html'
-    fields = ['item', 'description', 'vendor', 'delivery_date', 'quantity', 'price']
+    fields = ['item', 'customer_name', 'payment_method', 'quantity', 'price', 'amount_received']
+
+    def get_success_url(self):
+        return reverse('saleslist')
 
     def form_valid(self, form):
+        form.instance.profile = self.request.user.profile
         return super().form_valid(form)
-
 
 class SaleDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Sale
-    template_name = 'transactions/sale_delete.html'
-    success_url = '/sales'
+    template_name = 'transactions/saledelete.html'
+
+    def get_success_url(self):
+        return reverse('saleslist')
 
     def test_func(self):
         purchase = self.get_object()

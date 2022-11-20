@@ -19,10 +19,10 @@ DELIVERY_CHOICES = [
 ]
 
 class Sale(models.Model):
-    slug = AutoSlugField(unique=True , populate_from='name')
+    slug = AutoSlugField(unique=True , populate_from='customer_name')
     item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
     customer_name = models.CharField(max_length=20, null=True, blank=True)
-    transaction_date = models.DateTimeField(auto_now=False, auto_now_add=False, blank=False, null=False)
+    transaction_date = models.DateTimeField(auto_now=True, blank=True, null=True)
     quantity = models.FloatField(default=0.00, blank=False, null=False)
     payment_method = models.CharField(choices=PAYMENT_CHOICES, max_length=20, blank='True', null=True)
     price = models.FloatField(default=0.00, blank=False, null=False)
@@ -42,10 +42,10 @@ class Sale(models.Model):
 
 
     def __str__(self):
-        return self.item.name
+        return str(self.item.name)
 
 class Purchase(models.Model):
-    slug = AutoSlugField(unique=True , populate_from='name')
+    slug = AutoSlugField(unique=True , populate_from='vendor')
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     description = models.TextField(max_length=300, blank=True, null=True)
     vendor = models.ForeignKey(Vendor, related_name='vendor', on_delete=models.CASCADE, blank=False, null=False)

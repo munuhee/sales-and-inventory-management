@@ -44,3 +44,4 @@ class Delivery(models.Model):
     phone_number = PhoneNumberField(null=True,blank=True)
     location = models.CharField(blank=True, null=True, max_length=20)
     date = models.DateTimeField(null=False, blank=False)
+    is_delivered = models.BooleanField(default=False)
