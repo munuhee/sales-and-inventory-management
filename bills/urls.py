@@ -15,5 +15,6 @@ urlpatterns = [
     #path('bill/<slug:slug>/', BillDetailView.as_view(), name='bill-detail'),
     path('new-bill/', BillCreateView.as_view(), name='bill-create'),
     path('bill/<slug:slug>/update/', BillUpdateView.as_view(), name='bill-update'),
+    path('bill/<int:id>/delete/', BillDeleteView.as_view(), name='bill-delete'),
 ]
 urlpatterns += static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)

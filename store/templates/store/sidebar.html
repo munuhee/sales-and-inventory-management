@@ -12,14 +12,14 @@
           alt="">
         </a>
         <div class="ms-2">
-          <h5 class="fs-6 mb-0 text-white">{{user.username}} <i class="fa fa-badge-check"></i></h5>
+          <h5 class="fs-6 mb-0 text-white">{{user.username}}{% if user.profile.role == 'AD' %} <i class="fa-solid fa-circle-check"></i>{% endif %}</h5>
           <span class="badge badge-pill bg-soft-success text-success me-2">
             {% if user.profile.role == 'AD' %}
-            Admin
+              Admin
             {% elif user.profile.role == 'EX' %}
-            Executive
+              Executive
             {% else %}
-            Operative
+              Operative
         {% endif %}
           </span>
         </div>
@@ -46,9 +46,9 @@
       <li>
         <i class="fa-solid fa-money-bills"></i><a href="{% url 'bill_list' %}"> Bills</a>
       </li>
-      <li>
+      {% comment %} <li>
         <i class="fa-solid fa-truck-field"></i><a href="#"> Vendors</a>
-      </li>
+      </li> {% endcomment %}
       <li>
         <i class="fa-solid fa-people-group"></i><a href="{% url 'profile_list' %}"> Staff</a>
       </li>

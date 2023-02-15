@@ -29,14 +29,14 @@
         <table class= "table table-sm table-responsive">
             <thead>
               <tr class="table-success">
-                <th scope="col"><a href="{% querystring table.prefixed_order_by_field=column.order_by_alias.next %}">ID <i class="fa-sharp fa-solid fa-sort"></i></a></th>
-                <th scope="col">Name <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Customer Name <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Contact <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Address <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Delivery Date <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Delivery Status <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Action <i class="fa-sharp fa-solid fa-sort"></i></th>
+                <th scope="col"><a href="{% querystring table.prefixed_order_by_field=column.order_by_alias.next %}">ID <i class="fa-solid fa-sort"></i></a></th>
+                <th scope="col">Name <i class="fa-solid fa-sort"></i></th>
+                <th scope="col">Customer Name <i class="fa-solid fa-sort"></i></th>
+                <th scope="col">Contact <i class="fa-solid fa-sort"></i></th>
+                <th scope="col">Address <i class="fa-solid fa-sort"></i></th>
+                <th scope="col">Delivery Date <i class="fa-solid fa-sort"></i></th>
+                <th scope="col">Delivery Status <i class="fa-solid fa-sort"></i></th>
+                <th scope="col">Action <i class="fa-solid fa-sort"></i></th>
               </tr>
             </thead>
             <tbody>
@@ -59,8 +59,8 @@
                         </span></th>
                     {% endif %}
                 <td>
-                  <a class="text-info" href="#"><i class="fa-solid fa-pen"></i></a>
-                  <a class="text-danger float-end" href="#"><i class="fa-solid fa-trash"></i></a>
+                  <a class="text-info" href="{% url 'delivery-update' delivery.pk %}"><i class="fa-solid fa-pen"></i></a>
+                  <a class="text-danger float-end" href="{% url 'delivery-delete' delivery.pk %}"><i class="fa-solid fa-trash"></i></a>
                 </td>
               </tr>
             {% endfor %}

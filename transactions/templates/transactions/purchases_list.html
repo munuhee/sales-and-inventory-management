@@ -1,19 +1,5 @@
 {% extends "store/base.html" %}{% load static %}{% load render_table from django_tables2 %}{% load querystring from django_tables2 %}{% block title %}Purchases{%endblock title%}{% block content %}
     <div class="col container p-5">
-        <style>
-          input[type="text"],select{
-              box-sizing: border-box;
-              border: 1px solid #ccc;
-              border-radius: 4px;
-              display: inline-block;
-              padding: 6px 20px;
-              margin: 8px 0;
-          }
-          button[type="submit"]{
-            padding: 6px 20px;
-            margin: 8px 0;
-        }
-        </style>
         <small>
         <a class="btn btn-sm btn-success" href="{% url 'purchase-create' %}">Add Purchase Order</a>
         <a class="float-end btn btn-sm btn-success" href="{% querystring '_export'='xlsx' %}">
@@ -23,13 +9,13 @@
         <table class="table table-sm table-responsive">
             <thead>
               <tr class="table-success">
-                <th scope="col">ID <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Name <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Quantity <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Price <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Delivery status <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Delivery date <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Vendor <i class="fa-sharp fa-solid fa-sort"></i></th>
+                <th scope="col">ID <i class="fa-solid fa-sort"></i></th>
+                <th scope="col">Name <i class="fa-solid fa-sort"></i></th>
+                <th scope="col">Quantity <i class="fa-solid fa-sort"></i></th>
+                <th scope="col">Price <i class="fa-solid fa-sort"></i></th>
+                <th scope="col">Delivery status <i class="fa-solid fa-sort"></i></th>
+                <th scope="col">Delivery date <i class="fa-solid fa-sort"></i></th>
+                <th scope="col">Vendor <i class="fa-solid fa-sort"></i></th>
               </tr>
             </thead>
             <tbody>
@@ -45,13 +31,17 @@
                       pending
                     </span>
                   {% else %}
-                    <span class="badge badge-pill bg-soft-danger text-danger me-2">
+                    <span class="badge badge-pill bg-soft-success text-success me-2">
                       Successfull
                     </span>
                   {% endif %}
                 </td>
                 <td>{{purchase.delivery_date}}</td>
                 <td>{{purchase.vendor.name}}</td>
+                <td>
+                  <a class="text-info" href="{% url 'purchase-update' purchase.id %}"><i class="fa-solid fa-pen"></i></a>
+                  <a class="text-danger float-end" href="{% url 'purchase-delete' purchase.id %}"><i class="fa-solid fa-trash"></i></a>
+                </td>
               </tr>
             {% endfor %}
             </tbody>

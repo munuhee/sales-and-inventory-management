@@ -5,8 +5,8 @@ from django.utils.text import slugify
 from accounts.models import *
 from django_extensions.db.fields import AutoSlugField
 from phonenumber_field.modelfields import PhoneNumberField
-# Create your models here.
 
+# Create your models here.
 class Category(models.Model):
 	name = models.CharField(max_length=50)
 	slug = AutoSlugField(unique=True , populate_from='name')
@@ -44,4 +44,4 @@ class Delivery(models.Model):
     phone_number = PhoneNumberField(null=True,blank=True)
     location = models.CharField(blank=True, null=True, max_length=20)
     date = models.DateTimeField(null=False, blank=False)
-    is_delivered = models.BooleanField(default=False)
+    is_delivered = models.BooleanField(default=False, verbose_name=('is-delivered'))

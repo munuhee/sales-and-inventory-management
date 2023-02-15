@@ -3,20 +3,26 @@
 {% load crispy_forms_tags %}
 {% block title %}Add Sale transaction{%endblock title%}{% block content %}
 <div class="col container p-5">
-    <form method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        <section class="section-bg" id="plans">
-            <fieldset class="form-group">
-                <header class="section-header">
-                    <h4>Add sale transaction</h4>
-                    <hr>
-                </header>
-                {{ form.media }} {{ form|crispy }}
-            </fieldset>
-        </section>
-        <div class="form-group mt-4">
-            <button class="btn btn-success btn-sm" type="submit">Submit</button>
+    <div class="row">
+        <div class="col-md-3 col-lg-3"></div>
+          <div class="col-md-6 col-lg-6">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <section class="section-bg" id="plans">
+                    <fieldset class="form-group">
+                        <header class="section-header">
+                            <h1 class="text-success">Add sale transaction</h1>
+                            <hr>
+                        </header>
+                        {{ form.media }} {{ form|crispy }}
+                    </fieldset>
+                </section>
+                <div class="form-group mt-4 text-cemter">
+                    <button class="btn btn-success" type="submit">Submit</button>
+                </div>
+            </form>
         </div>
-    </form>
+        <div class="col-md-3 col-lg-3"></div>
+    </div>
 </div>
 {% endblock content %}

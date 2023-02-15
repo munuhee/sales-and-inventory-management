@@ -14,7 +14,7 @@ from .views import (
 )
 urlpatterns = [
     path('register/', user_views.register, name='user-register'),
-    path('', auth_views.LoginView.as_view(
+    path('login/', auth_views.LoginView.as_view(
         template_name='accounts/login.html'), name='user-login'),
     path('profile/', user_views.profile, name='user-profile'),
     path('profile/update/', user_views.profile_update,
@@ -24,6 +24,7 @@ urlpatterns = [
     path('profiles/',ProfileListView.as_view(), name="profile_list"),
     #path('profile/<slug:slug>/', ProfileDetailView.as_view(), name='profile-detail'),
     path('new-profile/', ProfileCreateView.as_view(), name='profile-create'),
-    path('profile/<slug:slug>/update/', ProfileUpdateView.as_view(), name='profile-update'),
+    path('profile/<int:pk>/update/', ProfileUpdateView.as_view(), name='profile-update'),
+    path('profile/<int:pk>/update/', ProfileDeleteView.as_view(), name='profile-delete')
 ]
 urlpatterns += static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)

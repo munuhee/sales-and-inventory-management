@@ -4,7 +4,7 @@ from django_extensions.db.fields import AutoSlugField
 
 class Bill(models.Model):
     slug = AutoSlugField(unique=True , populate_from='date')
-    date = models.DateTimeField(auto_now=False, auto_now_add=False, blank=False, null=False)
+    date = models.DateTimeField(auto_now=False, auto_now_add=False, blank=False, null=False, verbose_name=('Date (eg: 2022/11/22 )'))
     institution_name = models.CharField(max_length=30, blank=False, null=False)
     phone_number = models.IntegerField(blank=True, null=True)
     email = models.EmailField(null=True, blank=True)

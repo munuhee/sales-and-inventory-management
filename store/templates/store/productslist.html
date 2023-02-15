@@ -14,28 +14,40 @@
           margin: 8px 0;
       }
       </style>
-      {% comment %} <form method="GET" class="container">
-        {{filter.form}}
-        <button type="submit" class="btn btn-sm btn-success fa fa-search"> Search</button>
-      </form> {% endcomment %}
-      <div>
-        <a class="btn btn-sm btn-success" href="{% url 'product-create' %}">Add Item</a>
-        <a class="float-end btn btn-sm btn-success" href="{% querystring '_export'='xlsx' %}">
-          <i class="fa-solid fa-download"></i>
-          Export to Excel
-        </a>
+      <div class="row">
+        <div class="col-md-4">
+          <a class="btn btn-sm btn-success" href="{% url 'product-create' %}">Add Item</a>
+        </div>
+        <div class="col-md-4">
+          <form class="input-group" role="search " id="searchform" action="{% url 'item_search_list_view' %}" method="get" accept-charset="utf-8">
+            <div class="form-group">
+                <div class="input-group ">
+                    <input id="searchbox" name="q" type="text" class="form-control " placeholder="Find products">
+                    <span class="input-group-btn">
+                      <button class="btn btn-outline-success" type="submit">Search</i></button>
+                    </span>
+                </div>
+            </div>
+        </form>
+        </div>
+        <div class="col-md-4 float-end">
+          <a class="btn btn-sm btn-success" href="{% querystring '_export'='xlsx' %}">
+            <i class="fa-solid fa-download"></i>
+            Export to Excel
+          </a>
+        </div>
       </div>
       <div class="m-2">
         <table class= "table table-sm table-responsive">
             <thead>
               <tr class="table-success">
-                <th scope="col"><a href="{% querystring table.prefixed_order_by_field=column.order_by_alias.next %}">ID <i class="fa-sharp fa-solid fa-sort"></i></a></th>
-                <th scope="col">Name <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Category <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Quantity <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Price <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Expiring date <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Vendor <i class="fa-sharp fa-solid fa-sort"></i></th>
+                <th scope="col"><a href="{% querystring table.prefixed_order_by_field=column.order_by_alias.next %}">ID <i class="fa-solid fa-sort"></i></a></th>
+                <th scope="col">Name <i class="fa-solid fa-sort"></i></th>
+                <th scope="col">Category <i class="fa-solid fa-sort"></i></th>
+                <th scope="col">Quantity <i class="fa-solid fa-sort"></i></i></th>
+                <th scope="col">Price <i class="fa-solid fa-sort"></i></th>
+                <th scope="col">Expiring date <i class="fa-solid fa-sort"></i></th>
+                <th scope="col">Vendor <i class="fa-solid fa-sort"></i></th>
                 <th scope="col"> Action</th>
               </tr>
             </thead>

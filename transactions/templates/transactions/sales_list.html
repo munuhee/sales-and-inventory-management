@@ -24,15 +24,15 @@
         width="100%">
             <thead>
               <tr class="table-success">
-                <th scope="col" class="th-sm">ID <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col" class="th-sm">Item <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col" class="th-sm">Quantity <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col" class="th-sm">Price per item <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col" class="th-sm">Total price <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col" class="th-sm">Payment Method <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col" class="th-sm">Customer Name <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col" class="th-sm">Date <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col" class="th-sm">Served by <i class="fa-sharp fa-solid fa-sort"></i></th>
+                <th scope="col" class="th-sm">ID <i class="fa-solid fa-sort"></i></th>
+                <th scope="col" class="th-sm">Item <i class="fa-solid fa-sort"></i></th>
+                <th scope="col" class="th-sm">Quantity <i class="fa-solid fa-sort"></i></th>
+                <th scope="col" class="th-sm">Price per item <i class="fa-solid fa-sort"></i></th>
+                <th scope="col" class="th-sm">Total price <i class="fa-solid fa-sort"></i></th>
+                <th scope="col" class="th-sm">Payment Method <i class="fa-solid fa-sort"></i></th>
+                <th scope="col" class="th-sm">Customer Name <i class="fa-solid fa-sort"></i></th>
+                <th scope="col" class="th-sm">Date <i class="fa-solid fa-sort"></i></th>
+                <th scope="col" class="th-sm">Served by <i class="fa-solid fa-sort"></i></th>
                 <th scope="col" class="th-sm"> Action</th>
               </tr>
             </thead>
@@ -69,8 +69,8 @@
                 <td>{{sale.transaction_date|date:"Y/m/d - H:m:s"}}</td>
                 <td>{{sale.profile.user.username}}</td>
                 <td>
-                  <a class="text-info" href=""><i class="fa-solid fa-pen"></i></a>
-                  <a class="text-danger float-end" href=""><i class="fa-solid fa-trash"></i></a>
+                  <a class="text-info" href="{% url 'sale-update' sale.slug %}"><i class="fa-solid fa-pen"></i></a>
+                  <a class="text-danger float-end" href="{% url 'sale-delete' sale.slug %}"><i class="fa-solid fa-trash"></i></a>
                 </td>
               </tr>
             {% endfor %}

@@ -7,6 +7,7 @@ import django_tables2 as tables
 from django_tables2.export.views import ExportMixin
 from django_tables2.export.export import TableExport
 from .tables import BillTable
+from accounts.models import Profile
 from django.views.generic import (
     ListView,
     DetailView,
@@ -42,28 +43,31 @@ class BillCreateView(LoginRequiredMixin, CreateView):
 class BillUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Bill
     template_name = 'bills/billupdate.html'
-    fields = ['slug','date','institution_name', 'phone_number','email','address','description', 'payment_details', 'amount','status']
-    success_url = '/bills'
+    fields = ['date','institution_name', 'phone_number','email','address','description', 'payment_details', 'amount','status']
 
     def form_valid(self, form):
         return super().form_valid(form)
 
     def test_func(self):
-        if self.request.user.is_superuser:
+        profiles = Profile.objects.all()
+        if self.request.user.profile in profiles:
             return True
         else:
             return False
 
+    def get_success_url(self):
+        return reverse('bill_list')
 
 class BillDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Bill
     template_name = 'bill/billdelete.html'
-    success_url = '/products'
 
 
     def test_func(self):
-        item = self.get_object()
         if self.request.user.is_superuser:
             return True
         else:
             return False
+    def get_success_url(self):
+
+        return reverse('bill_list')

@@ -5,7 +5,7 @@
         {% csrf_token %}
         <fieldset class="form-group">
             <legend class="border-bottom mb-4">Delete delivery record</legend>
-            <h5>Are you sure you want to delete the delivery record "{{ object.name }}"</h5>
+            <h5>Are you sure you want to delete the delivery record "{{ object.item.name }}"</h5>
         </fieldset>
         <div class="form-group">
             <button class="btn btn-outline-danger btn-sm" type="submit">Yes, Delete</button>

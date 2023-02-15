@@ -3,402 +3,60 @@
 {% load crispy_forms_tags %}
 {% block content %}
 <div class="container my-4">
-    <style>
-  /*========================================================
-            Form Section
-  ========================================================*/
-  form {
-    margin: 0 auto;
-    width: 50%;
-    border-bottom-right-radius: 6px;
-    border-bottom-left-radius: 6px;
-    padding-bottom: 10px;
-  }
-  /*changing title style*/
-  h1 {
-    padding-top: 30px;
-    text-align: center;
-    color: #FF5722;
-    font-size: 26px;
-  }
-
-  /*Camera image to upload image*/
-  .fa-camera-retro {
-      color: #a7a7a7;
-      width: 100px;
-      height: 100px;
-      margin-top: 20px;
-      line-height: 100px;
-      border: 2px solid #a7a7a7;
-      cursor: pointer;
-      -webkit-border-radius: 50%;
-      border-radius: 50%;
-      -webkit-transition: background-color 0.3s ease;
-      transition: background-color 0.3s ease;
-      box-shadow: 0 15px 20px -10px rgba(0, 0, 0, 0.3);
-  }
-
-  .fa-camera-retro:hover{
-    border-color: #6f6f6f;
-    box-shadow: 0 3px 5px -5px rgba(0, 0, 0, 0.3);
-    transform: translateY(-1px);
-    color: #6f6f6f;
-  }
-
-
-
-  /*========================================================
-            input Section
-  ========================================================*/
-
-  /*Float Label main style*/
-  .float-label input, .float-label select {
-      -webkit-appearance: none;
-      outline: none;
-      border: none;
-      margin: 0 auto;
-      width: 100%;
-      display: block;
-      -moz-border-radius: 0;
-      border-radius: 0;
-      font-family: 'Lato', sans-serif;
-      font-size: 18px;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.7);
-      background: transparent;
-      color: #757575;
-      padding: 5px 15px 7px 10px;
-  }
-
-  .title {
-    font-family: 'Lato', sans-serif;
-    font-size: 18px;
-    background: transparent;
-    color: #757575;
-    font-weight: normal;
-    margin-left: 7px;
-  }
-
-  .gender, .birthday {
-      text-align: left;
-      padding-left: 16px;
-      margin-top: -10px;
-  }
-
-  .gender div, .birthday div {
-    display: inline-block;
-    padding-left: 0;
-  }
-
-  /*add style to radio options*/
-  .option-input {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    -ms-appearance: none;
-    -o-appearance: none;
-    appearance: none;
-    position: relative;
-    top: 13.33333px;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    height: 15px;
-    width: 15px;
-    transition: all 0.15s ease-out 0s;
-    background: #cbd1d8;
-    border: none;
-    color: #fff;
-    cursor: pointer;
-    display: inline-block;
-    margin-right: 0.5rem;
-    outline: none;
-    position: relative;
-    z-index: 1000;
-  }
-  .option-input:hover {
-    background: #9faab7;
-  }
-  .option-input:checked {
-    background: #77cee2;
-  }
-  .option-input:checked::before {
-    height: 15px;
-    width: 15px;
-    position: absolute;
-    content: '✔';
-    display: inline-block;
-    font-size: 12px;
-    text-align: center;
-    line-height: 15px;
-  }
-  .option-input:checked::after {
-    -webkit-animation: click-wave 0.65s;
-    -moz-animation: click-wave 0.65s;
-    animation: click-wave 0.65s;
-    background: #77cee2;
-    content: '';
-    display: block;
-    position: relative;
-    z-index: 100;
-  }
-  .option-input {
-    border-radius: 50%;
-  }
-  .option-input::after {
-    border-radius: 50%;
-  }
-  .radio-inline input[type=radio] {
-    position: static;
-    margin-left: 0;
-    padding-left: 0;
-  }
-  .radio-inline {
-    vertical-align: baseline;
-  }
-  .radio-inline span {
-    line-height: 4;
-    font-size: 16px;
-    padding-left: 4px;
-  }
-
-   /*Style birthday select */
-  .float-label select {
-    display: inline-block;
-    width: 24%;
-    margin-left: 20px;
-    font-size: 16px;
-    color: black;
-  }
-  .float-label select:first-child{
-    width: 30%;
-  }
-  .birthday .select {
-    width: 82%;
-  }
-
-  .float-label > select option:first-child {
-    color: #77cee2;
-  }
-
-
-
-  /*========================================================
-            Button Section
-  ========================================================*/
-  /*changing button box style*/
-  #sendData , #sendData2{
-    width: 150px;
-    margin-top: 50px;
-    margin-bottom: 10px;
-    text-transform: uppercase;
-    outline: 0;
-    border-style: none;
-    background: #FF7052;
-    padding: 10px 15px;
-    color: white;
-    font-weight: 200;
-    font-size: 18px;
-    box-shadow: rgba(0, 0, 0, 0.8);
-  }
-
-  .failure {
-    color: #FF7052;
-  }
-
-  /*change message*/
-  #login, #create, #signOut {
-    text-decoration: none;
-    color: #FF7052;
-    background: transparent;
-    border: none;
-  }
-
-  .message a:hover {
-    color: black;
-  }
-
-  /*========================================================
-        Profile Section
-  ========================================================*/
-  /*Add margin to profile*/
-  #updateProfile {
-    padding: 20px 60px;
-  }
-
-  .user-left {
-    padding-top: 40px;
-  }
-
-   /*create a round container to hide overflow image*/
-  .user-left span {
-    display: inline-block;
-    width: 250px;
-    height: 250px;
-    overflow: hidden;
-    text-align: center;
-    border-radius: 100%;
-    /*add shadow and border*/
-    border: 2px solid #a9a9a9;
-    cursor: pointer;
-    -webkit-border-radius: 50%;
-    border-radius: 50%;
-    -webkit-transition: background-color 0.3s ease;
-    transition: background-color 0.3s ease;
-    box-shadow: 0px 20px 25px -10px rgba(0, 0, 0, 0.3);
-  }
-
-  /*change image effect when hover*/
-  .user-left span:hover{
-    border-color: #b3b3b3;
-    box-shadow: 0 3px 5px -5px rgba(0, 0, 0, 0.3);
-    transform: translateY(-1px);
-  }
-
-  /*change font margin and padding*/
-  .user-left h1 {
-    padding-top: 0;
-  }
-
-  /*center image and make it round*/
-  .user-image {
-    left: 50%;
-    margin-left: -100%;
-    position: relative;
-    width: auto !important;
-    height: 250px !important;
-  }
-
-  /*change image opacity*/
-  .user-image:hover {
-    opacity: 0.5;
-    filter: alpha(opacity=50);
-  }
-
-  .user-right {
-    padding: 20px 20px 40px;
-    min-height: 200px;
-    /*margin-left: 80px;*/
-  }
-
-  /*Change profile title*/
-  .user-right h2 {
-    text-align: left;
-    font-family: 'Roboto', Arial, sans-serif;
-    font-weight: 400;
-    font-size: 3em;
-  }
-  .user-right span {
-    color: #d2d2d2;
-  }
-
-  .user-info {
-    padding: 18px;
-    width: 100%;
-    min-height: 200px;
-    border-radius: 3px;
-    box-shadow: 0 0 0 0 transparent;
-    box-shadow: 0 15px 20px -15px rgba(0, 0, 0, 0.3), 0 55px 50px -35px rgba(210, 214, 213, 0.5);
-    background-color: transparent;
-
-    box-shadow: 0px 2px 2px 2px rgba(210, 214, 213, 0.4);
-  }
-
-
-  td p{
-    font-size: 20px;
-    padding: 10px 15px 10px 10px;
-    text-align: left;
-  }
-
-  #signOut {
-    float: right;
-  }
-
-    </style>
-       {% comment %}  <div class="card">
-            <form method="POST" enctype="multipart/form-data">
-                {% csrf_token %}
-                {{ u_form|crispy }}
-                {{ p_form|crispy }}
-                <input class="btn btn-success btn-sm my-4" type="submit" value="Update">
-            </form>
-        </div> {% endcomment %}
-        <div class="box-main">
-
-            <!-- Get User data -->
-            <!-- =============================================================== -->
-            <form action="index.html" method="post" id="newProfile">
-              <h1 id="header">Edit Your Profile
-                <!-- <br><i class="fa fa-camera-retro fa-lg"></i> -->
+        <div class="box-main row">
+          <div class="col-md-3 col-lg-3"></div>
+          <div class="col-md-6 col-lg-6">
+          <form method="POST" enctype="multipart/form-data">
+              {% csrf_token %}
+              <h1 id="header" class="text-success">Edit Your Profile
               </h1>
-              <h1></h1>
-              <!-- USER NAME -->
               <div class="float-label">
-                <input type="text" name="f-name" value="" id="userName" placeholder="Name">
+                <label> username </label>
+                <span class="text-danger">{{ u_form.username.errors }}</span>
+                {{ u_form.username }}
               </div>
               <br>
-
-              <!-- PASSWORD -->
               <div class="float-label">
-                <input type="text" name="" value="" placeholder="Password" id="userPassword">
+                <label> email </label>
+                <span class="text-danger">{{ u_form.email.errors }}</span>
+                {{ u_form.email }}
               </div>
               <br>
-
-              <!-- EMAIL ADDRESS -->
               <div class="float-label">
-                <input type="text" name="f-name" value="" id="userEmail" placeholder="email address">
+                <label>secondary email </label>
+                <span class="text-danger">{{ p_form.email.errors }}</span>
+                {{ p_form.email }}
               </div>
               <br>
-
-             <div class='row'>
-               <!-- GENDER -->
-               <div class=" gender">
-                 <div class="gender-title">
-                   <label for="gender" class="title">Gender:</label>
-                 </div>
-                 <div class="radio">
-                   <label class="radio-inline">
-                     <input type="radio" name="inlineRadioOptions"  value="Male" class="option-input userGender" checked>
-                     <span>Male</span>
-                   </label>
-                   <label class="radio-inline">
-                     <input type="radio" name="inlineRadioOptions" value="Female" class="option-input userGender">
-                     <span>Female</span>
-                   </label>
-                 </div>
-               </div>
-             </div>
-
-
-             <!-- BIRTHDAY -->
-             <div class="row birthday">
-               <div class="gender-title">
-                 <label for="birthday" class="title">Birthday:</label>
-               </div>
-               <div class="float-label select">
-                   <select name="Month" id="month">
-                     <option value="" class="userMonth dateColor">Month</option>
-                   </select>
-
-                   <select name="Day" id="day">
-                     <option value="" class="userDay dateColor">Day</option>
-                   </select>
-
-                   <select name="Year" id="year">
-                     <option value="" class="userYear dateColor">Year</option>
-                     </optgroup>
-                   </select>
-
-                 </div>
-               </div>
-
-
-              <button type="button" name="button" id="sendData">Create</button>
-              <p></p>
+              <div class="float-label">
+                <label> first name </label>
+                <span class="text-danger">{{ p_form.first_name.errors }}</span>
+                {{ p_form.first_name}}
+              </div>
+              <br>
+              <div class="float-label">
+                <label> last name </label>
+                <span class="text-danger">{{ p_form.last_name.errors }}</span>
+                {{ p_form.last_name}}
+              </div>
+              <br>
+              <div class="float-label">
+                <label> mobile number </label>
+                <span class="text-danger">{{ p_form.telephone.errors }}</span>
+                {{ p_form.telephone}}
+              </div>
+              <br>
+              <div class="float-label">
+                <label> lasttname </label>
+                {{ p_form.profile_picture}}
+              </div>
+              <br>
+              <button type="submit" class="btn btn-success">update</button>
             </form>
               </div>
             </div>
-
-
-</div>
+          </div>
+          <div class="col-md-3 col-lg-3"></div>
+          </div>
 
 {% endblock %}

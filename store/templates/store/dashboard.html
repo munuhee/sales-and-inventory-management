@@ -17,7 +17,7 @@
                                 <div class="row">
                                     <div class="col">
                                         <span class="h6 font-semibold text-muted text-sm d-block mb-2">Products</span>
-                                        <span class="h3 font-bold mb-0">{{items_count}}</span>
+                                        <span class="h3 font-bold mb-0">{{total_items}}</span>
                                     </div>
                                     <div class="col-auto">
                                         <div class="icon icon-shape bg-tertiary text-white text-lg rounded-circle">
@@ -36,7 +36,7 @@
                         </a>
                     </div>
                     <div class="col-xl-3 col-sm-6 col-12" id="profiles">
-                        <a href="">
+                        <a href="{% url 'profile_list' %}">
                             <div class="card shadow border-0">
                                 <div class="card-body">
                                     <div class="row">
@@ -46,7 +46,7 @@
                                         </div>
                                         <div class="col-auto">
                                             <div class="icon icon-shape bg-primary text-white text-lg rounded-circle">
-                                                <i class="fa fa-fa-group"></i>
+                                                <i class="fa-solid fa-people-group"></i>
                                             </div>
                                         </div>
                                     </div>
@@ -209,7 +209,7 @@
                             </table>
                         </div>
                         <div class="text-center">
-                            <a class="btn btn-success btn-sm" href="{% url 'saleslist' %}">View all</a>
+                            <a class="btn btn-success btn-sm" href="{% url 'profile_list' %}">View all</a>
                         </div>
                     </div>
                 </div>

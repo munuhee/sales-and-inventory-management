@@ -11,6 +11,7 @@ import django_tables2 as tables
 from django_tables2.export.views import ExportMixin
 from django_tables2.export.export import TableExport
 from .tables import ProfileTable
+
 from django.views.generic import (
     ListView,
     DetailView,
@@ -73,7 +74,7 @@ class ProfileListView(LoginRequiredMixin, ExportMixin, tables.SingleTableView):
 class ProfileCreateView(LoginRequiredMixin, CreateView):
     model = Profile
     template_name = 'accounts/staffcreate'
-    fields = ['user','role']
+    fields = ['user','role', 'status']
 
     def form_valid(self, form):
         return super().form_valid(form)
@@ -83,37 +84,35 @@ class ProfileCreateView(LoginRequiredMixin, CreateView):
             return True
         else:
             return False
+
+    def get_success_url(self):
+        return reverse('profile_list')
 
 class ProfileUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Profile
     template_name = 'accounts/staffupdate.html'
-    fields = ['user','role']
-    success_url = '/profiles'
+    fields = ['user','role', 'status']
 
     def form_valid(self, form):
         return super().form_valid(form)
+
     def test_func(self):
         if self.request.user.is_superuser:
             return True
         else:
             return False
-
-    def test_func(self):
-        profiles = Profile.objects.all()
-        if self.request.user.profiles.role == 'AD' & self.request.user.profiles.role == 'EX':
-            return True
-        else:
-            return False
+    def get_success_url(self):
+        return reverse('profile_list')
 
 
 class ProfileDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Profile
     template_name = 'accounts/staffdelete.html'
-    success_url = '/products'
-
 
     def test_func(self):
         if self.request.user.is_superuser:
             return True
         else:
             return False
+    def get_success_url(self):
+        return reverse('profile_list')

@@ -1,19 +1,11 @@
 {% extends "store/base.html" %} {% load static %}{% block title %}Transaction detail{% endblock %}
 {% block content %}
 <style>
-	@import "compass/css3";
-	::selection {
-		background: #333;
-		color: #fff;
-   }
 	section .receipt {
 		margin: 0;
 		font-size: 12px;
 		position: relative;
 		font-family: 'courier';
-   }
-	* {
-		margin: 0;
    }
 	.serif {
 		font-family: serif;
@@ -315,12 +307,11 @@
 		letter-spacing: 2px;
    }
 </style>
-
+<div>
+<div class="text-center mt-3">
+	<a class="btn btn-outline-success btn-sm "><i class="fa fa-print"></i> Print</a>
+<div>
 <section class="receipt container-ticket">
-
-<div>
-	<a class="btn btn-succcess"><i class="fa fa-print"></i> Print</a>
-<div>
 	<div class="ticket">
 		<div class="head-ticket">
 			<p class="x-bold">InventoryMS</p>
@@ -425,4 +416,5 @@
 		</div>
 	</div>
 </section>
+</div>
 {% endblock %}

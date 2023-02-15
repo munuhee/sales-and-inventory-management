@@ -1,32 +1,28 @@
-{% extends "store/base.html" %}{% load static %}{% block title %}Staff{%endblock title%}{% block content %}
-    <div class="table-responsive col p-5">
-        <style>
-            input[type="text"],[type="email"],select{
-                box-sizing: border-box;
-                border: 1px solid #ccc;
-                border-radius: 4px;
-                display: inline-block;
-                padding: 6px 20px;
-                margin: 8px 0;
-            }
-            button[type="submit"]{
-              padding: 6px 20px;
-              margin: 8px 0;
-          }
-          </style>
-          <form method="GET" class="container">
-            {{filter.form}}
-            <button type="submit" class="btn btn-success fa fa-search"> Search</button>
-          </form>
-        <table class="table table-hover table-nowrap">
-            <thead class="thead-light">
-                <tr>
-                    <th scope="col">Id</th>
+{% extends "store/base.html" %}{% load static %}
+{% block title %}Staff{%endblock title%}
+{% load render_table from django_tables2 %}
+{% load querystring from django_tables2 %}{% block content %}
+    <div class="container">
+        <div class="col container p-5">
+            <div>
+              <a class="btn btn-sm btn-success" href="{% url 'invoice-create' %}">Add Staff</a>
+              <a class="float-end btn btn-sm btn-success" href="{% querystring '_export'='xlsx' %}">
+                <i class="fa-solid fa-download"></i>
+                Export to Excel
+              </a>
+            </div>
+        <table class="table table-sm table-responsive">
+            <thead>
+                <tr class="table-success">
+                    <th scope="col">Id<i class="fa-solid fa-sort"></i></th>
                     <th scope="col">Profile Image</th>
-                    <th scope="col">username</th>
+                    <th scope="col">username<i class="fa-solid fa-sort"></i></th>
                     <th scope="col">Phone Number</th>
-                    <th scope="col">Status</th>
-                    <th scope="col">Role</th>
+                    <th scope="col">Status<i class="fa-solid fa-sort"></i></th>
+                    <th scope="col">Role<i class="fa-solid fa-sort"></i></th>
+                    {% if user.profile.role == 'AD' or user.profile.role == 'EX' %}
+                    <th scope="col">Action</th>
+                    {% endif %}
                 </tr>
             </thead>
             <tbody>
@@ -58,13 +54,21 @@
                             Inactive
                         {% endif %}
                     </td>
-                    <td class="text-end">
+                    <td>
                         {% if profile.role == 'AD' %}
                             Admin
-                            {% elif profile.role == 'EX' %}
+                        {% elif profile.role == 'EX' %}
                             Executive
-                            {% else %}
+                        {% else %}
                             Operative
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if user.profile.role == 'AD' or user.profile.role == 'EX' %}
+                            <a class="text-info" href="{% url 'profile-update' profile.id %}"><i class="fa-solid fa-pen"></i></a>
+                        {% endif %}
+                        {% if user.profile.role == 'AD' %}
+                            <a class="text-danger float-end" href="{% url 'profile-delete' profile.id %}"><i class="fa-solid fa-trash"></i></a>
                         {% endif %}
                     </td>
                 </tr>

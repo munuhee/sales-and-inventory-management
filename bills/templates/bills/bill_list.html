@@ -29,14 +29,14 @@
         <table class= "table table-sm table-responsive">
             <thead>
               <tr class="table-success">
-                <th scope="col"><a href="{% querystring table.prefixed_order_by_field=column.order_by_alias.next %}">ID <i class="fa-sharp fa-solid fa-sort"></i></a></th>
-                <th scope="col">Name <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Description <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Contact number <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">email<i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Payment details<i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Amount <i class="fa-sharp fa-solid fa-sort"></i></th>
-                <th scope="col">Status <i class="fa-sharp fa-solid fa-sort"></i></th>
+                <th scope="col"><a href="{% querystring table.prefixed_order_by_field=column.order_by_alias.next %}">ID <i class="fa-solid fa-sort"></i></a></th>
+                <th scope="col">Name <i class="fa-solid fa-sort"></i></th>
+                <th scope="col">Description <i class="fa-solid fa-sort"></i></th>
+                <th scope="col">Contact number <i class="fa-solid fa-sort"></i></th>
+                <th scope="col">email<i class="fa-solid fa-sort"></i></th>
+                <th scope="col">Payment details<i class="fa-solid fa-sort"></i></th>
+                <th scope="col">Amount <i class="fa-solid fa-sort"></i></th>
+                <th scope="col">Status <i class="fa-solid fa-sort"></i></th>
                 <th scope="col"> Action</th>
               </tr>
             </thead>
@@ -61,8 +61,8 @@
                   {% endif %}
                 </td>
                 <td>
-                  <a class="text-info" href=""><i class="fa-solid fa-pen"></i></a>
-                  <a class="text-danger float-end" href=""><i class="fa-solid fa-trash"></i></a>
+                  <a class="text-info" href="{% url 'bill-update' bill.slug %}"><i class="fa-solid fa-pen"></i></a>
+                  <a class="text-danger float-end" href="{% url 'bill-delete' bill.pk %}"><i class="fa-solid fa-trash"></i></a>
                 </td>
               </tr>
             {% endfor %}
