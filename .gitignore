@@ -1,0 +1,9 @@
+# Ignore the virtual environment directory
+venv/
+env/
+
+# Ignore Pipenv files
+Pipfile
+Pipfile.lock
+
+db.sqlite3

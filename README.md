@@ -1,9 +1,32 @@
 # Django-inventory-management
+
+## Description
 The system is developed using various programming languages including Python (Django framework), JavaScript, Bootstrap, PostgreSQL, HTML and CSS. The system consists of a user-friendly front-end for user interaction and a back-end accessible only by an administrator. The back-end retrieves data from the database and displays it to the users.
 
 The system has two types of users: administrators and staff. Administrators can log in and modify information about goods, while staff members are responsible for processing sales, purchases, bills, and creating invoices.
 
 The system includes a database to store all information and provides a user-friendly interface for users to interact with it. Users input information through the interface, and the system processes it to provide the necessary information based on the input. The system also stores the processed information in the database for future reference.
+
+## Installation
+
+Before you can run the application, ensure you have the following prerequisites and dependencies:
+
+- Docker
+
+To install the application, follow these steps:
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/munuhee/sales-and-inventory-management.git
+   cd sales-and-inventory-management
+   
+2. Run the setup.sh file (Builds the Docker container):
+
+    ```bash
+    bash bin/setup.sh
+
+## Screenshots
 
 ![Screenshot (47)](https://user-images.githubusercontent.com/51537638/218985189-8ca2046e-02a8-4c8b-8243-0027fbfd728c.png)
 ![Screenshot (48)](https://user-images.githubusercontent.com/51537638/218985199-dfd74679-006a-4fe7-bd9a-fc1f244b8a5f.png)
