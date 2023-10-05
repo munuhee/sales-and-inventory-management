@@ -1,11 +1,11 @@
 # Django-inventory-management
 
 ## Description
-The system is developed using various programming languages including Python (Django framework), JavaScript, Bootstrap, PostgreSQL, HTML and CSS. The system consists of a user-friendly front-end for user interaction and a back-end accessible only by an administrator. The back-end retrieves data from the database and displays it to the users.
+This system is built with Python (Django), JavaScript, Bootstrap, HTML, and CSS. The system offers a user-friendly front-end for general users and a secure back-end exclusively accessible to administrators. The back-end seamlessly retrieves and displays vital data from the database.
 
-The system has two types of users: administrators and staff. Administrators can log in and modify information about goods, while staff members are responsible for processing sales, purchases, bills, and creating invoices.
+The system caters to two distinct user roles: administrators and staff members. Administrators have the privilege to log in and manage goods information, while staff members handle sales, purchases, bills, and invoice creation.
 
-The system includes a database to store all information and provides a user-friendly interface for users to interact with it. Users input information through the interface, and the system processes it to provide the necessary information based on the input. The system also stores the processed information in the database for future reference.
+Powered sqlite3 database, our system not only stores all essential information but also boasts a user-friendly interface for effortless interaction. Users input data through this interface, and the system processes it, generating valuable insights based on user input. Additionally, the system diligently archives processed data in the database for future reference.
 
 ## Installation
 
