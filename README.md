@@ -26,6 +26,7 @@ To install the application, follow these steps:
 2. Run the setup.sh file (Builds the Docker container):
 
     ```bash
+    chmod +x bin/setup.sh
     ./bin/setup.sh
 
 ## Screenshots
