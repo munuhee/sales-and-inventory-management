@@ -41,12 +41,38 @@ class PurchaseDetailView(FormMixin, DetailView):
 class PurchaseCreateView(LoginRequiredMixin, CreateView):
     model = Purchase
     template_name = 'transactions/purchasescreate.html'
-    fields = ['item', 'description', 'vendor', 'order_date', 'delivery_date', 'quantity', 'price', 'delivery_status']
+    fields = ['item', 'description', 'vendor', 'delivery_date', 'quantity', 'delivery_status']
 
     def form_valid(self, form):
+        item = form.cleaned_data['item']
+        quantity = form.cleaned_data['quantity']
+
+        if item.quantity < quantity:
+            raise ValidationError(f"Only {item.quantity} units of '{item.name}' are available.")
+
+        total_value = item.selling_price * quantity
+
+        form.instance.total_value = total_value
+        form.instance.price = item.selling_price
+
+        form.instance.balance = total_value
+
+        form.instance.profile = self.request.user.profile
+
+        item.quantity += quantity
+        item.save()
+
         return super().form_valid(form)
+
     def get_success_url(self):
         return reverse('purchaseslist')
+
+    def test_func(self):
+        profile_list = Profile.objects.all()
+        if self.request.user.profile in profile_list:
+            return False
+        else:
+            return True
 
 class PurchaseUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Purchase
@@ -80,7 +106,6 @@ class PurchaseDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def get_success_url(self):
             return reverse('purchaseslist')
 
-#Sales Order
 class SaleListView(ExportMixin, tables.SingleTableView):
     model = Sale
     table_class = SaleTable
