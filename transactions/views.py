@@ -103,11 +103,15 @@ class SaleCreateView(LoginRequiredMixin, CreateView):
         return reverse('saleslist')
 
     def form_valid(self, form):
-        if form.instance.quantity < 1.0:
-            raise ValidationError("Quantity should be greater than 0")
+        # Check if the product is available in stock
+        item = form.cleaned_data['item']
+        quantity = form.cleaned_data['quantity']
+
+        if item.quantity < quantity:
+            raise ValidationError(f"Only {item.quantity} units of '{item.name}' are available.")
+
         form.instance.profile = self.request.user.profile
         return super().form_valid(form)
-
 
     def test_func(self):
         profile_list = Profile.objects.all()
@@ -115,8 +119,6 @@ class SaleCreateView(LoginRequiredMixin, CreateView):
             return False
         else:
             return True
-
-
 
 class SaleUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Sale

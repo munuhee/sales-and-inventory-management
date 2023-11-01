@@ -33,7 +33,7 @@ class Sale(models.Model):
 
     def save(self, *args, **kwargs):
         amt_received = self.amount_received
-        bal = self.balance
+        balance = self.balance
         price = self.price
         quantity = self.quantity
         self.total_value = price * quantity
