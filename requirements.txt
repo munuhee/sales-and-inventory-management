@@ -1,6 +1,7 @@
 asgiref==3.7.2
 certifi==2023.7.22
 charset-normalizer==3.3.0
+crispy-bootstrap5==2023.10
 defusedxml==0.7.1
 Django==4.2.6
 django-appconf==1.0.5
