@@ -97,7 +97,7 @@ class SaleDetailView(DetailView):
 class SaleCreateView(LoginRequiredMixin, CreateView):
     model = Sale
     template_name = 'transactions/salescreate.html'
-    fields = ['item', 'customer_name', 'payment_method', 'quantity', 'price', 'amount_received']
+    fields = ['item', 'customer_name', 'payment_method', 'quantity', 'amount_received']
 
     def get_success_url(self):
         return reverse('saleslist')
@@ -109,6 +109,21 @@ class SaleCreateView(LoginRequiredMixin, CreateView):
 
         if item.quantity < quantity:
             raise ValidationError(f"Only {item.quantity} units of '{item.name}' are available.")
+
+        # Fetch the price of the selected item
+        price = item.selling_price
+
+        # Calculate the total price based on quantity and fetched price
+        total_price = price * quantity
+
+        # Assign the total price to the sale
+        form.instance.price = price
+        form.instance.total_value = total_price
+
+        # Calculate the balance based on the provided amount_received
+        amount_received = form.cleaned_data['amount_received']
+        balance = amount_received - total_price
+        form.instance.balance = balance
 
         form.instance.profile = self.request.user.profile
         return super().form_valid(form)
