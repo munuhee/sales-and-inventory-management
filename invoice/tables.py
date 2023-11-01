@@ -1,4 +1,3 @@
-# tutorial/tables.py
 import django_tables2 as tables
 from .models import Invoice
 from django.shortcuts import render

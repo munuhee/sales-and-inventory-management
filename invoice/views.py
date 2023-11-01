@@ -1,12 +1,10 @@
 from django.shortcuts import render
-from .models import *
 from django.urls import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django_tables2 import SingleTableView
 import django_tables2 as tables
 from django_tables2.export.views import ExportMixin
 from django_tables2.export.export import TableExport
-from .tables import InvoiceTable
 from django.views.generic import (
     ListView,
     DetailView,
@@ -14,6 +12,8 @@ from django.views.generic import (
     UpdateView,
     DeleteView
 )
+from .models import Invoice
+from .tables import InvoiceTable
 
 class InvoiceListView(LoginRequiredMixin, ExportMixin, tables.SingleTableView):
     model = Invoice
@@ -37,8 +37,6 @@ class InvoiceCreateView(LoginRequiredMixin,CreateView):
     template_name = 'invoice/invoicecreate.html'
     fields = ['customer_name','contact_number','item','price_per_item','quantity', 'shipping',]
 
-    def form_valid(self, form):
-        return super().form_valid(form)
     def get_success_url(self):
         return reverse('invoicelist')
 
@@ -49,9 +47,6 @@ class InvoiceUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def get_success_url(self):
         return reverse('invoicelist')
-
-    def form_valid(self, form):
-        return super().form_valid(form)
 
     def test_func(self):
         if self.request.user.is_superuser:
@@ -69,7 +64,6 @@ class InvoiceDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return reverse('invoicelist')
 
     def test_func(self):
-        item = self.get_object()
         if self.request.user.is_superuser:
             return True
         else:

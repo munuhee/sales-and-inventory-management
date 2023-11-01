@@ -1,6 +1,5 @@
 from django.contrib import admin
-from .models import *
-# Register your models here.
+from .models import Sale, Purchase
 
 @admin.register(Sale)
 class SaleAdmin(admin.ModelAdmin):

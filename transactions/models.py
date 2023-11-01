@@ -1,6 +1,6 @@
 from django.db import models
 from store.models import Item
-from accounts.models import *
+from accounts.models import Profile, Vendor
 from django_extensions.db.fields import AutoSlugField
 
 # Create your models here.
@@ -33,7 +33,6 @@ class Sale(models.Model):
 
     def save(self, *args, **kwargs):
         amt_received = self.amount_received
-        balance = self.balance
         price = self.price
         quantity = self.quantity
         self.total_value = price * quantity
@@ -56,7 +55,7 @@ class Purchase(models.Model):
     price = models.FloatField(default=0.00, blank=False, null=False, verbose_name=('Price per item(Ksh)'))
     total_value = models.FloatField()
 
-    def save(self, *args, new_name=True, **kwargs):
+    def save(self, *args, **kwargs):
         quantity = self.quantity
         price = self.price
         self.total_value = price * quantity

@@ -1,11 +1,15 @@
 from django.db import models
 from store.models import Item
 from django_extensions.db.fields import AutoSlugField
-# Create your models here.
 
 class Invoice(models.Model):
     slug = AutoSlugField(unique=True , populate_from='date')
-    date = models.DateTimeField(auto_now=True, blank=False, null=False, verbose_name=('Date (eg: 2022/11/22 )'))
+    date = models.DateTimeField(
+        auto_now=True,
+        blank=False,
+        null=False,
+        verbose_name=('Date (eg: 2022/11/22 )')
+    )
     customer_name = models.CharField(max_length=30, blank=False, null=False)
     contact_number = models.CharField(max_length=13, blank=False, null=False)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
@@ -15,7 +19,7 @@ class Invoice(models.Model):
     total = models.FloatField(verbose_name=('Total Amount (Ksh)'))
     grand_total = models.FloatField(verbose_name=('Grand total (Ksh)'))
 
-    def save(self, *args, new_name=True, **kwargs):
+    def save(self, *args, **kwargs):
         quantity = self.quantity
         price_per_item = self.price_per_item
         self.total = quantity * price_per_item

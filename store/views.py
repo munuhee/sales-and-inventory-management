@@ -1,24 +1,9 @@
-from django.shortcuts import render
-from .models import *
-from django.contrib.auth.decorators import login_required
-from django.urls import reverse
-from accounts.models import Profile
-from transactions.models import Sale
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.views.generic.edit import FormMixin
-from django_tables2 import SingleTableView
-import django_tables2 as tables
-from django_tables2.export.views import ExportMixin
-from django_tables2.export.export import TableExport
-from .tables import ItemTable, DeliveryTable
-from django.db.models import Sum, Avg
-from .forms import ProductForm
-from functools import reduce
-from django.db.models import Q
 import operator
-from django.db.models import Count
-
+from functools import reduce
+from django.shortcuts import render
+from django.urls import reverse
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import (
     ListView,
     DetailView,
@@ -26,7 +11,19 @@ from django.views.generic import (
     UpdateView,
     DeleteView
 )
-from .filters import ProductFilter
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django_tables2 import SingleTableView
+import django_tables2 as tables
+from django_tables2.export.views import ExportMixin
+from django_tables2.export.export import TableExport
+from django.db.models import Q, Count, Sum, Avg
+from django.views.generic.edit import FormMixin
+
+from accounts.models import Profile, Vendor
+from transactions.models import Sale
+from .models import Category, Item, Delivery
+from .forms import ProductForm
+from .tables import ItemTable
 
 @login_required
 def dashboard(request):
@@ -104,12 +101,9 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
     form_class = ProductForm
     success_url = '/products'
 
-    def form_valid(self, form):
-        return super().form_valid(form)
-
     def test_func(self):
         #item = Item.objects.get(id=pk)
-        if request.POST.get("quantity") < 1:
+        if self.request.POST.get("quantity") < 1:
             return False
         else:
             return True
@@ -119,9 +113,6 @@ class ProductUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     template_name = 'store/productupdate.html'
     fields = ['name','category','quantity','selling_price', 'expiring_date', 'vendor']
     success_url = '/products'
-
-    def form_valid(self, form):
-        return super().form_valid(form)
 
     def test_func(self):
         if self.request.user.is_superuser:
@@ -137,7 +128,6 @@ class ProductDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
 
     def test_func(self):
-        item = self.get_object()
         if self.request.user.is_superuser:
             return True
         else:
@@ -174,18 +164,11 @@ class DeliveryCreateView(LoginRequiredMixin, CreateView):
     template_name = 'store/deliveriescreate.html'
     success_url = '/deliveries'
 
-    def form_valid(self, form):
-        return super().form_valid(form)
-
 class DeliveryUpdateView(LoginRequiredMixin, UpdateView):
     model = Delivery
     fields = ['item', 'customer_name', 'phone_number', 'location', 'date','is_delivered']
     template_name = 'store/deliveryupdate.html'
     success_url = '/deliveries'
-
-    def form_valid(self, form):
-        return super().form_valid(form)
-
 
 class DeliveryDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Delivery

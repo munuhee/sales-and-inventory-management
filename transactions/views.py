@@ -22,8 +22,8 @@ from django.views.generic import (
     DeleteView
 )
 
-# Create your views here.
 class PurchaseListView(ExportMixin, tables.SingleTableView):
+    """View to list purchases and export them."""
     model = Purchase
     table_class = SaleTable
     template_name = 'transactions/purchases_list.html'
@@ -32,6 +32,7 @@ class PurchaseListView(ExportMixin, tables.SingleTableView):
     SingleTableView.table_pagination = False
 
 class PurchaseDetailView(FormMixin, DetailView):
+    """"View to display details of a purchase."""
     model = Purchase
     template_name = 'transactions/sale_detail.html'
 
@@ -39,11 +40,13 @@ class PurchaseDetailView(FormMixin, DetailView):
         return reverse('sale-detail', kwargs={'slug': self.object.slug})
 
 class PurchaseCreateView(LoginRequiredMixin, CreateView):
+    """View to create a new purchase."""
     model = Purchase
     template_name = 'transactions/purchasescreate.html'
     fields = ['item', 'description', 'vendor', 'delivery_date', 'quantity', 'delivery_status']
 
     def form_valid(self, form):
+        """Handles the form submission and updates the item's quantity."""
         item = form.cleaned_data['item']
         quantity = form.cleaned_data['quantity']
 
@@ -72,25 +75,24 @@ class PurchaseCreateView(LoginRequiredMixin, CreateView):
             return True
 
 class PurchaseUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    """View to update a purchase."""
     model = Purchase
     template_name = 'transactions/purchaseupdate.html'
-    fields = ['item', 'description', 'vendor', 'order_date', 'delivery_date', 'quantity', 'price', 'delivery_status']
+    fields = ['item', 'description', 'vendor', 'delivery_date', 'quantity', 'price', 'delivery_status']
 
-    def form_valid(self, form):
-        return super().form_valid(form)
-    def get_success_url(self):
-        return reverse('purchase-update')
     def test_func(self):
         profiles = Profile.objects.all()
         if self.request.user.profile in profiles:
             return True
         else:
             return False
+    
     def get_success_url(self):
             return reverse('purchaseslist')
 
 
 class PurchaseDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    """View to delete a purchase."""
     model = Purchase
     template_name = 'transactions/purchasedelete.html'
 
@@ -104,6 +106,7 @@ class PurchaseDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
             return reverse('purchaseslist')
 
 class SaleListView(ExportMixin, tables.SingleTableView):
+    """View to list sales and export them."""
     model = Sale
     table_class = SaleTable
     template_name = 'transactions/sales_list.html'
@@ -112,11 +115,13 @@ class SaleListView(ExportMixin, tables.SingleTableView):
     SingleTableView.table_pagination = False
 
 class SaleDetailView(DetailView):
+    """View to display details of a sale."""
     model = Sale
     template_name = 'transactions/saledetail.html'
 
 
 class SaleCreateView(LoginRequiredMixin, CreateView):
+    """View to create a new sale."""
     model = Sale
     template_name = 'transactions/salescreate.html'
     fields = ['item', 'customer_name', 'payment_method', 'quantity', 'amount_received']
@@ -125,24 +130,20 @@ class SaleCreateView(LoginRequiredMixin, CreateView):
         return reverse('saleslist')
 
     def form_valid(self, form):
-        # Check if the product is available in stock
+        """Handles the form submission and validates product availability."""
         item = form.cleaned_data['item']
         quantity = form.cleaned_data['quantity']
 
         if item.quantity < quantity:
             raise ValidationError(f"Only {item.quantity} units of '{item.name}' are available.")
 
-        # Fetch the price of the selected item
         price = item.selling_price
 
-        # Calculate the total price based on quantity and fetched price
         total_price = price * quantity
 
-        # Assign the total price to the sale
         form.instance.price = price
         form.instance.total_value = total_price
 
-        # Calculate the balance based on the provided amount_received
         amount_received = form.cleaned_data['amount_received']
         balance = amount_received - total_price
         form.instance.balance = balance
@@ -158,11 +159,13 @@ class SaleCreateView(LoginRequiredMixin, CreateView):
             return True
 
 class SaleUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    """View to update a sale."""
     model = Sale
     template_name = 'transactions/sale_update.html'
     fields = ['item', 'customer_name', 'payment_method', 'quantity', 'price', 'amount_received']
 
     def test_func(self):
+        """Checks if the user has the required permissions to access this view."""
         profiles = Profile.objects.all()
         if self.request.user.profile in profiles:
             return True
@@ -173,10 +176,12 @@ class SaleUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return reverse('saleslist')
 
     def form_valid(self, form):
+        """Handles form submission and sets the profile of the sale."""
         form.instance.profile = self.request.user.profile
         return super().form_valid(form)
 
 class SaleDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    """View to delete a sale."""
     model = Sale
     template_name = 'transactions/saledelete.html'
 
@@ -184,9 +189,7 @@ class SaleDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return reverse('saleslist')
 
     def test_func(self):
-        purchase = self.get_object()
-
-    def test_func(self):
+        """Checks if the user has the required permissions to access this view."""
         if self.request.user.is_superuser:
             return True
         else:
