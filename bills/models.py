@@ -11,7 +11,7 @@ class Bill(models.Model):
     description = models.CharField(max_length=255, blank=True, null=True)
     payment_details = models.CharField(max_length=255, blank=False, null=False)
     amount = models.FloatField(verbose_name=('Total Amount Owing (Ksh)'))
-    status = models.BooleanField(default=False)
+    status = models.BooleanField(default=False, verbose_name=('Paid'))
 
     def __str__(self):
         return self.institution_name
