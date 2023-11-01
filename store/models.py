@@ -6,7 +6,6 @@ from accounts.models import *
 from django_extensions.db.fields import AutoSlugField
 from phonenumber_field.modelfields import PhoneNumberField
 
-# Create your models here.
 class Category(models.Model):
 	name = models.CharField(max_length=50)
 	slug = AutoSlugField(unique=True , populate_from='name')
