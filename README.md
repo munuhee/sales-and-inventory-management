@@ -1,3 +1,8 @@
+
+<div align="center">
+  <img src="https://res.cloudinary.com/murste/image/upload/v1698907632/stevolve_x8ioeu.png" alt="Stephen Murichu's Logo" width="100" />
+</div>
+
 # Django-inventory-management
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python Version](https://img.shields.io/badge/Python-3.10-green)](https://www.python.org/downloads/)
