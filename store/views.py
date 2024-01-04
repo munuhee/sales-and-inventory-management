@@ -292,4 +292,3 @@ class DeliveryDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
             return True
         else:
             return False
-
