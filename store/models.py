@@ -37,7 +37,13 @@ class Item(models.Model):
 class Delivery(models.Model):
     item = models.ForeignKey(Item, blank=True, null=True, on_delete=models.SET_NULL)
     customer_name = models.CharField(blank=True, null=True, max_length=30)
-    phone_number = PhoneNumberField(null=True,blank=True)
+    phone_number = PhoneNumberField(null=True, blank=True)
     location = models.CharField(blank=True, null=True, max_length=20)
     date = models.DateTimeField(null=False, blank=False)
     is_delivered = models.BooleanField(default=False, verbose_name='is-delivered')
+
+    def __str__(self):
+        return (
+            f"Delivery of {self.item} to {self.customer_name} "
+            f"at {self.location} on {self.date.strftime('%Y-%m-%d %H:%M:%S')}"
+        )
