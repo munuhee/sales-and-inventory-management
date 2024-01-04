@@ -45,5 +45,5 @@ class Delivery(models.Model):
     def __str__(self):
         return (
             f"Delivery of {self.item} to {self.customer_name} "
-            f"at {self.location} on {self.date.strftime('%Y-%m-%d %H:%M:%S')}"
+            f"at {self.location} on {self.date}"
         )
