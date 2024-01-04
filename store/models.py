@@ -12,7 +12,6 @@ Each class provides specific fields and methods for handling related data.
 """
 from django.db import models
 from django.urls import reverse
-from django.utils.text import slugify
 from django_extensions.db.fields import AutoSlugField
 from phonenumber_field.modelfields import PhoneNumberField
 from accounts.models import Vendor
@@ -28,7 +27,7 @@ class Category(models.Model):
         """
         String representation of the category.
         """
-        return self.name
+        return f"Category: {self.name}"
 
     class Meta:
         verbose_name_plural = 'Categories'
@@ -49,7 +48,7 @@ class Item(models.Model):
         """
         String representation of the item.
         """
-        return self.name
+        return f"{self.name} - Category: {self.category}, Quantity: {self.quantity}"
 
     def get_absolute_url(self):
         """
