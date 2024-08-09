@@ -1,8 +1,4 @@
-asgiref==3.7.2
-certifi==2023.7.22
-charset-normalizer==3.3.0
-crispy-bootstrap5==2023.10
-defusedxml==0.7.1
+# Django and related packages
 Django==4.2.6
 django-appconf==1.0.5
 django-autoslug==1.9.9
@@ -12,27 +8,17 @@ django-filter==23.3
 django-imagekit==5.0.0
 django-phonenumber-field==7.2.0
 django-tables2==2.6.0
-et-xmlfile==1.1.0
-idna==3.4
-MarkupPy==1.14
-numpy==1.26.0
-odfpy==1.4.1
-openpyxl==3.1.2
-pandas==2.1.1
+
+crispy-bootstrap5==2023.10
 phonenumbers==8.13.22
-pilkit==3.0
-Pillow==10.0.1
-python-dateutil==2.8.2
-pytz==2023.3.post1
-PyYAML==6.0.1
+
+# Utilities
 requests==2.31.0
-six==1.16.0
+pytz==2023.3.post1
 sqlparse==0.4.4
-tablib==3.5.0
-tabulate==0.9.0
-timeago==1.0.16
-typing_extensions==4.8.0
-tzdata==2023.3
 urllib3==2.0.7
-xlrd==2.0.1
-xlwt==1.3.0
+
+# Data processing
+pandas==2.1.1
+openpyxl==3.1.2
+tablib==3.5.0
