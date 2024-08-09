@@ -5,13 +5,9 @@
 
 <!-- Specific Page CSS goes HERE  -->
 {% block stylesheets %}
-<!-- Datatables -->
-<link href="{% static 'vendor/datatables/dataTables.bootstrap4.min.css ' %}" rel="stylesheet">
 <!--Select2 CSS-->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@1.5.2/dist/select2-bootstrap4.min.css">
-<!--Bootstrap Touchspin-->
-<link rel="stylesheet" href="{% static 'assets/bootstrap-touchspin-master/src/jquery.bootstrap-touchspin.css' %}">
 {% endblock stylesheets %}
 
 <!-- Page Heading -->
@@ -52,7 +48,7 @@
                                 <!--End Search item-->
 
                                 <!--Delete all items from sale-->
-                                <button type="button" class="mb-4 btn btn-danger btn-sm deleteAll">
+                                <button type="button" class="mb-4 my-2 btn btn-danger btn-sm deleteAll">
                                     Delete all items <i class="ml-1 fas fa-trash-alt fa-xs"></i>
                                 </button>
                                 <!--End Delete all items from sale-->
@@ -125,7 +121,7 @@
                                     </div>
                                 </div>
 
-                                <button type="submit" class="btn btn-success font-weight-bold">Create sale</button>
+                                <button type="submit" class="btn btn-success font-weight-bold my-2">Create sale</button>
                             </div>
                             <!--End card-body-->
                     </div>
@@ -444,8 +440,8 @@
             tblItems = $('#table_items').DataTable({
                 columnDefs: [
                     {
-                        targets: [-1], // column index (start from 0)
-                        orderable: false, // set orderable false for selected columns
+                        targets: [-1],
+                        orderable: false,
                     }
                 ],
             });
