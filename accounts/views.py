@@ -1,54 +1,70 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import Group
-from .models import Profile
 from django.contrib.auth.decorators import login_required
-from .forms import CreateUserForm, UserUpdateForm, ProfileUpdateForm
+from django.urls import reverse_lazy
 from django.urls import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django_tables2 import SingleTableView
-import django_tables2 as tables
 from django_tables2.export.views import ExportMixin
-from django_tables2.export.export import TableExport
-from .tables import ProfileTable
-
 from django.views.generic import (
     ListView,
     DetailView,
     CreateView,
     UpdateView,
     DeleteView
-    )
+)
 
-# Create your views here.
+from .models import Profile, Customer
+from .forms import (
+    CreateUserForm, UserUpdateForm, ProfileUpdateForm, CustomerForm
+)
+from .tables import ProfileTable
 
 
 def register(request):
+    """
+    Handle user registration.
+    If the request is POST, process the form data to create a new user.
+    Redirect to the login page on successful registration.
+    For GET requests, render the registration form.
+    """
     if request.method == 'POST':
         form = CreateUserForm(request.POST)
         if form.is_valid():
-            user = form.save()
+            form.save()
             return redirect('user-login')
     else:
         form = CreateUserForm()
-    context = {
-        'form': form
-    }
-    return render(request, 'accounts/register.html', context)
+
+    return render(request, 'accounts/register.html', {'form': form})
 
 
+@login_required
 def profile(request):
-    context = {
+    """
+    Render the user profile page.
+    Requires user to be logged in.
+    """
+    return render(request, 'accounts/profile.html')
 
-    }
-    return render(request, 'accounts/profile.html', context)
 
-
+@login_required
 def profile_update(request):
+    """
+    Handle profile update.
+    If the request is POST, process the form data
+    to update user information and profile.
+    Redirect to the profile page on success.
+    For GET requests, render the update forms.
+    """
     if request.method == 'POST':
         u_form = UserUpdateForm(request.POST, instance=request.user)
         p_form = ProfileUpdateForm(
-            request.POST, request.FILES, instance=request.user.profile)
+            request.POST,
+            request.FILES,
+            instance=request.user.profile
+        )
         if u_form.is_valid() and p_form.is_valid():
             u_form.save()
             p_form.save()
@@ -57,62 +73,143 @@ def profile_update(request):
         u_form = UserUpdateForm(instance=request.user)
         p_form = ProfileUpdateForm(instance=request.user.profile)
 
-    context = {
-        'u_form': u_form,
-        'p_form': p_form,
-    }
-    return render(request, 'accounts/profile_update.html', context)
+    return render(
+        request,
+        'accounts/profile_update.html',
+        {'u_form': u_form, 'p_form': p_form}
+    )
 
-class ProfileListView(LoginRequiredMixin, ExportMixin, tables.SingleTableView):
+
+class ProfileListView(LoginRequiredMixin, ExportMixin, SingleTableView):
+    """
+    Display a list of profiles in a table format.
+    Requires user to be logged in
+    and supports exporting the table data.
+    Pagination is applied with 10 profiles per page.
+    """
     model = Profile
     template_name = 'accounts/stafflist.html'
     context_object_name = 'profiles'
-    pagination = 10
     table_class = ProfileTable
-    SingleTableView.table_pagination = False
+    paginate_by = 10
+    table_pagination = False
+
 
 class ProfileCreateView(LoginRequiredMixin, CreateView):
+    """
+    Create a new profile.
+    Requires user to be logged in and have superuser status.
+    Redirects to the profile list upon successful creation.
+    """
     model = Profile
-    template_name = 'accounts/staffcreate'
-    fields = ['user','role', 'status']
-
-    def form_valid(self, form):
-        return super().form_valid(form)
-
-    def test_func(self):
-        if self.request.user.is_superuser:
-            return True
-        else:
-            return False
+    template_name = 'accounts/staffcreate.html'
+    fields = ['user', 'role', 'status']
 
     def get_success_url(self):
+        """
+        Return the URL to redirect to after successfully creating a profile.
+        """
         return reverse('profile_list')
+
+    def test_func(self):
+        """
+        Check if the user is a superuser.
+        """
+        return self.request.user.is_superuser
+
 
 class ProfileUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    """
+    Update an existing profile.
+    Requires user to be logged in and have superuser status.
+    Redirects to the profile list upon successful update.
+    """
     model = Profile
     template_name = 'accounts/staffupdate.html'
-    fields = ['user','role', 'status']
+    fields = ['user', 'role', 'status']
 
-    def form_valid(self, form):
-        return super().form_valid(form)
+    def get_success_url(self):
+        """
+        Return the URL to redirect to after successfully updating a profile.
+        """
+        return reverse('profile_list')
 
     def test_func(self):
-        if self.request.user.is_superuser:
-            return True
-        else:
-            return False
-    def get_success_url(self):
-        return reverse('profile_list')
+        """
+        Check if the user is a superuser.
+        """
+        return self.request.user.is_superuser
 
 
 class ProfileDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    """
+    Delete an existing profile.
+    Requires user to be logged in and have superuser status.
+    Redirects to the profile list upon successful deletion.
+    """
     model = Profile
     template_name = 'accounts/staffdelete.html'
 
-    def test_func(self):
-        if self.request.user.is_superuser:
-            return True
-        else:
-            return False
     def get_success_url(self):
+        """
+        Return the URL to redirect to after successfully deleting a profile.
+        """
         return reverse('profile_list')
+
+    def test_func(self):
+        """
+        Check if the user is a superuser.
+        """
+        return self.request.user.is_superuser
+
+
+class CustomerListView(LoginRequiredMixin, ListView):
+    """
+    View for listing all customers.
+
+    Requires the user to be logged in. Displays a list of all Customer objects.
+    """
+    model = Customer
+    template_name = 'accounts/customer_list.html'
+    context_object_name = 'customers'
+
+
+class CustomerCreateView(LoginRequiredMixin, CreateView):
+    """
+    View for creating a new customer.
+
+    Requires the user to be logged in.
+    Provides a form for creating a new Customer object.
+    On successful form submission, redirects to the customer list.
+    """
+    model = Customer
+    template_name = 'accounts/customer_form.html'
+    form_class = CustomerForm
+    success_url = reverse_lazy('customer_list')
+
+
+class CustomerUpdateView(LoginRequiredMixin, UpdateView):
+    """
+    View for updating an existing customer.
+
+    Requires the user to be logged in.
+    Provides a form for editing an existing Customer object.
+    On successful form submission, redirects to the customer list.
+    """
+    model = Customer
+    template_name = 'accounts/customer_form.html'
+    form_class = CustomerForm
+    success_url = reverse_lazy('customer_list')
+
+
+class CustomerDeleteView(LoginRequiredMixin, DeleteView):
+    """
+    View for deleting a customer.
+
+    Requires the user to be logged in.
+    Displays a confirmation page for deleting an existing Customer object.
+    On confirmation, deletes the object and redirects to the customer list.
+    """
+    model = Customer
+    template_name = 'accounts/customer_confirm_delete.html'
+    success_url = reverse_lazy('customer_list')

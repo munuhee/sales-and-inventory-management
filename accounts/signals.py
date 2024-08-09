@@ -6,15 +6,13 @@ from .models import Profile
 
 
 @receiver(post_save, sender=User)
-def create_profile(sender, instance, created, **kwargs):
-
+def handle_user_profile(sender, instance, created, **kwargs):
+    """
+    Signal handler to create or update a Profile when a User is saved.
+    """
     if created:
         Profile.objects.create(user=instance)
-        print('profile created!')
-
-@receiver(post_save, sender=User)
-def update_profile(sender, instance, created, **kwargs):
-
-    if created == False:
+        print('Profile created!')
+    else:
         instance.profile.save()
-        print('profile updated!')
+        print('Profile updated!')

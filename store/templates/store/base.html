@@ -7,9 +7,11 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         {% load static %}
         <link rel="stylesheet" href="{% static 'fontawesome/css/all.css' %}" type="text/css">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        <!-- Bootstrap CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" type="text/css" href="https://unpkg.com/@webpixels/css@1.1.5/dist/index.css">
         <link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css">
+        {% block stylesheets %}{% endblock stylesheets %}
         <title>IMS: {% block title %} {% endblock title %}</title>
 
     </head>
@@ -44,13 +46,18 @@
                   </div>
                 </div>
               </nav>
-        {% block content%}
+          {% block content%}
 
-        {% endblock content%}
+          {% endblock content%}
         </section>
         </div>
-        <script type="text/javascript" src="{% static 'js/main.js'%}"></script>
-        <script type="text/javascript" src="{% static 'js/dashboard.js'%}"></script>
-        <script type="text/javascript" src="{% static 'fontawesome/js/all.js' %}" crossorigin="anonymous"></script>
-    </body>
+        <!-- Bootstrap core JavaScript-->
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
+        <!-- Core plugin JavaScript-->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+        {% block javascripts %}{% endblock javascripts %}
+      </body>
 </html>

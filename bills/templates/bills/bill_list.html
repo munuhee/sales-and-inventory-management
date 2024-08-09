@@ -19,7 +19,7 @@
         <button type="submit" class="btn btn-sm btn-success fa fa-search"> Search</button>
       </form> {% endcomment %}
       <div>
-        <a class="btn btn-sm btn-success" href="{% url 'bill-create' %}">Add a bill record</a>
+        <a class="btn btn-sm btn-success" href="{% url 'bill_create' %}">Add a bill record</a>
         <a class="float-end btn btn-sm btn-success" href="{% querystring '_export'='xlsx' %}">
           <i class="fa-solid fa-download"></i>
           Export to Excel
@@ -61,8 +61,8 @@
                   {% endif %}
                 </td>
                 <td>
-                  <a class="text-info" href="{% url 'bill-update' bill.slug %}"><i class="fa-solid fa-pen"></i></a>
-                  <a class="text-danger float-end" href="{% url 'bill-delete' bill.pk %}"><i class="fa-solid fa-trash"></i></a>
+                  <a class="text-info" href="{% url 'bill_update' bill.slug %}"><i class="fa-solid fa-pen"></i></a>
+                  <a class="text-danger float-end" href="{% url 'bill_delete' bill.pk %}"><i class="fa-solid fa-trash"></i></a>
                 </td>
               </tr>
             {% endfor %}

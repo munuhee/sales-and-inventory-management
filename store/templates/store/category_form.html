@@ -1,0 +1,23 @@
+{% extends 'store/base.html' %}
+
+{% block content %}
+<div class="container p-4">
+    <h2 class="mb-4">
+        <i class="{% if form.instance.pk %}fas fa-edit{% else %}fas fa-plus{% endif %}"></i>
+        {% if form.instance.pk %}Edit{% else %}Create{% endif %} Category
+    </h2>
+    <form method="post" class="border p-4 rounded bg-light">
+        {% csrf_token %}
+        <div class="mb-3">
+            {{ form.name.label_tag }}
+            {{ form.name }}
+        </div>
+        <button type="submit" class="btn btn-success">
+            <i class="fas fa-save"></i> Save
+        </button>
+    </form>
+    <a href="{% url 'category-list' %}" class="btn btn-secondary mt-3">
+        <i class="fas fa-arrow-left"></i> Back to list
+    </a>
+</div>
+{% endblock %}

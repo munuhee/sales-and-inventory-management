@@ -1,0 +1,56 @@
+{% extends "store/base.html" %}
+{% load static %}{% load crispy_forms_tags %}
+{% block title %}Update purchase transaction{% endblock %}
+{% block content %}
+<div class="container p-5">
+    <h2>Create or Update Purchase</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        <div class="row mt-5">
+            <div class="form-group col-md-4">
+                {{ form.item.label_tag }}
+                {{ form.item }}
+                {{ form.item.errors }}
+            </div>
+            <div class="form-group col-md-4">
+                {{ form.vendor.label_tag }}
+                {{ form.vendor }}
+                {{ form.vendor.errors }}
+            </div>
+            <div class="form-group col-md-4">
+                {{ form.description.label_tag }}
+                {{ form.description }}
+                {{ form.description.errors }}
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group col-md-6">
+                {{ form.delivery_date.label_tag }}
+                {{ form.delivery_date }}
+                {{ form.delivery_date.errors }}
+            </div>
+            <div class="form-group col-md-6">
+                {{ form.quantity.label_tag }}
+                {{ form.quantity }}
+                {{ form.quantity.errors }}
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group col-md-4">
+                {{ form.delivery_status.label_tag }}
+                {{ form.delivery_status }}
+                {{ form.delivery_status.errors }}
+            </div>
+            <div class="form-group col-md-4">
+                {{ form.price.label_tag }}
+                {{ form.price }}
+                {{ form.price.errors }}
+            </div>
+        </div>
+        <button type="submit" class="mt-3 btn btn-primary">
+            <i class="fas fa-save"></i> Save
+        </button>
+    </form>
+</div>
+{% endblock %}

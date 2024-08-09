@@ -1,0 +1,44 @@
+{% extends 'store/base.html' %}
+{% block content %}
+  <div class="container mt-5">
+    <h1 class="mb-4">Customer List</h1>
+    <a href="{% url 'customer_create' %}" class="btn btn-success mb-3">
+      <i class="fas fa-plus"></i> Add New Customer
+    </a>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">First Name</th>
+          <th scope="col">Last Name</th>
+          <th scope="col">Address</th>
+          <th scope="col">Email</th>
+          <th scope="col">Phone</th>
+          <th scope="col">Loyalty Points</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for customer in customers %}
+          <tr>
+            <th scope="row">{{ forloop.counter }}</th>
+            <td>{{ customer.first_name }}</td>
+            <td>{{ customer.last_name }}</td>
+            <td>{{ customer.address }}</td>
+            <td>{{ customer.email }}</td>
+            <td>{{ customer.phone }}</td>
+            <td>{{ customer.loyalty_points }}</td>
+            <td>
+              <a href="{% url 'customer_update' customer.pk %}" class="btn btn-primary btn-sm">
+                <i class="fas fa-edit"></i> Edit
+              </a>
+              <a href="{% url 'customer_delete' customer.pk %}" class="btn btn-danger btn-sm">
+                <i class="fas fa-trash-alt"></i> Delete
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

@@ -8,11 +8,12 @@ from django.views.generic import (
 )
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django_tables2 import SingleTableView
-import django_tables2 as tables
 from django_tables2.export.views import ExportMixin
+
 from .models import Bill
 from .tables import BillTable
 from accounts.models import Profile
+
 
 class BillListView(LoginRequiredMixin, ExportMixin, SingleTableView):
     """View for listing bills."""
@@ -23,25 +24,47 @@ class BillListView(LoginRequiredMixin, ExportMixin, SingleTableView):
     paginate_by = 10
     SingleTableView.table_pagination = False
 
+
 class BillCreateView(LoginRequiredMixin, CreateView):
-    """View for creating a bill."""
+    """View for creating a new bill."""
     model = Bill
     template_name = 'bills/billcreate.html'
-    fields = ['institution_name', 'phone_number', 'email', 'address', 'description', 'payment_details', 'amount', 'status']
+    fields = [
+        'institution_name',
+        'phone_number',
+        'email',
+        'address',
+        'description',
+        'payment_details',
+        'amount',
+        'status'
+    ]
     success_url = '/bills'
 
+
 class BillUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    """View for updating a bill."""
+    """View for updating an existing bill."""
     model = Bill
     template_name = 'bills/billupdate.html'
-    fields = ['institution_name', 'phone_number', 'email', 'address', 'description', 'payment_details', 'amount', 'status']
+    fields = [
+        'institution_name',
+        'phone_number',
+        'email',
+        'address',
+        'description',
+        'payment_details',
+        'amount',
+        'status'
+    ]
 
     def test_func(self):
-        """Checks if the user has the required permissions to access this view."""
+        """Check if the user has the required permissions."""
         return self.request.user.profile in Profile.objects.all()
 
     def get_success_url(self):
+        """Redirect to the list of bills after a successful update."""
         return reverse('bill_list')
+
 
 class BillDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     """View for deleting a bill."""
@@ -49,8 +72,9 @@ class BillDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     template_name = 'bills/billdelete.html'
 
     def test_func(self):
-        """Checks if the user has the required permissions to access this view."""
+        """Check if the user is a superuser."""
         return self.request.user.is_superuser
 
     def get_success_url(self):
+        """Redirect to the list of bills after successful deletion."""
         return reverse('bill_list')

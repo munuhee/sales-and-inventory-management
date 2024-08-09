@@ -1,94 +1,105 @@
-{% extends "store/base.html" %}{% load render_table from django_tables2 %}{% load querystring from django_tables2 %}{% load static %}{% block title %}Products{%endblock title%}{% block content %}
-    <div class="col container p-5">
-      <style>
-        input[type="text"],select{
-            box-sizing: border-box;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            display: inline-block;
-            padding: 6px 20px;
-            margin: 8px 0;
-        }
-        button[type="submit"]{
-          padding: 6px 20px;
-          margin: 8px 0;
-      }
-      </style>
-      <div class="row">
+{% extends "store/base.html" %}
+{% load render_table from django_tables2 %}
+{% load querystring from django_tables2 %}
+{% load static %}
+{% block title %}Products{% endblock title %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-3">
         <div class="col-md-4">
-          <a class="btn btn-sm btn-success" href="{% url 'product-create' %}">Add Item</a>
+            <a class="btn btn-success btn-sm" href="{% url 'product-create' %}">
+                <i class="fa-solid fa-plus"></i> Add Item
+            </a>
         </div>
-        <div class="col-md-4">
-          <form class="input-group" role="search " id="searchform" action="{% url 'item_search_list_view' %}" method="get" accept-charset="utf-8">
-            <div class="form-group">
-                <div class="input-group ">
-                    <input id="searchbox" name="q" type="text" class="form-control " placeholder="Find products">
-                    <span class="input-group-btn">
-                      <button class="btn btn-outline-success" type="submit">Search</i></button>
-                    </span>
-                </div>
-            </div>
-        </form>
+        <div class="col-md-4 d-flex justify-content-center">
+            <form class="input-group" role="search" id="searchform" action="{% url 'item_search_list_view' %}" method="get" accept-charset="utf-8">
+                <input id="searchbox" name="q" type="text" class="form-control" placeholder="Find products">
+                <span class="input-group-append">
+                    <button class="btn btn-outline-success" type="submit">
+                        <i class="fa-solid fa-search"></i>
+                    </button>
+                </span>
+            </form>
         </div>
-        <div class="col-md-4 float-end">
-          <a class="btn btn-sm btn-success" href="{% querystring '_export'='xlsx' %}">
-            <i class="fa-solid fa-download"></i>
-            Export to Excel
-          </a>
-        </div>
-      </div>
-      <div class="m-2">
-        <table class= "table table-sm table-responsive">
-            <thead>
-              <tr class="table-success">
-                <th scope="col"><a href="{% querystring table.prefixed_order_by_field=column.order_by_alias.next %}">ID <i class="fa-solid fa-sort"></i></a></th>
-                <th scope="col">Name <i class="fa-solid fa-sort"></i></th>
-                <th scope="col">Category <i class="fa-solid fa-sort"></i></th>
-                <th scope="col">Quantity <i class="fa-solid fa-sort"></i></i></th>
-                <th scope="col">Price <i class="fa-solid fa-sort"></i></th>
-                <th scope="col">Expiring date <i class="fa-solid fa-sort"></i></th>
-                <th scope="col">Vendor <i class="fa-solid fa-sort"></i></th>
-                <th scope="col"> Action</th>
-              </tr>
-            </thead>
-            <tbody>
-            {% for item in items %}
-              <tr>
-                <th scope="row"><a> {{item.id}}</a></th>
-                <td>{{item.name}}</td>
-                <td>{{item.category}}</td>
-                <td>{{item.quantity}}</td>
-                <td>{{item.selling_price}}</td>
-                <th scope="col">{{item.expiring_date}}</th>
-                <td>{{item.vendor}}</td>
-                <td>
-                  <a class="text-info" href="{% url 'product-update' item.slug %}"><i class="fa-solid fa-pen"></i></a>
-                  <a class="text-danger float-end" href="{% url 'product-delete' item.slug %}"><i class="fa-solid fa-trash"></i></a>
-                </td>
-              </tr>
-            {% endfor %}
-            </tbody>
-          </table>
-        </div>
-          <div class="paginator">
-            {% if is_paginated %}
-            <ul class="pagination ">
-                {% if page_obj.has_previous %}
-                <li><a class="btn btn-sm accent-1 btn-outline-success " href="?page={{ page_obj.previous_page_number }} ">&laquo;</a></li>
-                {% else %}
-                <li class="disabled "><span class="btn btn-sm btn-outline-success ">&laquo;</span></li>
-                {% endif %} {% for i in paginator.page_range %} {% if page_obj.number == i %}
-                <li class="active "><span class="btn btn-sm btn-success ">{{ i }} <span class="sr-only ">(current)</span></span>
-                </li>
-                {% else %}
-                <li><a href="?page={{ i }} " class="btn btn-sm btn-outline-success ">{{ i }}</a></li>
-                {% endif %} {% endfor %} {% if page_obj.has_next %}
-                <li><a href="?page={{ page_obj.next_page_number }} " class="btn btn-sm btn-outline-success ">&raquo;</a></li>
-                {% else %}
-                <li class="disabled "><span class="btn btn-sm btn-outline-success ">&raquo;</span></li>
-                {% endif %}
-            </ul>
-            {% endif %}
+        <div class="col-md-4 text-end">
+            <a class="btn btn-success btn-sm" href="{% querystring '_export'='xlsx' %}">
+                <i class="fa-solid fa-download"></i> Export to Excel
+            </a>
         </div>
     </div>
-  {% endblock content %}
+
+    <div class="mb-4">
+        <table class="table table-sm table-striped table-bordered table-responsive">
+            <thead>
+                <tr class="table-success">
+                    <th scope="col"><a href="{% querystring table.prefixed_order_by_field=column.order_by_alias.next %}">ID <i class="fa-solid fa-sort"></i></a></th>
+                    <th scope="col">Name <i class="fa-solid fa-sort"></i></th>
+                    <th scope="col">Category <i class="fa-solid fa-sort"></i></th>
+                    <th scope="col">Quantity <i class="fa-solid fa-sort"></i></th>
+                    <th scope="col">Price <i class="fa-solid fa-sort"></i></th>
+                    <th scope="col">Expiring Date <i class="fa-solid fa-sort"></i></th>
+                    <th scope="col">Vendor <i class="fa-solid fa-sort"></i></th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <th scope="row">{{ item.id }}</th>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.category }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.price }}</td>
+                    <td>{{ item.expiring_date }}</td>
+                    <td>{{ item.vendor }}</td>
+                    <td>
+                        <a class="text-info" href="{% url 'product-update' item.slug %}"><i class="fa-solid fa-pen"></i></a>
+                        <a class="text-danger float-end" href="{% url 'product-delete' item.slug %}"><i class="fa-solid fa-trash"></i></a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if is_paginated %}
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">&laquo;</span>
+            </li>
+            {% endif %}
+            {% for i in paginator.page_range %}
+            {% if page_obj.number == i %}
+            <li class="page-item active" aria-current="page">
+                <span class="page-link">{{ i }} <span class="visually-hidden">(current)</span></span>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">&raquo;</span>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock content %}

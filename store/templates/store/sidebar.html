@@ -1,59 +1,152 @@
-{% load static %}
-<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
-<aside class="sidebar position-fixed top-0 left-0 overflow-auto h-100 float-left" id="show-side-navigation1">
-    <i class="fa fa-bars close-aside d-md-none d-lg-none" data-close="show-side-navigation1"></i>
-    <div class="sidebar-header d-flex justify-content-center align-items-center px-3 py-4">
-      <a href="{% url 'user-profile' %}">
-        <img
-          class="rounded-pill img-fluid"
-          id = "sidebar-img"
-          width="65"
-          src="{{request.user.profile.profile_picture.url}}"
-          alt="">
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Font Awesome for icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+<style>
+    .sidebar {
+        width: 250px;
+        background-color: #343a40;
+        color: #fff;
+        position: fixed;
+        top: 0;
+        bottom: 0; /* Extend to the bottom of the viewport */
+        display: flex;
+        flex-direction: column; /* Stack children vertically */
+    }
+
+    .sidebar-header {
+        background-color: #212529;
+    }
+
+    .nav-container {
+        flex: 1; /* Take up remaining space */
+        overflow-y: auto; /* Enable vertical scrolling */
+        padding: 5px; /* Add some padding */
+    }
+
+    .nav-link {
+        color: #adb5bd;
+    }
+
+    .nav-link.active {
+        background-color: #495057;
+        color: #fff;
+    }
+
+    .dropdown-menu {
+        background-color: #495057;
+    }
+
+    .dropdown-item {
+        color: #adb5bd;
+    }
+
+    .dropdown-item.active, .dropdown-item:hover {
+        background-color: #6c757d;
+        color: #fff;
+    }
+
+    .sidebar-footer {
+        background-color: #212529;
+        text-align: center;
+        padding: 10px;
+    }
+</style>
+<aside class="sidebar position-fixed top-0 left-0 overflow-auto h-100 bg-dark text-light" id="show-side-navigation1">
+    <!-- Close Button -->
+    <button class="btn btn-dark d-md-none d-lg-none position-absolute top-0 end-0 mt-2 me-2 rounded-circle" data-close="show-side-navigation1" aria-label="Close">
+        <i class="fa fa-times text-white"></i>
+    </button>
+
+    <!-- Sidebar Header -->
+    <div class="sidebar-header d-flex align-items-center px-3 py-4 border-bottom border-secondary">
+        <a href="{% url 'user-profile' %}" class="d-flex align-items-center text-decoration-none text-light">
+            <img class="rounded-circle img-fluid" id="sidebar-img" width="45" src="{{ request.user.profile.profile_picture.url }}" alt="Profile Picture" />
+            <div class="ms-3">
+                <h5 class="fs-6 mb-0">
+                    {{ request.user.username }}{% if request.user.profile.role == 'AD' %} <i class="fa-solid fa-circle-check text-success"></i>{% endif %}
+                </h5>
+                <span class="badge bg-success text-light">
+                    {% if request.user.profile.role == 'AD' %}
+                        Admin
+                    {% elif request.user.profile.role == 'EX' %}
+                        Executive
+                    {% else %}
+                        Operative
+                    {% endif %}
+                </span>
+            </div>
         </a>
-        <div class="ms-2">
-          <h5 class="fs-6 mb-0 text-white">{{user.username}}{% if user.profile.role == 'AD' %} <i class="fa-solid fa-circle-check"></i>{% endif %}</h5>
-          <span class="badge badge-pill bg-soft-success text-success me-2">
-            {% if user.profile.role == 'AD' %}
-              Admin
-            {% elif user.profile.role == 'EX' %}
-              Executive
-            {% else %}
-              Operative
-        {% endif %}
-          </span>
-        </div>
     </div>
-    <ul class="categories list-unstyled">
-      <li>
-        <i class="fa fa-home fa-fw"></i><a href="{% url 'dashboard' %}"> Dashboard</a>
-      </li>
-      <li class="">
-        <i class="fa fa-folder"></i><a href="{% url 'productslist' %}"> Products</a>
-      </li>
-      <li>
-        <i  class="fa fa-shopping-bag fa-fw"></i><a href="{% url 'saleslist' %}"> Sales Orders</a>
-      </li>
-      <li>
-        <i class="fa fa-shopping-cart"></i><a href="{% url 'purchaseslist' %}"> Purchase Orders</a>
-      </li>
-      <li>
-        <i class="fa-solid fa-box"></i><a href="{% url 'deliveries' %}"> Package</a>
-      </li>
-      <li>
-        <i class="fa-solid fa-receipt"></i><a href="{% url 'invoicelist' %}"> Invoices</a>
-      </li>
-      <li>
-        <i class="fa-solid fa-money-bills"></i><a href="{% url 'bill_list' %}"> Bills</a>
-      </li>
-      {% comment %} <li>
-        <i class="fa-solid fa-truck-field"></i><a href="#"> Vendors</a>
-      </li> {% endcomment %}
-      <li>
-        <i class="fa-solid fa-people-group"></i><a href="{% url 'profile_list' %}"> Staff</a>
-      </li>
-      <li class="">
-        <a class="btn btn-sm btn-danger" href="{% url 'user-logout' %}"><i class="fa fa-sign-out"></i> Logout</a>
-      </li>
-    </ul>
-  </aside>
+
+    <!-- Navigation Container -->
+    <div class="nav-container">
+        <!-- Navigation Links -->
+        <ul class="nav flex-column mt-3">
+            <li class="nav-item mb-2">
+                <a class="nav-link text-light {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
+                    <i class="fa fa-tachometer-alt fa-fw me-2"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item mb-2 dropdown">
+                <a class="nav-link text-light {% if request.resolver_match.url_name == 'productslist' %}active{% endif %} dropdown-toggle" href="#" id="productsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fa fa-folder me-2"></i> Products
+                </a>
+                <ul class="dropdown-menu bg-dark border-0" aria-labelledby="productsDropdown">
+                    <li><a class="dropdown-item text-light {% if request.resolver_match.url_name == 'productslist' %}active{% endif %}" href="{% url 'productslist' %}">All Products</a></li>
+                    <li><a class="dropdown-item text-light" href="{% url 'category-list' %}">Categories</a></li>
+                </ul>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link text-light {% if request.resolver_match.url_name == 'saleslist' %}active{% endif %}" href="{% url 'saleslist' %}">
+                    <i class="fa fa-shopping-bag fa-fw me-2"></i> Sales Orders
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link text-light {% if request.resolver_match.url_name == 'purchaseslist' %}active{% endif %}" href="{% url 'purchaseslist' %}">
+                    <i class="fa fa-shopping-cart me-2"></i> Purchase Orders
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link text-light {% if request.resolver_match.url_name == 'deliveries' %}active{% endif %}" href="{% url 'deliveries' %}">
+                    <i class="fa-solid fa-box me-2"></i> Package
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link text-light {% if request.resolver_match.url_name == 'invoicelist' %}active{% endif %}" href="{% url 'invoicelist' %}">
+                    <i class="fa-solid fa-receipt me-2"></i> Invoices
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link text-light {% if request.resolver_match.url_name == 'bill_list' %}active{% endif %}" href="{% url 'bill_list' %}">
+                    <i class="fa-solid fa-file-invoice me-2"></i> Bills
+                </a>
+            </li>
+            <li class="nav-item mb-2 dropdown">
+                <a class="nav-link text-light {% if request.resolver_match.url_name == 'profile_list' or request.resolver_match.url_name == 'customer_list' %} active{% endif %} dropdown-toggle" href="#" id="accountsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fa fa-users me-2"></i> Accounts
+                </a>
+                <ul class="dropdown-menu bg-dark border-0" aria-labelledby="accountsDropdown">
+                    <li><a class="dropdown-item text-light {% if request.resolver_match.url_name == 'profile_list' %}active{% endif %}" href="{% url 'profile_list' %}">All Staff</a></li>
+                    <li><a class="dropdown-item text-light {% if request.resolver_match.url_name == 'customer_list' %}active{% endif %}" href="{% url 'customer_list' %}">Customers</a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Sidebar Footer -->
+    <div class="sidebar-footer position-absolute bottom-0 w-100 text-center py-3 bg-dark border-top border-secondary">
+        <a class="btn btn-danger btn-sm w-75" href="{% url 'user-logout' %}">
+            <i class="fa fa-sign-out me-2"></i> Logout
+        </a>
+    </div>
+</aside>
+
+<!-- Bootstrap Bundle with Popper.js -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Explicitly initializing Bootstrap dropdowns if needed
+    document.querySelectorAll('.dropdown-toggle').forEach(function(element) {
+        new bootstrap.Dropdown(element);
+    });
+</script>

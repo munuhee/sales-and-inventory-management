@@ -1,0 +1,15 @@
+{% extends 'store/base.html' %}
+{% block content %}
+  <div class="container mt-5">
+    <h1 class="mb-4">Are you sure you want to delete "{{ object }}"?</h1>
+    <form method="post" class="mb-3">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">
+        <i class="fas fa-trash-alt"></i> Confirm
+      </button>
+      <a href="{% url 'customer_list' %}" class="btn btn-secondary">
+        <i class="fas fa-times"></i> Cancel
+      </a>
+    </form>
+  </div>
+{% endblock %}

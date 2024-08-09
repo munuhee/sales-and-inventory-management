@@ -1,0 +1,61 @@
+{% extends 'store/base.html' %}
+{% block title %}Update sale transaction{% endblock %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Create or Update Sale</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ form.item.label_tag }}
+                    {{ form.item }}
+                    {{ form.item.errors }}
+                </div>
+                <div class="form-group">
+                    {{ form.customer_name.label_tag }}
+                    {{ form.customer_name }}
+                    {{ form.customer_name.errors }}
+                </div>
+                <div class="form-group">
+                    {{ form.payment_method.label_tag }}
+                    {{ form.payment_method }}
+                    {{ form.payment_method.errors }}
+                </div>
+                <div class="form-group">
+                    {{ form.quantity.label_tag }}
+                    {{ form.quantity }}
+                    {{ form.quantity.errors }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ form.amount_received.label_tag }}
+                    {{ form.amount_received }}
+                    {{ form.amount_received.errors }}
+                </div>
+                <div class="form-group">
+                    {{ form.price.label_tag }}
+                    {{ form.price }}
+                    {{ form.price.errors }}
+                </div>
+                <div class="form-group">
+                    {{ form.total_value.label_tag }}
+                    {{ form.total_value }}
+                    {{ form.total_value.errors }}
+                </div>
+                <div class="form-group">
+                    {{ form.balance.label_tag }}
+                    {{ form.balance }}
+                    {{ form.balance.errors }}
+                </div>
+            </div>
+        </div>
+        <button type="submit" class="mt-3 btn btn-primary">
+            <i class="fas fa-save"></i> Save
+        </button>
+    </form>
+</div>
+{% endblock %}

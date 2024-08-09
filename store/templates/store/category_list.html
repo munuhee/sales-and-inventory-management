@@ -1,0 +1,30 @@
+{% extends 'store/base.html' %}
+
+{% block content %}
+<div class="container p-4">
+    <h2 class="mb-4 text-center">
+        <i class="fas fa-list me-2"></i> Categories
+    </h2>
+    <div class="row">
+        {% for category in categories %}
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-light">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-tag me-2"></i> {{ category.name }}
+                    </h5>
+                    <a href="{% url 'category-detail' category.pk %}" class="btn btn-outline-primary">
+                        <i class="fas fa-info-circle me-2"></i> View Details
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="text-center mt-4">
+        <a href="{% url 'category-create' %}" class="btn btn-success btn-lg">
+            <i class="fas fa-plus me-2"></i> Create New Category
+        </a>
+    </div>
+</div>
+{% endblock %}
