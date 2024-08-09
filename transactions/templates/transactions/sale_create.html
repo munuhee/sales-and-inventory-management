@@ -16,124 +16,106 @@
 <!-- Page content  -->
 {% block content %}
 <div class="container p-3">
-<!--Go back-->
-<div class="row ml-0 mb-3">
-    <a href="{% url 'saleslist' %}">
-        <button type="button" class="btn btn-success font-weight-bold">
-            <i class="fas fa-long-arrow-alt-left mr-2"></i>
-            Go back
-        </button>
-    </a>
-</div>
+    <!-- Go back -->
+    <div class="row mb-3">
+        <div class="col">
+            <a href="{% url 'saleslist' %}">
+                <button type="button" class="btn btn-success font-weight-bold">
+                    <i class="fas fa-long-arrow-alt-left mr-2"></i>
+                    Go back
+                </button>
+            </a>
+        </div>
+    </div>
 
-<!--Sale items and details-->
-<form action="{% url 'sale-create' %}" class="saleForm" method="post">
-    <div class="row mt-3">
-        <div class="card col-md-12">
-            <div class="card-body ml-0">
-                <div class="row">
-                    <!--Left column-->
-                    <div class="col-md-9 pl-0">
-                        <div class="card card-secondary">
-                            <div class="card-header">Sale items</div>
-
-                            <div class="card-body">
-                                <!--Search item-->
-                                <div class="form-group">
-                                    <label>Search item:</label>
-                                    <div class="input-group">
-                                        <select class="form-control select2" name="searchbox_items" id="searchbox_items"></select>
-                                    </div>
-                                </div>
-                                <!--End Search item-->
-
-                                <!--Delete all items from sale-->
-                                <button type="button" class="mb-4 my-2 btn btn-danger btn-sm deleteAll">
-                                    Delete all items <i class="ml-1 fas fa-trash-alt fa-xs"></i>
-                                </button>
-                                <!--End Delete all items from sale-->
-
-                                <!--items table-->
-                                <div class="card-body table-responsive p-0">
-                                    <table class="table table-hover text-nowrap" id="table_items">
-                                        <thead>
-                                            <tr>
-                                                <th>#</th>
-                                                <th>Name</th>
-                                                <th>Price</th>
-                                                <th>Quantity</th>
-                                                <th>Total</th>
-                                                <th class="text-center">Delete</th>
-                                                </tr>
-                                            </thead>
-                                        <tbody>
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <!--End items table-->
+    <!-- Sale items and details -->
+    <form action="{% url 'sale-create' %}" class="saleForm" method="post">
+        <div class="row">
+            <!-- Left column -->
+            <div class="col-lg-8 mb-3">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">Sale items</div>
+                    <div class="card-body">
+                        <!-- Search item -->
+                        <div class="form-group">
+                            <label for="searchbox_items">Search item:</label>
+                            <div class="input-group">
+                                <select class="form-control select2" name="searchbox_items" id="searchbox_items" aria-label="Search items"></select>
                             </div>
                         </div>
-                    </div>
-                    <!--End Left column-->
+                        <!-- End Search item -->
 
-                    <!--Righ column-->
-                    <div class="col-md-3 pr-0">
-                        <div class="card card-secondary">
-                            <div class="card-header">Sale details</div>
-                            <div class="card-body">
-                                {% csrf_token %}
-                                <div class="form-group">
-                                    <label for="customer">Customer</label>
-                                    <select name="customer" class="form-control" id="searchbox_customers" required>
-                                        <option value="" selected disabled hidden>Select the customer</option>
-                                        {% for customer in customers %}
-                                        <option value="{{customer.value}}">{{customer.label}}</option>
-                                        {% endfor %}
-                                    </select>
-                                <div class="form-group mt-4">
-                                    <label>Subtotal</label>
-                                    <div class="input-group">
-                                        <input name="sub_total" class="form-control" required>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label>Tax Inclusive (%)</label>
-                                    <div class="input-group">
-                                        <input name="tax_percentage" class="form-control" value=0 required>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label>Tax Amount</label>
-                                    <div class="input-group">
-                                        <input name="tax_amount" class="form-control" required>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label>Grand Total</label>
-                                    <div class="input-group">
-                                        <input name="grand_total" class="form-control" required>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label>Amount payed</label>
-                                    <div class="input-group">
-                                        <input name="amount_payed" class="form-control" required>
-                                    </div>
-                                </div>
+                        <!-- Delete all items from sale -->
+                        <button type="button" class="btn btn-danger btn-sm my-4 deleteAll">
+                            Delete all items <i class="ml-1 fas fa-trash-alt fa-xs"></i>
+                        </button>
+                        <!-- End Delete all items from sale -->
 
-                                <button type="submit" class="btn btn-success font-weight-bold my-2">Create sale</button>
-                            </div>
-                            <!--End card-body-->
+                        <!-- Items table -->
+                        <div class="table-responsive">
+                            <table class="table table-hover text-nowrap" id="table_items">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Name</th>
+                                        <th>Price</th>
+                                        <th>Quantity</th>
+                                        <th>Total</th>
+                                        <th class="text-center">Delete</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- End items table -->
                     </div>
-                    <!--End Right column-->
                 </div>
-                <!--End row-->
             </div>
-            <!--End card-body-->
-        </div>
+            <!-- End Left column -->
 
-    </div>
-</form>
+            <!-- Right column -->
+            <div class="col-lg-4 mb-3">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">Sale details</div>
+                    <div class="card-body">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="customer">Customer</label>
+                            <select name="customer" class="form-control" id="customer" aria-label="Customer" required>
+                                <option value="" selected disabled hidden>Select the customer</option>
+                                {% for customer in customers %}
+                                <option value="{{customer.value}}">{{customer.label}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="sub_total">Subtotal</label>
+                            <input name="sub_total" class="form-control" id="sub_total" aria-label="Subtotal" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="tax_percentage">Tax Inclusive (%)</label>
+                            <input name="tax_percentage" class="form-control" id="tax_percentage" aria-label="Tax Inclusive" value="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="tax_amount">Tax Amount</label>
+                            <input name="tax_amount" class="form-control" id="tax_amount" aria-label="Tax Amount" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="grand_total">Grand Total</label>
+                            <input name="grand_total" class="form-control" id="grand_total" aria-label="Grand Total" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="amount_payed">Amount payed</label>
+                            <input name="amount_payed" class="form-control" id="amount_payed" aria-label="Amount Payed" required>
+                        </div>
+                        <button type="submit" class="btn btn-success font-weight-bold my-2">Create sale</button>
+                    </div>
+                </div>
+            </div>
+            <!-- End Right column -->
+        </div>
+    </form>
 </div>
 {% endblock content %}
 
