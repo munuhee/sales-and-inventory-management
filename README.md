@@ -14,25 +14,81 @@ The system caters to two distinct user roles: administrators and staff members. 
 
 Powered sqlite3 database, our system not only stores all essential information but also boasts a user-friendly interface for effortless interaction. Users input data through this interface, and the system processes it, generating valuable insights based on user input. Additionally, the system diligently archives processed data in the database for future reference.
 
+# Prerequisites
+
+- **Python**
+- **Django**
+
 ## Installation
 
-Before you can run the application, ensure you have the following prerequisites and dependencies:
+Before you can run the application, ensure you have the following prerequisites and dependencies.
 
-- Docker
+### Clone the Repository
 
-To install the application, follow these steps:
+```bash
+git clone https://github.com/munuhee/sales-and-inventory-management.git
+cd sales-and-inventory-management
+```
 
-1. Clone the repository:
+### With Docker
 
-   ```bash
-   git clone https://github.com/munuhee/sales-and-inventory-management.git
-   cd sales-and-inventory-management
-   
-2. Run the setup.sh file (Builds the Docker container):
+1. **Build the Docker Image**
 
     ```bash
-    chmod +x bin/setup.sh
-    ./bin/setup.sh
+    docker build -t sales-and-inventory-management:1.0 .
+    ```
+
+2. **Run the Docker Container**
+
+    ```bash
+    docker run -d -p 8000:8000 sales-and-inventory-management:1.0
+    ```
+
+### Without Docker
+
+#### On Linux
+
+1. **Set Up the Virtual Environment**
+
+    ```bash
+    python3 -m venv venv
+    source venv/bin/activate
+    ```
+
+2. **Install Dependencies**
+
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+3. **Apply Migrations and Run the Server**
+
+    ```bash
+    python manage.py migrate
+    python manage.py runserver
+    ```
+
+#### On Windows
+
+1. **Set Up the Virtual Environment**
+
+    ```bash
+    python -m venv venv
+    venv\Scripts\activate
+    ```
+
+2. **Install Dependencies**
+
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+3. **Apply Migrations and Run the Server**
+
+    ```bash
+    python manage.py migrate
+    python manage.py runserver
+    ```
 
 ## Screenshots
 
