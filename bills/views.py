@@ -45,7 +45,10 @@ class BillCreateView(LoginRequiredMixin, CreateView):
         'amount',
         'status'
     ]
-    success_url = '/bills'
+
+    def get_success_url(self):
+        """Redirect to the list of bills after a successful update."""
+        return reverse('bill_list')
 
 
 class BillUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
