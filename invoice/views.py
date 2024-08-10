@@ -1,12 +1,22 @@
+# Django core imports
 from django.urls import reverse
+
+# Authentication and permissions
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+
+# Class-based views
+from django.views.generic import (
+    DetailView, CreateView, UpdateView, DeleteView
+)
+
+# Third-party packages
 from django_tables2 import SingleTableView
 from django_tables2.export.views import ExportMixin
-from django.views.generic import (
-    ListView, DetailView, CreateView, UpdateView, DeleteView
-)
+
+# Local app imports
 from .models import Invoice
 from .tables import InvoiceTable
+
 
 class InvoiceListView(LoginRequiredMixin, ExportMixin, SingleTableView):
     """
@@ -18,6 +28,7 @@ class InvoiceListView(LoginRequiredMixin, ExportMixin, SingleTableView):
     context_object_name = 'invoices'
     paginate_by = 10
     table_pagination = False  # Disable table pagination
+
 
 class InvoiceDetailView(DetailView):
     """
@@ -31,6 +42,7 @@ class InvoiceDetailView(DetailView):
         Return the URL to redirect to after a successful action.
         """
         return reverse('invoice-detail', kwargs={'slug': self.object.pk})
+
 
 class InvoiceCreateView(LoginRequiredMixin, CreateView):
     """
@@ -48,6 +60,7 @@ class InvoiceCreateView(LoginRequiredMixin, CreateView):
         Return the URL to redirect to after a successful creation.
         """
         return reverse('invoicelist')
+
 
 class InvoiceUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     """
@@ -71,6 +84,7 @@ class InvoiceUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         Determine if the user has permission to update the invoice.
         """
         return self.request.user.is_superuser
+
 
 class InvoiceDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     """

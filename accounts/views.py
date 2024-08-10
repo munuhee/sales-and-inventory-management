@@ -1,23 +1,27 @@
+# Django core imports
 from django.shortcuts import render, redirect
-from django.contrib.auth.forms import UserCreationForm
 from django.http import JsonResponse
+from django.urls import reverse_lazy, reverse
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.models import Group
-from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
-from django.urls import reverse_lazy
-from django.urls import reverse
+
+# Authentication and permissions
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django_tables2 import SingleTableView
-from django_tables2.export.views import ExportMixin
+
+# Class-based views
 from django.views.generic import (
     ListView,
-    DetailView,
     CreateView,
     UpdateView,
     DeleteView
 )
 
+# Third-party packages
+from django_tables2 import SingleTableView
+from django_tables2.export.views import ExportMixin
+
+# Local app imports
 from .models import Profile, Customer, Vendor
 from .forms import (
     CreateUserForm, UserUpdateForm,

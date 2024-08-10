@@ -1,5 +1,6 @@
 from django.db import models
 from django_extensions.db.fields import AutoSlugField
+
 from store.models import Item
 from accounts.models import Vendor, Customer
 
@@ -110,7 +111,8 @@ class SaleDetail(models.Model):
 
 class Purchase(models.Model):
     """
-    Represents a purchase of an item, including vendor details and delivery status.
+    Represents a purchase of an item,
+    including vendor details and delivery status.
     """
 
     slug = AutoSlugField(unique=True, populate_from="vendor")
@@ -123,7 +125,9 @@ class Purchase(models.Model):
     delivery_date = models.DateTimeField(
         blank=True, null=True, verbose_name="Delivery Date"
     )
-    quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    quantity = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0.0
+    )
     delivery_status = models.CharField(
         choices=DELIVERY_CHOICES,
         max_length=1,

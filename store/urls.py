@@ -1,6 +1,9 @@
+# Django core imports
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
+
+# Local app imports
 from . import views
 from .views import (
     ProductListView,
@@ -22,9 +25,12 @@ from .views import (
     CategoryDeleteView
 )
 
+# URL patterns
 urlpatterns = [
+    # Dashboard
     path('', views.dashboard, name='dashboard'),
 
+    # Product URLs
     path(
         'products/',
         ProductListView.as_view(),
@@ -51,12 +57,14 @@ urlpatterns = [
         name='product-delete'
     ),
 
+    # Item search
     path(
         'search/',
         ItemSearchListView.as_view(),
         name='item_search_list_view'
     ),
 
+    # Delivery URLs
     path(
         'deliveries/',
         DeliveryListView.as_view(),
@@ -82,11 +90,15 @@ urlpatterns = [
         DeliveryDeleteView.as_view(),
         name='delivery-delete'
     ),
+
+    # AJAX view
     path(
         'get-items/',
         get_items_ajax_view,
         name='get_items'
     ),
+
+    # Category URLs
     path(
         'categories/',
         CategoryListView.as_view(),
@@ -114,6 +126,7 @@ urlpatterns = [
     ),
 ]
 
+# Static media files configuration for development
 if settings.DEBUG:
     urlpatterns += static(
         settings.MEDIA_URL,

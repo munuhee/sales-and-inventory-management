@@ -1,15 +1,21 @@
-from django.shortcuts import render
+# Django core imports
 from django.urls import reverse
+
+# Class-based views
 from django.views.generic import (
-    ListView,
     CreateView,
     UpdateView,
     DeleteView
 )
+
+# Authentication and permissions
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+
+# Third-party packages
 from django_tables2 import SingleTableView
 from django_tables2.export.views import ExportMixin
 
+# Local app imports
 from .models import Bill
 from .tables import BillTable
 from accounts.models import Profile

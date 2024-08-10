@@ -1,6 +1,9 @@
+# Django core imports
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
+
+# Local app imports
 from .views import (
     InvoiceListView,
     InvoiceDetailView,
@@ -9,7 +12,9 @@ from .views import (
     InvoiceDeleteView
 )
 
+# URL patterns
 urlpatterns = [
+    # Invoice URLs
     path(
         'invoices/',
         InvoiceListView.as_view(),
@@ -37,6 +42,7 @@ urlpatterns = [
     ),
 ]
 
+# Static media files configuration for development
 if settings.DEBUG:
     urlpatterns += static(
         settings.MEDIA_URL,

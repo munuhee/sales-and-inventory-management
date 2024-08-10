@@ -308,20 +308,22 @@
    }
 </style>
 <div>
-<div class="text-center mt-3">
-	<a class="btn btn-outline-success btn-sm "><i class="fa fa-print"></i> Print</a>
-<div>
+<div class="text-center py-3">
+	<a href="#" class="btn btn-outline-success btn-sm">
+		<i class="fa fa-print"></i> Print
+	</a>
+</div>
 <section class="receipt container-ticket">
-	<div class="ticket">
-		<div class="head-ticket">
-			<p class="x-bold">InventoryMS</p>
-			<p class="bold">Tom Mboya Street, Tudor</p>
-			<p class="bold">Tel: +2547 00 000000</p>
-			<br>
-			<p class="bold">P.O BOX. 90420-80100 MSA</p>
-			<p>Date :{{sale.transaction_date|date:"Y/m/d    H:m:s"}}</p>
-			<p>Receipt code : IMS{{sale.id}}{{sale.slug|upper}}</p>
-			<div class="code-barre">
+    <div class="ticket">
+        <div class="head-ticket">
+            <p class="x-bold">InventoryMS</p>
+            <p class="bold">Tom Mboya Street, Tudor</p>
+            <p class="bold">Tel: +2547 00 000000</p>
+            <br>
+            <p class="bold">P.O BOX. 90420-80100 MSA</p>
+            <p>Date: {{ sale.date_added|date:"Y/m/d H:i:s" }}</p>
+            <p>Receipt code: IMS{{ sale.id }}</p>
+            <div class="code-barre">
 				<span></span>
 				<span></span>
 				<span></span>
@@ -372,49 +374,44 @@
 				<span></span>
 				<span></span>
 				<span></span>
-			</div>
-		</div>
-		<div class="body-ticket">
-			<div class="produits">
-				<div class="col2">
-					<p>{{sale.item.name|upper}}</p>
-					<p class="prix"><b>Ksh {{sale.price}}</b></p>
-				</div>
-				<div class="hr-sm"></div>
-				<div class="col2">
-					<p>Quantity</p>
-					<p class="prix"><b>{{sale.quantity}}</b></p>
-				</div>
-				<div class="col2">
-					<p>Total</p>
-					<p class="prix"><b>{{sale.total_value}}<b></p>
-				</div>
-				<br>
-				<div class="col2">
-					<p>Payment Method</p>
-					<p class="prix"><b>{{sale.payment_method}}<b></p>
-				</div>
-				<div class="col2">
-					<p>Amount recived</p>
-					<p class="prix"><b>Ksh {{sale.amount_received}}</b></p>
-				</div>
-				<div class="col2">
-					<p>Balance</p>
-					<p class="prix"><b>{{sale.balance}}</b></p>
-				</div>
-			</div>
-			<div class="hr-lg"></div>
-			<div class="carte">
-				<p class="title-carte">Customer: {{sale.customer_name}}</p>
-				<br>
-				<p>Served by: {{sale.profile}}</p>
-			</div>
-			<div class="hr-lg"></div>
-		</div>
-		<div class="footer-ticket">
-			<p class="title-footer">THANK YOU</p>
-		</div>
-	</div>
+            </div>
+        </div>
+        <div class="body-ticket">
+            <div class="produits">
+                <div class="hr-sm"></div>
+                <div class="col2">
+                    <p>Sub Total</p>
+                    <p class="prix"><b>Ksh {{ sale.sub_total }}</b></p>
+                </div>
+                <br>
+                <div class="col2">
+                    <p>Tax Amount</p>
+                    <p class="prix"><b>Ksh {{ sale.tax_amount }}</b></p>
+                </div>
+                <div class="col2">
+                    <p>Grand Total</p>
+                    <p class="prix"><b>Ksh {{ sale.grand_total }}</b></p>
+                </div>
+                <div class="col2">
+                    <p>Amount Paid</p>
+                    <p class="prix"><b>Ksh {{ sale.amount_paid }}</b></p>
+                </div>
+                <div class="col2">
+                    <p>Balance</p>
+                    <p class="prix"><b>Ksh {{ sale.amount_change }}</b></p>
+                </div>
+            </div>
+            <div class="hr-lg"></div>
+            <div class="carte">
+                <p class="title-carte">Customer: {{ sale.customer.first_name }}</p>
+            </div>
+            <div class="hr-lg"></div>
+        </div>
+        <div class="footer-ticket">
+            <p class="title-footer">THANK YOU</p>
+        </div>
+    </div>
 </section>
+
 </div>
 {% endblock %}

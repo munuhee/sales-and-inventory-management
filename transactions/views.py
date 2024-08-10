@@ -1,22 +1,28 @@
+# Standard library imports
 import json
 import logging
+
+# Django core imports
 from django.http import JsonResponse, HttpResponse
 from django.urls import reverse
 from django.shortcuts import render
-from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.views.generic import DetailView, ListView
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.shortcuts import redirect
-from django.core.exceptions import ValidationError
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 
+# Class-based views
+from django.views.generic import DetailView, ListView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+
+# Authentication and permissions
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+
+# Third-party packages
 from openpyxl import Workbook
 
+# Local app imports
 from store.models import Item
 from accounts.models import Customer
 from .models import Sale, Purchase, SaleDetail
 from .forms import PurchaseForm
+
 
 logger = logging.getLogger(__name__)
 
@@ -137,7 +143,11 @@ def SaleCreateView(request):
                     raise ValueError("Items should be a list")
 
                 for item in items:
-                    if not all(k in item for k in ["id", "price", "quantity", "total_item"]):
+                    if not all(
+                        k in item for k in [
+                            "id", "price", "quantity", "total_item"
+                        ]
+                    ):
                         raise ValueError("Item is missing required fields")
 
                     detail_attributes = {
@@ -150,21 +160,49 @@ def SaleCreateView(request):
                     SaleDetail.objects.create(**detail_attributes)
                     logger.info(f"Sale detail created: {detail_attributes}")
 
-                return JsonResponse({'status': 'success', 'message': 'Sale created successfully!', 'redirect': '/transactions/sales/'})
+                return JsonResponse(
+                    {
+                        'status': 'success',
+                        'message': 'Sale created successfully!',
+                        'redirect': '/transactions/sales/'
+                    }
+                )
 
             except json.JSONDecodeError:
-                return JsonResponse({'status': 'error', 'message': 'Invalid JSON format in request body!'}, status=400)
+                return JsonResponse(
+                    {
+                        'status': 'error',
+                        'message': 'Invalid JSON format in request body!'
+                    }, status=400)
             except Customer.DoesNotExist:
-                return JsonResponse({'status': 'error', 'message': 'Customer does not exist!'}, status=400)
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Customer does not exist!'
+                    }, status=400)
             except Item.DoesNotExist:
-                return JsonResponse({'status': 'error', 'message': 'Item does not exist!'}, status=400)
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Item does not exist!'
+                    }, status=400)
             except ValueError as ve:
-                return JsonResponse({'status': 'error', 'message': f'Value error: {str(ve)}'}, status=400)
+                return JsonResponse({
+                    'status': 'error',
+                    'message': f'Value error: {str(ve)}'
+                    }, status=400)
             except TypeError as te:
-                return JsonResponse({'status': 'error', 'message': f'Type error: {str(te)}'}, status=400)
+                return JsonResponse({
+                    'status': 'error',
+                    'message': f'Type error: {str(te)}'
+                    }, status=400)
             except Exception as e:
                 logger.error(f"Exception during sale creation: {e}")
-                return JsonResponse({'status': 'error', 'message': f'There was an error during the creation: {str(e)}'}, status=500)
+                return JsonResponse(
+                    {
+                        'status': 'error',
+                        'message': (
+                            f'There was an error during the creation: {str(e)}'
+                        )
+                    }, status=500)
 
     return render(request, "transactions/sale_create.html", context=context)
 

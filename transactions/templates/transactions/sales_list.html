@@ -34,6 +34,7 @@
                 <th>Tax Percentage</th>
                 <th>Amount Paid</th>
                 <th>Amount Change</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -48,6 +49,11 @@
                 <td>{{ sale.tax_percentage }}</td>
                 <td>{{ sale.amount_paid }}</td>
                 <td>{{ sale.amount_change }}</td>
+                <td>
+                    <a class="btn btn-outline-info btn-sm" href="{% url 'sale-detail' sale.id %}">
+                        <i class="fa-solid fa-eye"></i> View Details
+                    </a>
+                </td>
             </tr>
             {% endfor %}
         </tbody>

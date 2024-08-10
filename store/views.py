@@ -1,34 +1,43 @@
 """
 Module: store.views
 
-Contains Django views for managing items, profiles, and deliveries in the store application.
+Contains Django views for managing items, profiles,
+and deliveries in the store application.
 
-Classes handle product listing, creation, updating, deletion, and delivery management.
-The module integrates with Django's authentication and querying functionalities.
+Classes handle product listing, creation, updating,
+deletion, and delivery management.
+The module integrates with Django's authentication
+and querying functionalities.
 """
 
+# Standard library imports
 import operator
 from functools import reduce
+
+# Django core imports
 from django.shortcuts import render
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Q, Count, Sum
+
+# Authentication and permissions
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.urls import reverse_lazy
+
+# Class-based views
 from django.views.generic import (
     DetailView, CreateView, UpdateView, DeleteView, ListView
 )
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.views.generic.edit import FormMixin
+
+# Third-party packages
 from django_tables2 import SingleTableView
 import django_tables2 as tables
 from django_tables2.export.views import ExportMixin
-from django_tables2.export.export import TableExport
-from django.db.models import Q, Count, Sum, Avg
-from django.views.generic.edit import FormMixin
-from django.http import JsonResponse
-from django.views.decorators.http import require_POST
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
 
+# Local app imports
 from accounts.models import Profile, Vendor
 from transactions.models import Sale
 from .models import Category, Item, Delivery
@@ -120,7 +129,9 @@ class ItemSearchListView(ProductListView):
         if query:
             query_list = query.split()
             result = result.filter(
-                reduce(operator.and_, (Q(name__icontains=q) for q in query_list))
+                reduce(
+                    operator.and_, (Q(name__icontains=q) for q in query_list)
+                )
             )
         return result
 
@@ -209,7 +220,9 @@ class ProductDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
             return False
 
 
-class DeliveryListView(LoginRequiredMixin, ExportMixin, tables.SingleTableView):
+class DeliveryListView(
+    LoginRequiredMixin, ExportMixin, tables.SingleTableView
+):
     """
     View class to display a list of deliveries.
 
@@ -244,7 +257,8 @@ class DeliverySearchListView(DeliveryListView):
             query_list = query.split()
             result = result.filter(
                 reduce(
-                    operator.and_, (Q(customer_name__icontains=q) for q in query_list)
+                    operator.
+                    and_, (Q(customer_name__icontains=q) for q in query_list)
                 )
             )
         return result
