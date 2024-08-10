@@ -4,7 +4,25 @@
 {% load querystring from django_tables2 %}
 {% block title %}Sales{% endblock title %}
 {% block content %}
-<div class="container p-5">
+<!-- Header Section -->
+<div class="container my-4">
+    <div class="card shadow-sm rounded p-3">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h4 class="display-6 mb-0 text-success">Sales</h4>
+            </div>
+            <div class="col-md-6 d-flex justify-content-end gap-2">
+                <a class="btn btn-success btn-sm rounded-pill shadow-sm" href="{% url 'sale-create' %}">
+                    <i class="fa-solid fa-plus"></i> Add Sale Order
+                </a>
+                <a class="btn btn-primary btn-sm rounded-pill shadow-sm" href="{% url 'sales-export' %}">
+                    <i class="fa-solid fa-download"></i> Export to Excel
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container px-3">
     <style>
         .table th, .table td {
             text-align: center;
@@ -14,14 +32,6 @@
             margin: 4px;
         }
     </style>
-    <div class="d-flex justify-content-between mb-3">
-        <a class="btn btn-success btn-custom" href="{% url 'sale-create' %}">
-            <i class="fa-solid fa-plus"></i> Add Sale Order
-        </a>
-        <a class="btn btn-primary btn-custom" href="{% url 'sales-export' %}">
-            <i class="fa-solid fa-download"></i> Export to Excel
-        </a>
-    </div>
     <table class="table table-bordered table-striped table-hover table-sm">
         <thead class="thead-light">
             <tr>

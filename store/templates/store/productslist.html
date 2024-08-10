@@ -1,37 +1,39 @@
 {% extends "store/base.html" %}
+{% load static %}
 {% load render_table from django_tables2 %}
 {% load querystring from django_tables2 %}
-{% load static %}
 {% block title %}Products{% endblock title %}
 {% block content %}
-<div class="container mt-4">
-    <div class="row mb-3">
-        <div class="col-md-4">
-            <a class="btn btn-success btn-sm" href="{% url 'product-create' %}">
-                <i class="fa-solid fa-plus"></i> Add Item
-            </a>
-        </div>
-        <div class="col-md-4 d-flex justify-content-center">
-            <form class="input-group" role="search" id="searchform" action="{% url 'item_search_list_view' %}" method="get" accept-charset="utf-8">
-                <input id="searchbox" name="q" type="text" class="form-control" placeholder="Find products">
-                <span class="input-group-append">
-                    <button class="btn btn-outline-success" type="submit">
-                        <i class="fa-solid fa-search"></i>
-                    </button>
-                </span>
+<div class="container">
+    <!-- Header Section -->
+    <div class="container my-4">
+        <div class="card shadow-sm rounded p-3">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h4 class="display-6 mb-0 text-success">Products</h4>
+                </div>
+                <div class="col-md-6 d-flex justify-content-end gap-2">
+                    <a class="btn btn-success btn-sm rounded-pill shadow-sm" href="{% url 'product-create' %}">
+                        <i class="fa-solid fa-plus"></i> Add Item
+                    </a>
+                    <a class="btn btn-success btn-sm rounded-pill shadow-sm" href="{% querystring '_export'='xlsx' %}">
+                        <i class="fa-solid fa-download"></i> Export to Excel
+                    </a>
+                </div>
+            </div>
+            <form class="input-group mt-4" role="search" id="searchform" action="{% url 'item_search_list_view' %}" method="get" accept-charset="utf-8">
+                <input id="searchbox" name="q" type="text" class="form-control border-0 rounded-pill shadow-sm" placeholder="Find products">
+                <button class="btn btn-outline-success rounded-pill shadow-sm" type="submit">
+                    <i class="fa-solid fa-search"></i>
+                </button>
             </form>
-        </div>
-        <div class="col-md-4 text-end">
-            <a class="btn btn-success btn-sm" href="{% querystring '_export'='xlsx' %}">
-                <i class="fa-solid fa-download"></i> Export to Excel
-            </a>
         </div>
     </div>
 
-    <div class="mb-4">
-        <table class="table table-sm table-striped table-bordered table-responsive">
-            <thead>
-                <tr class="table-success">
+    <div class="px-4">
+        <table class="table table-bordered table-striped table-hover table-sm">
+            <thead class="thead-light">
+                <tr>
                     <th scope="col"><a href="{% querystring table.prefixed_order_by_field=column.order_by_alias.next %}">ID <i class="fa-solid fa-sort"></i></a></th>
                     <th scope="col">Name <i class="fa-solid fa-sort"></i></th>
                     <th scope="col">Category <i class="fa-solid fa-sort"></i></th>
@@ -53,8 +55,12 @@
                     <td>{{ item.expiring_date }}</td>
                     <td>{{ item.vendor }}</td>
                     <td>
-                        <a class="text-info" href="{% url 'product-update' item.slug %}"><i class="fa-solid fa-pen"></i></a>
-                        <a class="text-danger float-end" href="{% url 'product-delete' item.slug %}"><i class="fa-solid fa-trash"></i></a>
+                        <a class="btn btn-outline-info btn-sm" href="{% url 'product-update' item.slug %}">
+                            <i class="fa-solid fa-pen"></i> Edit
+                        </a>
+                        <a class="btn btn-outline-danger btn-sm float-end" href="{% url 'product-delete' item.slug %}">
+                            <i class="fa-solid fa-trash"></i> Delete
+                        </a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -73,7 +79,9 @@
             </li>
             {% else %}
             <li class="page-item disabled">
-                <span class="page-link">&laquo;</span>
+                <span class="page-link" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </span>
             </li>
             {% endif %}
             {% for i in paginator.page_range %}
@@ -95,7 +103,9 @@
             </li>
             {% else %}
             <li class="page-item disabled">
-                <span class="page-link">&raquo;</span>
+                <span class="page-link" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </span>
             </li>
             {% endif %}
         </ul>
