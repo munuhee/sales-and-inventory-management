@@ -1,0 +1,18 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container px-5">
+    <h1 class="my-4">Confirm Delete</h1>
+    <p>Are you sure you want to delete "{{ object.name }}"?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">
+            <i class="fas fa-trash-alt"></i> Confirm
+        </button>
+        <a href="{% url 'vendor-list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Cancel
+        </a>
+    </form>
+</div>
+{% endblock %}

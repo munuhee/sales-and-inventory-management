@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
-from .models import Profile, Customer
+from .models import Profile, Customer, Vendor
 
 
 class CreateUserForm(UserCreationForm):
@@ -46,9 +46,17 @@ class ProfileUpdateForm(forms.ModelForm):
 
 
 class CustomerForm(forms.ModelForm):
+    """Form for creating/updating customer information."""
     class Meta:
         model = Customer
-        fields = ['first_name', 'last_name', 'address', 'email', 'phone', 'loyalty_points']
+        fields = [
+            'first_name',
+            'last_name',
+            'address',
+            'email',
+            'phone',
+            'loyalty_points'
+        ]
         widgets = {
             'first_name': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -75,4 +83,22 @@ class CustomerForm(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': 'Enter loyalty points'
             }),
+        }
+
+
+class VendorForm(forms.ModelForm):
+    """Form for creating/updating vendor information."""
+    class Meta:
+        model = Vendor
+        fields = ['name', 'phone_number', 'address']
+        widgets = {
+            'name': forms.TextInput(
+                attrs={'class': 'form-control', 'placeholder': 'Vendor Name'}
+            ),
+            'phone_number': forms.NumberInput(
+                attrs={'class': 'form-control', 'placeholder': 'Phone Number'}
+            ),
+            'address': forms.TextInput(
+                attrs={'class': 'form-control', 'placeholder': 'Address'}
+            ),
         }

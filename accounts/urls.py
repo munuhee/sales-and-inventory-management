@@ -13,7 +13,11 @@ from .views import (
     CustomerCreateView,
     CustomerUpdateView,
     CustomerDeleteView,
-    get_customers
+    get_customers,
+    VendorListView,
+    VendorCreateView,
+    VendorUpdateView,
+    VendorDeleteView
 )
 
 urlpatterns = [
@@ -39,6 +43,14 @@ urlpatterns = [
     path('customers/<int:pk>/delete/', CustomerDeleteView.as_view(),
          name='customer_delete'),
     path('get_customers/', get_customers, name='get_customers'),
+
+    # Vendor URLs
+    path('vendors/', VendorListView.as_view(), name='vendor-list'),
+    path('vendors/new/', VendorCreateView.as_view(), name='vendor-create'),
+    path('vendors/<int:pk>/update/', VendorUpdateView.as_view(),
+         name='vendor-update'),
+    path('vendors/<int:pk>/delete/', VendorDeleteView.as_view(),
+         name='vendor-delete'),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

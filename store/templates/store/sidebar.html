@@ -123,12 +123,13 @@
                 </a>
             </li>
             <li class="nav-item mb-2 dropdown">
-                <a class="nav-link text-light {% if request.resolver_match.url_name == 'profile_list' or request.resolver_match.url_name == 'customer_list' %} active{% endif %} dropdown-toggle" href="#" id="accountsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <a class="nav-link text-light {% if request.resolver_match.url_name == 'profile_list' or request.resolver_match.url_name == 'customer_list' or request.resolver_match.url_name == 'vendor-list' %} active{% endif %} dropdown-toggle" href="#" id="accountsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="fa fa-users me-2"></i> Accounts
                 </a>
                 <ul class="dropdown-menu bg-dark border-0" aria-labelledby="accountsDropdown">
                     <li><a class="dropdown-item text-light {% if request.resolver_match.url_name == 'profile_list' %}active{% endif %}" href="{% url 'profile_list' %}">All Staff</a></li>
                     <li><a class="dropdown-item text-light {% if request.resolver_match.url_name == 'customer_list' %}active{% endif %}" href="{% url 'customer_list' %}">Customers</a></li>
+                    <li><a class="dropdown-item text-light {% if request.resolver_match.url_name == 'customer_list' %}active{% endif %}" href="{% url 'vendor-list' %}">Vendors</a></li>
                 </ul>
             </li>
         </ul>

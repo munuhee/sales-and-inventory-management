@@ -18,9 +18,11 @@ from django.views.generic import (
     DeleteView
 )
 
-from .models import Profile, Customer
+from .models import Profile, Customer, Vendor
 from .forms import (
-    CreateUserForm, UserUpdateForm, ProfileUpdateForm, CustomerForm
+    CreateUserForm, UserUpdateForm,
+    ProfileUpdateForm, CustomerForm,
+    VendorForm
 )
 from .tables import ProfileTable
 
@@ -234,3 +236,29 @@ def get_customers(request):
         customer_list = list(customers)
         return JsonResponse(customer_list, safe=False)
     return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+class VendorListView(LoginRequiredMixin, ListView):
+    model = Vendor
+    template_name = 'accounts/vendor_list.html'
+    context_object_name = 'vendors'
+
+
+class VendorCreateView(LoginRequiredMixin, CreateView):
+    model = Vendor
+    form_class = VendorForm
+    template_name = 'accounts/vendor_form.html'
+    success_url = reverse_lazy('vendor-list')
+
+
+class VendorUpdateView(LoginRequiredMixin, UpdateView):
+    model = Vendor
+    form_class = VendorForm
+    template_name = 'accounts/vendor_form.html'
+    success_url = reverse_lazy('vendor-list')
+
+
+class VendorDeleteView(LoginRequiredMixin, DeleteView):
+    model = Vendor
+    template_name = 'accounts/vendor_confirm_delete.html'
+    success_url = reverse_lazy('vendor-list')

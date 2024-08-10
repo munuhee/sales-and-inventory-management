@@ -1,0 +1,18 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container px-5">
+    <h1 class="my-4">{{ form.instance.pk|yesno:"Edit Vendor,Add Vendor" }}</h1>
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Save
+        </button>
+        <a href="{% url 'vendor-list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </form>
+</div>
+{% endblock %}
