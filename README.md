@@ -12,8 +12,6 @@ This system is built with Python (Django), JavaScript, Bootstrap, HTML, and CSS.
 
 The system caters to two distinct user roles: administrators and staff members. Administrators have the privilege to log in and manage goods information, while staff members handle sales, purchases, bills, and invoice creation.
 
-Powered sqlite3 database, our system not only stores all essential information but also boasts a user-friendly interface for effortless interaction. Users input data through this interface, and the system processes it, generating valuable insights based on user input. Additionally, the system diligently archives processed data in the database for future reference.
-
 # Prerequisites
 
 - **Python**
@@ -92,42 +90,35 @@ cd sales-and-inventory-management
 
 ## Screenshots
 
-![Screenshot (47)](https://user-images.githubusercontent.com/51537638/218985189-8ca2046e-02a8-4c8b-8243-0027fbfd728c.png)
+![screenshot_1](https://github.com/user-attachments/assets/9bb2f5f9-d456-4681-b5de-8d82a3ef97d8)
 
-![Screenshot (48)](https://user-images.githubusercontent.com/51537638/218985199-dfd74679-006a-4fe7-bd9a-fc1f244b8a5f.png)
+![screenshot_2](https://github.com/user-attachments/assets/d6e14ba3-8827-41c1-9cdb-8f24add83f4d)
 
-![Screenshot (49)](https://user-images.githubusercontent.com/51537638/218985218-2c00c2f4-bf8a-4ab0-88cf-b374bcf1cdb2.png)
+![screenshot_3](https://github.com/user-attachments/assets/6be5060e-974b-4289-bcdf-b852771833f8)
 
-![Screenshot (50)](https://user-images.githubusercontent.com/51537638/218985221-3af9c58f-1015-4e3d-99b6-a93f1586d5aa.png)
+![screenshot_4](https://github.com/user-attachments/assets/5b176c44-82dd-4080-8259-0976029a496f)
 
-![Screenshot (51)](https://user-images.githubusercontent.com/51537638/218985224-544832e1-938e-4b18-aec8-2efe8f55415e.png)
+![screenshot_5](https://github.com/user-attachments/assets/c9ab8f77-bf2a-4b1e-bc66-986101d4991b)
 
-![Screenshot (52)](https://user-images.githubusercontent.com/51537638/218985242-e52fe221-3fb7-4393-b205-8d930f673037.png)
+![screenshot_6](https://github.com/user-attachments/assets/3db3ca87-28a8-4fee-8cc7-fcc9481076f4)
 
-![Screenshot (53)](https://user-images.githubusercontent.com/51537638/218985248-2a2864a1-7b07-40b0-ab28-fdb3d40b0742.png)
+![screenshot_7](https://github.com/user-attachments/assets/1197a79f-8e11-41e1-a8a8-4ea5f0ac0391)
 
-![Screenshot (54)](https://user-images.githubusercontent.com/51537638/218985262-ce21da7e-dc14-47f2-b31d-94de04b49bb7.png)
+![screenshot_8](https://github.com/user-attachments/assets/a340d85b-76dc-4618-b530-97cd620ef649)
 
-![Screenshot (37)](https://user-images.githubusercontent.com/51537638/218985266-2bdf70a6-8f41-4e07-bafb-3cb97562ef85.png)
+![screenshot_9](https://github.com/user-attachments/assets/751fe028-6115-424e-b69c-0fedfa9f321f)
 
-![Screenshot (38)](https://user-images.githubusercontent.com/51537638/218985272-1773c6af-db04-4221-9149-8b56f50638df.png)
+![screenshot_10](https://github.com/user-attachments/assets/d3905ec2-c843-468c-bdd4-799955854fd6)
 
-![Screenshot (39)](https://user-images.githubusercontent.com/51537638/218985280-7a6a8116-6cdb-4281-9aae-a036a0c42157.png)
+![screenshot_11](https://github.com/user-attachments/assets/99bb9f1c-4688-4049-b31e-5de1bd817304)
 
-![Screenshot (40)](https://user-images.githubusercontent.com/51537638/218985289-d50e317c-a4c8-4546-88c9-b71a03e0cb37.png)
+![screenshot_12](https://github.com/user-attachments/assets/a0ea68c0-2969-42e4-81cd-fbf6efffd569)
 
-![Screenshot (41)](https://user-images.githubusercontent.com/51537638/218985303-a61516c4-b28d-4807-909e-761d820dc60c.png)
+![screenshot_13](https://github.com/user-attachments/assets/9fbd7b1c-d60c-456a-957c-4a033cf76d89)
 
-![Screenshot (42)](https://user-images.githubusercontent.com/51537638/218985321-fe56bfcf-2498-4ed0-bc7c-1611b7e9b2cd.png)
+![screenshot_14](https://github.com/user-attachments/assets/b6eabb9a-119a-418d-af56-b44d316bf6be)
 
-![Screenshot (43)](https://user-images.githubusercontent.com/51537638/218985330-ba9eea5c-ee39-4f5c-8cd4-5e9fadeb4e24.png)
-
-![Screenshot (44)](https://user-images.githubusercontent.com/51537638/218985343-5dcb504a-0096-4138-9572-0f293ef25d98.png)
-
-![Screenshot (45)](https://user-images.githubusercontent.com/51537638/218985351-356f0f61-f3e5-480b-ab88-9818cbfb91c1.png)
-
-![Screenshot (46)](https://user-images.githubusercontent.com/51537638/218985357-fc0e7f3b-5729-4a32-95b3-c016aa48c219.png)
-
+![screenshot_15](https://github.com/user-attachments/assets/ec117dfd-e0ee-46ff-9486-b5262f58b901)
 
 ## Authors
 
