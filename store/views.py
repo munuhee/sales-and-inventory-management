@@ -61,7 +61,7 @@ def dashboard(request):
     # Prepare data for charts
     category_counts = Category.objects.annotate(
         item_count=Count("item")
-        ).values("name", "item_count")
+    ).values("name", "item_count")
     categories = [cat["name"] for cat in category_counts]
     category_counts = [cat["item_count"] for cat in category_counts]
 
@@ -73,7 +73,7 @@ def dashboard(request):
     sale_dates_labels = [
         date["date_added__date"].strftime("%Y-%m-%d") for date in sale_dates
     ]
-    sale_dates_values = [date["total_sales"] for date in sale_dates]
+    sale_dates_values = [float(date["total_sales"]) for date in sale_dates]
 
     context = {
         "items": items,
@@ -336,6 +336,7 @@ class CategoryListView(LoginRequiredMixin, ListView):
     model = Category
     template_name = 'store/category_list.html'
     context_object_name = 'categories'
+    paginate_by = 10
     login_url = 'login'
 
 
