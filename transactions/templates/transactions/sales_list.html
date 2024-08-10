@@ -1,100 +1,101 @@
-{% extends "store/base.html" %}{% load static %}{% load render_table from django_tables2 %}{% load querystring from django_tables2 %}{% block title %}Sales{%endblock title%}{% block content %}
-    <div class="col container p-5">
-      <style>
-        input[type="text"],select{
-            box-sizing: border-box;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            display: inline-block;
-            padding: 6px 20px;
-            margin: 8px 0;
+{% extends "store/base.html" %}
+{% load static %}
+{% load render_table from django_tables2 %}
+{% load querystring from django_tables2 %}
+{% block title %}Sales{% endblock title %}
+{% block content %}
+<div class="container p-5">
+    <style>
+        .table th, .table td {
+            text-align: center;
         }
-        button[type="submit"]{
-          padding: 4px 20px;
-          margin: 8px 0;
-      }
-      </style>
-      <div>
-        <a class="btn btn-sm btn-success" href="{% url 'sale-create' %}">Add Sale Order</a>
-        <a class="float-end btn btn-sm btn-success" href="{% querystring '_export'='xlsx' %}">
-          <i class="fa-solid fa-download"></i>
-          Export to Excel
+        .btn-custom {
+            padding: 8px 20px;
+            margin: 4px;
+        }
+    </style>
+    <div class="d-flex justify-content-between mb-3">
+        <a class="btn btn-success btn-custom" href="{% url 'sale-create' %}">
+            <i class="fa-solid fa-plus"></i> Add Sale Order
         </a>
-        <table class="table table-sm table-responsive overflow-x-hidden" id="dtVerticalScrollExample" cellspacing="0"
-        width="100%">
-            <thead>
-              <tr class="table-success">
-                <th scope="col" class="th-sm">ID <i class="fa-solid fa-sort"></i></th>
-                <th scope="col" class="th-sm">Item <i class="fa-solid fa-sort"></i></th>
-                <th scope="col" class="th-sm">Quantity <i class="fa-solid fa-sort"></i></th>
-                <th scope="col" class="th-sm">Price per item <i class="fa-solid fa-sort"></i></th>
-                <th scope="col" class="th-sm">Total price <i class="fa-solid fa-sort"></i></th>
-                <th scope="col" class="th-sm">Payment Method <i class="fa-solid fa-sort"></i></th>
-                <th scope="col" class="th-sm">Customer Name <i class="fa-solid fa-sort"></i></th>
-                <th scope="col" class="th-sm">Date <i class="fa-solid fa-sort"></i></th>
-                <th scope="col" class="th-sm">Served by <i class="fa-solid fa-sort"></i></th>
-                <th scope="col" class="th-sm"> Action</th>
-              </tr>
-            </thead>
-            <tbody>
+        <a class="btn btn-primary btn-custom" href="{% url 'sales-export' %}">
+            <i class="fa-solid fa-download"></i> Export to Excel
+        </a>
+    </div>
+    <table class="table table-bordered table-striped table-hover table-sm">
+        <thead class="thead-light">
+            <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Customer</th>
+                <th>Sub Total</th>
+                <th>Grand Total</th>
+                <th>Tax Amount</th>
+                <th>Tax Percentage</th>
+                <th>Amount Paid</th>
+                <th>Amount Change</th>
+            </tr>
+        </thead>
+        <tbody>
             {% for sale in sales %}
-              <tr>
-                <th scope="row">{{sale.id}}</th>
-
-                <td><a href="{% url 'sale-detail' sale.pk %}">{{sale.item.name}}</a></td>
-
-                <td>{{sale.quantity}}</td>
-                <td>{{sale.price}}</td>
-                <td>{{sale.total_value}}</td>
-                <td>
-                  {% if sale.payment_method == 'MP' %}
-                    <span class="badge badge-pill bg-soft-success text-success me-2">
-                      MPESA
-                    </span>
-                  {% elif sale.payment_method == 'CS' %}
-                    <span class="badge badge-pill bg-soft-primary text-primary me-2">
-                      CASH
-                    </span>
-                  {% elif sale.payment_method == 'VM' %}
-                    <span class="badge badge-pill bg-soft-warning text-warning me-2">
-                      VOOMA
-                    </span>
-                  {% else %}
-                    <span class="badge badge-pill bg-soft-info text-info me-2">
-                      BANK
-                    </span>
-                  {% endif %}
-                </td>
-                <td>{{sale.customer_name}}</td>
-                <td>{{sale.transaction_date|date:"Y/m/d - H:m:s"}}</td>
-                <td>{{sale.profile.user.username}}</td>
-                <td>
-                  <a class="text-info" href="{% url 'sale-update' sale.slug %}"><i class="fa-solid fa-pen"></i></a>
-                  <a class="text-danger float-end" href="{% url 'sale-delete' sale.slug %}"><i class="fa-solid fa-trash"></i></a>
-                </td>
-              </tr>
+            <tr>
+                <td>{{ sale.id }}</td>
+                <td>{{ sale.date_added|date:"Y-m-d H:i:s" }}</td>
+                <td>{{ sale.customer }}</td>
+                <td>{{ sale.sub_total }}</td>
+                <td>{{ sale.grand_total }}</td>
+                <td>{{ sale.tax_amount }}</td>
+                <td>{{ sale.tax_percentage }}</td>
+                <td>{{ sale.amount_paid }}</td>
+                <td>{{ sale.amount_change }}</td>
+            </tr>
             {% endfor %}
-            </tbody>
-          </table>
-          <div class="paginator">
-            {% if is_paginated %}
-            <ul class="pagination ">
+        </tbody>
+    </table>
+    <div class="d-flex justify-content-center mt-4">
+        {% if is_paginated %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
                 {% if page_obj.has_previous %}
-                <li><a class="btn btn-sm accent-1 btn-outline-success " href="?page={{ page_obj.previous_page_number }} ">&laquo;</a></li>
-                {% else %}
-                <li class="disabled "><span class="btn btn-sm btn-outline-success ">&laquo;</span></li>
-                {% endif %} {% for i in paginator.page_range %} {% if page_obj.number == i %}
-                <li class="active "><span class="btn btn-sm btn-success ">{{ i }} <span class="sr-only ">(current)</span></span>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
                 </li>
                 {% else %}
-                <li><a href="?page={{ i }} " class="btn btn-sm btn-outline-success ">{{ i }}</a></li>
-                {% endif %} {% endfor %} {% if page_obj.has_next %}
-                <li><a href="?page={{ page_obj.next_page_number }} " class="btn btn-sm btn-outline-success ">&raquo;</a></li>
+                <li class="page-item disabled">
+                    <span class="page-link" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </span>
+                </li>
+                {% endif %}
+                {% for i in paginator.page_range %}
+                {% if page_obj.number == i %}
+                <li class="page-item active">
+                    <span class="page-link">{{ i }} <span class="sr-only">(current)</span></span>
+                </li>
                 {% else %}
-                <li class="disabled "><span class="btn btn-sm btn-outline-success ">&raquo;</span></li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                </li>
+                {% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </span>
+                </li>
                 {% endif %}
             </ul>
-            {% endif %}
-        </div>
+        </nav>
+        {% endif %}
     </div>
-  {% endblock content %}
+</div>
+{% endblock content %}

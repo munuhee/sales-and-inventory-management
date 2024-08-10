@@ -10,7 +10,8 @@ from .views import (
     SaleListView,
     SaleDetailView,
     SaleCreateView,
-    SaleDeleteView
+    SaleDeleteView,
+    export_sales_to_excel
 )
 
 urlpatterns = [
@@ -29,6 +30,7 @@ urlpatterns = [
     path('new-sale/', SaleCreateView, name='sale-create'),
     path('sale/<slug:slug>/delete/', SaleDeleteView.as_view(),
          name='sale-delete'),
+    path('sales/export/', export_sales_to_excel, name='sales-export'),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,5 +1,6 @@
 import json
-from django.http import JsonResponse
+import logging
+from django.http import JsonResponse, HttpResponse
 from django.urls import reverse
 from django.shortcuts import render
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
@@ -9,14 +10,67 @@ from django.shortcuts import redirect
 from django.core.exceptions import ValidationError
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+
+from openpyxl import Workbook
+
 from store.models import Item
 from accounts.models import Customer
 from .models import Sale, Purchase, SaleDetail
 from .forms import PurchaseForm
 
+logger = logging.getLogger(__name__)
+
 
 def is_ajax(request):
     return request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
+
+
+def export_sales_to_excel(request):
+    # Create a workbook and select the active worksheet.
+    workbook = Workbook()
+    worksheet = workbook.active
+    worksheet.title = 'Sales'
+
+    # Define the column headers
+    columns = [
+        'ID', 'Date', 'Customer', 'Sub Total',
+        'Grand Total', 'Tax Amount', 'Tax Percentage',
+        'Amount Paid', 'Amount Change'
+    ]
+    worksheet.append(columns)
+
+    # Fetch sales data
+    sales = Sale.objects.all()
+
+    for sale in sales:
+        # Convert timezone-aware datetime to naive datetime
+        if sale.date_added.tzinfo is not None:
+            date_added = sale.date_added.replace(tzinfo=None)
+        else:
+            date_added = sale.date_added
+
+        worksheet.append([
+            sale.id,
+            date_added,
+            sale.customer.phone,
+            sale.sub_total,
+            sale.grand_total,
+            sale.tax_amount,
+            sale.tax_percentage,
+            sale.amount_paid,
+            sale.amount_change
+        ])
+
+    # Set up the response to send the file
+    response = HttpResponse(
+        content_type=(
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+    )
+    response['Content-Disposition'] = 'attachment; filename=sales.xlsx'
+    workbook.save(response)
+
+    return response
 
 
 class SaleListView(LoginRequiredMixin, ListView):
@@ -51,6 +105,7 @@ def SaleCreateView(request):
             try:
                 # Load the JSON data from the request body
                 data = json.loads(request.body)
+                logger.info(f"Received data: {data}")
 
                 # Validate required fields
                 required_fields = [
@@ -66,14 +121,15 @@ def SaleCreateView(request):
                     "customer": Customer.objects.get(id=int(data['customer'])),
                     "sub_total": float(data["sub_total"]),
                     "grand_total": float(data["grand_total"]),
-                    "discount_amount": float(data.get("discount_amount", 0.0)),
-                    "discount_percentage": float(data.get("discount_percentage", 0.0)),
+                    "tax_amount": float(data.get("tax_amount", 0.0)),
+                    "tax_percentage": float(data.get("tax_percentage", 0.0)),
                     "amount_paid": float(data["amount_paid"]),
                     "amount_change": float(data["amount_change"]),
                 }
 
                 # Create the sale
                 new_sale = Sale.objects.create(**sale_attributes)
+                logger.info(f"Sale created: {new_sale}")
 
                 # Create sale details
                 items = data["items"]
@@ -92,6 +148,7 @@ def SaleCreateView(request):
                         "total_detail": float(item["total_item"])
                     }
                     SaleDetail.objects.create(**detail_attributes)
+                    logger.info(f"Sale detail created: {detail_attributes}")
 
                 return JsonResponse({'status': 'success', 'message': 'Sale created successfully!', 'redirect': '/transactions/sales/'})
 
@@ -106,6 +163,7 @@ def SaleCreateView(request):
             except TypeError as te:
                 return JsonResponse({'status': 'error', 'message': f'Type error: {str(te)}'}, status=400)
             except Exception as e:
+                logger.error(f"Exception during sale creation: {e}")
                 return JsonResponse({'status': 'error', 'message': f'There was an error during the creation: {str(e)}'}, status=500)
 
     return render(request, "transactions/sale_create.html", context=context)

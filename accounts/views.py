@@ -1,7 +1,10 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.urls import reverse_lazy
 from django.urls import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -213,3 +216,21 @@ class CustomerDeleteView(LoginRequiredMixin, DeleteView):
     model = Customer
     template_name = 'accounts/customer_confirm_delete.html'
     success_url = reverse_lazy('customer_list')
+
+
+def is_ajax(request):
+    return request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
+
+
+@csrf_exempt
+@require_POST
+@login_required
+def get_customers(request):
+    if is_ajax(request) and request.method == 'POST':
+        term = request.POST.get('term', '')
+        customers = Customer.objects.filter(
+            name__icontains=term
+        ).values('id', 'name')
+        customer_list = list(customers)
+        return JsonResponse(customer_list, safe=False)
+    return JsonResponse({'error': 'Invalid request method'}, status=400)

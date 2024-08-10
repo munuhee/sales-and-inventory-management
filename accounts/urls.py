@@ -12,7 +12,8 @@ from .views import (
     CustomerListView,
     CustomerCreateView,
     CustomerUpdateView,
-    CustomerDeleteView
+    CustomerDeleteView,
+    get_customers
 )
 
 urlpatterns = [
@@ -37,6 +38,7 @@ urlpatterns = [
          name='customer_update'),
     path('customers/<int:pk>/delete/', CustomerDeleteView.as_view(),
          name='customer_delete'),
+    path('get_customers/', get_customers, name='get_customers'),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

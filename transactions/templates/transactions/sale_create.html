@@ -15,45 +15,39 @@
 
 <!-- Page content  -->
 {% block content %}
-<div class="container p-3">
+<div class="container py-5">
     <!-- Go back -->
-    <div class="row mb-3">
-        <div class="col">
-            <a href="{% url 'saleslist' %}">
-                <button type="button" class="btn btn-success font-weight-bold">
-                    <i class="fas fa-long-arrow-alt-left mr-2"></i>
-                    Go back
-                </button>
-            </a>
-        </div>
+    <div class="mb-4">
+        <a href="{% url 'saleslist' %}" class="btn btn-outline-success">
+            <i class="fas fa-arrow-left me-2"></i>
+            Go back
+        </a>
     </div>
 
     <!-- Sale items and details -->
-    <form action="{% url 'sale-create' %}" class="saleForm" method="post">
+    <form id="form_sale" action="{% url 'sale-create' %}" class="saleForm" method="post">
         <div class="row">
             <!-- Left column -->
-            <div class="col-lg-8 mb-3">
-                <div class="card">
-                    <div class="card-header bg-secondary text-white">Sale items</div>
+            <div class="col-lg-8 mb-4">
+                <div class="card border-light shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Sale Items</h5>
+                    </div>
                     <div class="card-body">
                         <!-- Search item -->
-                        <div class="form-group">
-                            <label for="searchbox_items">Search item:</label>
-                            <div class="input-group">
-                                <select class="form-control select2" name="searchbox_items" id="searchbox_items" aria-label="Search items"></select>
-                            </div>
+                        <div class="mb-4">
+                            <label for="searchbox_items" class="form-label">Search Item:</label>
+                            <select class="form-select select2" name="searchbox_items" id="searchbox_items" aria-label="Search items"></select>
                         </div>
-                        <!-- End Search item -->
 
                         <!-- Delete all items from sale -->
-                        <button type="button" class="btn btn-danger btn-sm my-4 deleteAll">
-                            Delete all items <i class="ml-1 fas fa-trash-alt fa-xs"></i>
+                        <button type="button" class="btn btn-danger btn-sm mb-4 deleteAll">
+                            <i class="fas fa-trash-alt me-2"></i> Delete All Items
                         </button>
-                        <!-- End Delete all items from sale -->
 
-                        <!-- Items table -->
-                        <div class="table-responsive">
-                            <table class="table table-hover text-nowrap" id="table_items">
+                        <!-- Items Table -->
+                        <div class="table-responsive my-3">
+                            <table class="table table-bordered table-striped" id="table_items">
                                 <thead>
                                     <tr>
                                         <th>#</th>
@@ -61,59 +55,60 @@
                                         <th>Price</th>
                                         <th>Quantity</th>
                                         <th>Total</th>
-                                        <th class="text-center">Delete</th>
+                                        <th class="text-center">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                 </tbody>
                             </table>
                         </div>
-                        <!-- End items table -->
                     </div>
                 </div>
             </div>
-            <!-- End Left column -->
+            <!-- End Left Column -->
 
-            <!-- Right column -->
-            <div class="col-lg-4 mb-3">
-                <div class="card">
-                    <div class="card-header bg-secondary text-white">Sale details</div>
+            <!-- Right Column -->
+            <div class="col-lg-4 mb-4">
+                <div class="card border-light shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Sale Details</h5>
+                    </div>
                     <div class="card-body">
                         {% csrf_token %}
-                        <div class="form-group">
-                            <label for="customer">Customer</label>
-                            <select name="customer" class="form-control" id="customer" aria-label="Customer" required>
+                        <div class="mb-3">
+                            <label for="customer" class="form-label">Customer</label>
+                            <select name="customer" class="form-select" id="customer" aria-label="Customer" required>
                                 <option value="" selected disabled hidden>Select the customer</option>
                                 {% for customer in customers %}
-                                <option value="{{customer.value}}">{{customer.label}}</option>
+                                <option value="{{ customer.value }}">{{ customer.label }}</option>
                                 {% endfor %}
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label for="sub_total">Subtotal</label>
-                            <input name="sub_total" class="form-control" id="sub_total" aria-label="Subtotal" required>
+                        <div class="mb-3">
+                            <label for="sub_total" class="form-label">Subtotal</label>
+                            <input name="sub_total" type="number" class="form-control" id="sub_total" aria-label="Subtotal" required>
                         </div>
-                        <div class="form-group">
-                            <label for="tax_percentage">Tax Inclusive (%)</label>
-                            <input name="tax_percentage" class="form-control" id="tax_percentage" aria-label="Tax Inclusive" value="0" required>
+                        <div class="mb-3">
+                            <label for="tax_percentage" class="form-label">Tax Inclusive (%)</label>
+                            <input name="tax_percentage" type="number" class="form-control" id="tax_percentage" aria-label="Tax Inclusive" value="0" required>
                         </div>
-                        <div class="form-group">
-                            <label for="tax_amount">Tax Amount</label>
-                            <input name="tax_amount" class="form-control" id="tax_amount" aria-label="Tax Amount" required>
+                        <div class="mb-3">
+                            <label for="tax_amount" class="form-label">Tax Amount</label>
+                            <input name="tax_amount" type="number" class="form-control" id="tax_amount" aria-label="Tax Amount" required>
                         </div>
-                        <div class="form-group">
-                            <label for="grand_total">Grand Total</label>
-                            <input name="grand_total" class="form-control" id="grand_total" aria-label="Grand Total" required>
+                        <div class="mb-3">
+                            <label for="grand_total" class="form-label">Grand Total</label>
+                            <input name="grand_total" type="number" class="form-control" id="grand_total" aria-label="Grand Total" required>
                         </div>
-                        <div class="form-group">
-                            <label for="amount_payed">Amount payed</label>
-                            <input name="amount_payed" class="form-control" id="amount_payed" aria-label="Amount Payed" required>
+                        <div class="mb-3">
+                            <label for="amount_paid" class="form-label">Amount Payed</label>
+                            <input name="amount_paid" type="number" class="form-control" id="amount_paid" aria-label="Amount Paid" required>
                         </div>
-                        <button type="submit" class="btn btn-success font-weight-bold my-2">Create sale</button>
+                        <button type="submit" class="btn btn-success w-100">Create Sale</button>
                     </div>
                 </div>
             </div>
-            <!-- End Right column -->
+            <!-- End Right Column -->
         </div>
     </form>
 </div>
@@ -146,38 +141,36 @@
         return Math.round(n) / multiplicator;
     }
 
-    //Variable for item number in table
+    // Variable for item number in table
     var number = 1;
 
-    //Variable to store sale details and products
+    // Variable to store sale details and products
     var sale = {
         products: {
-            customer : 0,
-            sub_total : 0.00,
-            grand_total : 0.00,
-            tax_amount : 0.00,
-            tax_percentage : 0.00,
-            amount_payed : 0.00,
-            amount_change : 0.00,
-            items: [
-
-            ]
+            customer: 0,
+            sub_total: 0.00,
+            grand_total: 0.00,
+            tax_amount: 0.00,
+            tax_percentage: 0.00,
+            amount_payed: 0.00,
+            amount_change: 0.00,
+            items: []
         },
-        calculate_sale: function (){
+        calculate_sale: function () {
             // Subtotal of all items added
-            var sub_total = 0.00
+            var sub_total = 0.00;
 
             var tax_percentage = $('input[name="tax_percentage"]').val();
 
             // Calculates the total for each item
-            $.each(this.products.items, function(pos, dict){
+            $.each(this.products.items, function (pos, dict) {
                 dict.pos = pos;
                 dict.total_item = roundTo(dict.quantity * dict.price, 2);
                 // Add the item total to the sale subtotal
                 sub_total += roundTo(dict.total_item, 2);
             });
 
-            //Update the sale subtotal, grand total, and tax amount
+            // Update the sale subtotal, grand total, and tax amount
             this.products.sub_total = roundTo(sub_total, 2);
             this.products.grand_total = roundTo(this.products.sub_total, 2);
             this.products.tax_amount = roundTo(this.products.sub_total * (tax_percentage / 100), 2);
@@ -186,7 +179,7 @@
             $('input[name="tax_amount"]').val(this.products.tax_amount);
             $('input[name="grand_total"]').val(this.products.grand_total);
         },
-        // Adds a item to the sale object
+        // Adds an item to the sale object
         add_item: function (item) {
             this.products.items.push(item);
             this.list_item();
@@ -212,33 +205,32 @@
                         // Quantity
                         class: 'text-center',
                         targets: [3],
-                        render: function (data, type, row){
-                            return '<input name="quantity" type="text" class="form-control form-control-xs text-center input-sm" autocomplete="off" value="'+row.quantity+'">';
+                        render: function (data, type, row) {
+                            return '<input name="quantity" type="text" class="form-control form-control-xs text-center input-sm" autocomplete="off" value="' + row.quantity + '">';
                         },
                     },
                     {
-                        //item price an total
+                        // Item price and total
                         class: 'text-right',
-                        targets: [2,4],
-                        render: function (data, type, row){
+                        targets: [2, 4],
+                        render: function (data, type, row) {
                             return parseFloat(data).toFixed(2) + ' $';
                         },
                     },
                     {
-                        //Delete button
+                        // Delete button
                         class: 'text-center',
                         targets: [-1],
                         orderable: false,
-                        render: function (data, type, row){
+                        render: function (data, type, row) {
                             return '<a rel="delete" type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Delete item"> <i class="fas fa-trash-alt fa-xs"></i> </a>';
                         },
                     },
-
                 ],
-                rowCallback(row, data, displayNun, displayIndex, dataIndex){
-                    $(row).find(("input[name='quantity']")).TouchSpin({
+                rowCallback(row, data, displayNun, displayIndex, dataIndex) {
+                    $(row).find("input[name='quantity']").TouchSpin({
                         min: 1,
-                        max: 100, //Máximo de acuerdo al stock de cada itemo
+                        max: 100, // Máximo de acuerdo al stock de cada itemo
                         step: 1,
                         decimals: 0,
                         boostat: 1,
@@ -246,18 +238,12 @@
                         postfix: ''
                     });
                 },
-            })
-
-            // IDs de itemos ya seleccionados para exlcuir en la busqueda
-            //console.log("this.traer_ids()");
-            //console.log(this.traer_ids());
-
+            });
         },
     };
 
-    $(document).ready(function() {
-
-        //Tax percentage touchspin
+    $(document).ready(function () {
+        // Tax percentage touchspin
         $("input[name='tax_percentage']").TouchSpin({
             min: 0,
             max: 100,
@@ -266,80 +252,121 @@
             boostat: 5,
             maxboostedstep: 10,
             postfix: '%'
-        }).on('change', function(){
+        }).on('change', function () {
             sale.calculate_sale();
         });
 
-
-        //Select2 customers
+        // Select2 customers
         $('#searchbox_customers').select2({
+            delay: 250,
             placeholder: "Select a customer",
             allowClear: true,
+            minimumInputLength: 1,
+            ajax: {
+                url: "{% url 'get_customers' %}",
+                type: 'POST',
+                data: function (params) {
+                    return {
+                        term: params.term,
+                        csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val() // Include CSRF token
+                    };
+                },
+                processResults: function (data) {
+                    return {
+                        results: data
+                    };
+                }
+            }
+        }).on('select2:select', function (e) {
+            // When a customer is selected
+            var data = e.params.data;
+            sale.products.customer = data.id;
+        });
+
+        // Select2 items searchbox
+        $('#searchbox_items').select2({
+            delay: 250,
+            placeholder: 'Search an item',
+            minimumInputLength: 1,
+            allowClear: true,
+            templateResult: template_item_searchbox,
+            ajax: {
+                url: "{% url 'get_items' %}",
+                type: 'POST',
+                data: function (params) {
+                    return {
+                        term: params.term,
+                        csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val()
+                    };
+                },
+                processResults: function (data) {
+                    return {
+                        results: data
+                    };
+                }
+            }
+        }).on('select2:select', function (e) {
+            // When an item is selected from the searchbox
+            var data = e.params.data;
+            // Add number, subtotal, and quantity of the item to the dictionary
+            data.number = number;
+            number++; // Increase the item number in the table
+            // Add the item to the sale object
+            sale.add_item(data);
+            // Clear the searchbox after the item is selected
+            $(this).val('').trigger('change.select2');
         });
 
         // Tables Events
         $('#table_items tbody').on('click', 'a[rel="delete"]', function () {
-                // When a item is deleted
+            // When an item is deleted
+            var tr = tblItems.cell($(this).closest('td, li')).index();
+            item_name = (tblItems.row(tr.row).data().name);
 
-                // Row variable of the table
-                var tr = tblItems.cell($(this).closest('td, li')).index();
-                item_name = (tblItems.row(tr.row).data().name)
-
-                Swal.fire({
-                    customClass: {
-                        confirmButton: 'ml-3 btn btn-danger',
-                        cancelButton: 'btn btn-info'
-                    },
-                    buttonsStyling: false,
-                    title: "Are you sure you want to delete this item from the sale?",
-                    text: item_name,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Delete',
-                    cancelButtonText: 'Cancel',
-                    reverseButtons: true,
-
-                }).then((result) => {
-                    // Si se confirma
-                    if (result.isConfirmed) {
-
-                        // Delete the item
-                        sale.products.items.splice(tr.row, 1);
-                        //List the table again
-                        sale.list_item();
-                        Swal.fire('The item was eliminated!', '', 'success')
-                    };
-                })
-
-
-
-            }).on('change keyup', 'input[name="quantity"]', function(){
-                // When a item changes is quantity
-                var quantity = parseInt($(this).val());
-                //console.log(quantity);
-                // Row variable of the table
-                var tr = tblItems.cell($(this).closest('td, li')).index();
-                console.log(tr);
-                //var data = tblItemos.row(tr.row).node();
-                //console.log(data);
-                // Update the item quantity in the sale object
-                sale.products.items[tr.row].quantity = quantity;
-                console.log(sale.products.items);
-                // Calculate the sale with the new quantity
-                sale.calculate_sale();
-                // Find the row to update the item total
-                $('td:eq(4)', tblItems.row(tr.row).node()).html(sale.products.items[tr.row].total_item + ' $');
+            Swal.fire({
+                customClass: {
+                    confirmButton: 'ml-3 btn btn-danger',
+                    cancelButton: 'btn btn-success'
+                },
+                buttonsStyling: false,
+                title: "Are you sure you want to delete this item from the sale?",
+                text: item_name,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Delete',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true,
+            }).then((result) => {
+                // If confirmed
+                if (result.isConfirmed) {
+                    // Delete the item
+                    sale.products.items.splice(tr.row, 1);
+                    // List the table again
+                    sale.list_item();
+                    Swal.fire('The item was eliminated!', '', 'success');
+                }
+            });
+        }).on('change keyup', 'input[name="quantity"]', function () {
+            // When an item changes its quantity
+            var quantity = parseInt($(this).val());
+            var tr = tblItems.cell($(this).closest('td, li')).index();
+            // Update the item quantity in the sale object
+            sale.products.items[tr.row].quantity = quantity;
+            // Calculate the sale with the new quantity
+            sale.calculate_sale();
+            // Find the row to update the item total
+            $('td:eq(4)', tblItems.row(tr.row).node()).html(sale.products.items[tr.row].total_item + ' $');
         });
 
         // Delete all items
-        $('.deleteAll').on('click', function(){
-            // If there are no items doesn't do anything
-            if(sale.products.items.length === 0 ) return false;
+        $('.deleteAll').on('click', function () {
+            // If there are no items, don't do anything
+            if (sale.products.items.length === 0) return false;
             // Alert the user
             Swal.fire({
                 customClass: {
                     confirmButton: 'ml-3 btn btn-danger',
-                    cancelButton: 'btn btn-info'
+                    cancelButton: 'btn btn-success'
                 },
                 buttonsStyling: false,
                 title: "Are you sure you want to delete all items from the sale?",
@@ -348,179 +375,118 @@
                 confirmButtonText: 'Delete all',
                 cancelButtonText: 'Cancel',
                 reverseButtons: true,
-
             }).then((result) => {
-                // Si se confirma
+                // If confirmed
                 if (result.isConfirmed) {
-                    // Borramos todos los itemos del objeto de venta
+                    // Remove all items from the sale object
                     sale.products.items = [];
-                    // Calculamos de vuelta la factura
+                    // Recalculate the sale
                     sale.list_item();
-                    Swal.fire('All items were eliminated!', '', 'success')
-                };
-            })
-        });
-
-        //Select2 items searchbox
-        // Validate the csrf_token
-        var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
-
-        function csrfSafeMethod(method) {
-            // these HTTP methods do not require CSRF protection
-            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-        }
-        // To avoid error 403 Fordbidden
-        $.ajaxSetup({
-            beforeSend: function (xhr, settings) {
-                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                    Swal.fire('All items were eliminated!', '', 'success');
                 }
-            }
+            });
         });
 
-        $('#searchbox_items').select2({
-            delay: 250,
-            placeholder: 'Search a item',
-            minimumInputLength: 1,
-            allowClear: true,
-            templateResult: template_item_searchbox,
-            ajax:{
-                url: "{% url 'get_items' %}",
-                type: 'POST',
-                data: function (params) {
-                var queryParameters = {
-                    term: params.term,
-                    //excluir_prod_seleccionados: JSON.stringify(venta.traer_ids())
+        // Items datatable
+        tblItems = $('#table_items').DataTable({
+            columnDefs: [
+                {
+                    targets: [-1],
+                    orderable: false,
                 }
-                return queryParameters;
-                },
-                processResults: function (data) {
-                    console.log(data)
-                    return {
-                        results: data
-                    };
-                },
-            }
-            }).on('select2:select', function (e) {
-                //When a item is selected from the searchbox
-                var data = e.params.data;
-                //Add number, subtotal and quantity of the item to the dictionary
-                data.number = number;
-                number++; //Increase the item number in the table
-                //data.sub_total = 0;
-                //data.quantity = 1;
-                //Add the item to the sale object
-                sale.add_item(data);
-                console.log("Sale products");
-                console.log(sale.products);
-                //Clean the searchbox after the item is selected
-                $(this).val('').trigger('change.select2');;
-            });
-
-            // items datatable
-
-            tblItems = $('#table_items').DataTable({
-                columnDefs: [
-                    {
-                        targets: [-1],
-                        orderable: false,
-                    }
-                ],
-            });
-
-
+            ],
         });
 
-        // item searchbox templateResult
+        // Item searchbox templateResult
         function template_item_searchbox(repo) {
-            if (repo.loading) {
-                return repo.text;
-            }
-
-            var option = $(
-                '<div class="wrapper container">'+
-                ' <div class="row">' +
-                    '<div class="col-lg-11 text-left shadow-sm">' +
-                      //'<br>' +
-                      '<p style="margin-bottom: 5px;">' +
-                      '<b>Name:</b> ' + repo.text + " | Category: " + "<span class='btn-info px-2'>" + repo.category + '</span> <br>' +
-                      '<b>Price:</b> <span class="btn-success px-2">'+repo.price+' $. </span>'+
-                      '</p>' +
-                    '</div>' +
-                  '</div>' +
-                '</div>');
-
-            return option;
+            return $(`
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <small class="card-title">${repo.name}</small>
+                    </div>
+                </div>
+            `);
         }
 
-        // Send the sale via ajax
+        // Helper functions
+        function getAjax(type, url, data, successCallback, errorCallback) {
+            $.ajax({
+                type: type,
+                url: url,
+                data: data,
+                success: successCallback,
+                error: errorCallback
+            });
+        }
 
-        $('.saleForm').on('submit', function (e) {
-            // Only allow sending if we have at least one item
-            if (sale.products.items.length === 0 ) {
-                Swal.fire({
-                    title: 'The sale must have at least 1 item',
-                    text: 'Search a item and add it to the sale',
-                    icon: 'warning',
-                });
-                return false;
+        // Function to round numbers
+        function roundTo(value, decimals) {
+            const factor = Math.pow(10, decimals);
+            return Math.round(value * factor) / factor;
+        }
+
+        // On form submit
+        $('form#form_sale').on('submit', function (event) {
+            event.preventDefault();
+
+            // Gather sale details
+            var amountPaid = parseFloat($('input[name="amount_paid"]').val());
+            var grandTotal = parseFloat($('input[name="grand_total"]').val());
+            var amountChange = roundTo(amountPaid - grandTotal, 2);
+
+            // Gather sale details
+            var formData = {
+                customer: $('select[name="customer"]').val(),
+                sub_total: $('input[name="sub_total"]').val(),
+                grand_total: grandTotal,
+                amount_paid: amountPaid,
+                amount_change: amountChange,
+                items: sale.products.items
             };
 
-            // Only allow sending if the paid amount is equal or greater than the total
-            if ($('[name="amount_payed"]').val() < $('[name="grand_total"]').val()) {
+            // Check if amount_change is present
+            if (isNaN(amountChange)) {
                 Swal.fire({
-                    title: 'Payable Amount is lower than the Grand Total',
-                    icon: 'warning',
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Amount change is required!'
                 });
-                return false;
+                return;
             }
 
-            // Agregamos los datos faltantes al objeto sales
-            sale.products.customer = $('select[name="customer"]').val();
-            console.log("Customer: " + sale.products.customer)
-            sale.products.sub_total = $('input[name="sub_total"]').val();
-            sale.products.grand_total = $('input[name="grand_total"]').val();
-            sale.products.tax_amount = $('input[name="tax_amount"]').val();
-            sale.products.tax_percentage = $('input[name="tax_percentage"]').val();
-            sale.products.amount_payed = $('input[name="amount_payed"]').val();
-            sale.products.amount_change = roundTo($('input[name="amount_payed"]').val() - $('input[name="grand_total"]').val(), 2);
+            // Get CSRF token
+            var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
 
-            console.log("Sale:")
-            console.log(sale.products)
-
-            // Validate the csrf_token
-            var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
-
-            function csrfSafeMethod(method) {
-            // these HTTP methods do not require CSRF protection
-            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-            }
-            $.ajaxSetup({
-                beforeSend: function (xhr, settings) {
-                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
-                    }
-                }
-            });
+            // Submit the form data via AJAX
             $.ajax({
-                url: '/transactions/new-sale/',
+                url: $(this).attr('action'),
                 type: 'POST',
-                data: JSON.stringify(formData),
                 contentType: 'application/json',
-                success: function(response) {
-                    if (response.status === 'success') {
-                        alert(response.message);
-                        window.location.href = response.redirect; // Redirect to sales list
-                    } else {
-                        alert(response.message); // Display error message
-                    }
+                headers: {
+                    'X-CSRFToken': csrftoken
                 },
-                error: function(xhr, status, error) {
-                    console.error('AJAX Error:', status, error);
-                    alert('An error occurred while processing your request.');
+                data: JSON.stringify(formData),
+                success: function (response) {
+                    // Handle success response
+                    sale.products.items = [];
+                    sale.list_item();
+                    $('form#form_sale').trigger('reset');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: 'Sale has been completed successfully!'
+                    });
+                },
+                error: function (xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: xhr.responseJSON.message || 'An error occurred while processing the sale!'
+                    });
                 }
             });
         });
-
+    });
 </script>
+
 {% endblock javascripts %}
