@@ -6,6 +6,7 @@ import logging
 from django.http import JsonResponse, HttpResponse
 from django.urls import reverse
 from django.shortcuts import render
+from django.db import transaction
 
 # Class-based views
 from django.views.generic import DetailView, ListView
@@ -133,32 +134,42 @@ def SaleCreateView(request):
                     "amount_change": float(data["amount_change"]),
                 }
 
-                # Create the sale
-                new_sale = Sale.objects.create(**sale_attributes)
-                logger.info(f"Sale created: {new_sale}")
+                # Use a transaction to ensure atomicity
+                with transaction.atomic():
+                    # Create the sale
+                    new_sale = Sale.objects.create(**sale_attributes)
+                    logger.info(f"Sale created: {new_sale}")
 
-                # Create sale details
-                items = data["items"]
-                if not isinstance(items, list):
-                    raise ValueError("Items should be a list")
+                    # Create sale details and update item quantities
+                    items = data["items"]
+                    if not isinstance(items, list):
+                        raise ValueError("Items should be a list")
 
-                for item in items:
-                    if not all(
-                        k in item for k in [
-                            "id", "price", "quantity", "total_item"
-                        ]
-                    ):
-                        raise ValueError("Item is missing required fields")
+                    for item in items:
+                        if not all(
+                            k in item for k in [
+                                "id", "price", "quantity", "total_item"
+                            ]
+                        ):
+                            raise ValueError("Item is missing required fields")
 
-                    detail_attributes = {
-                        "sale": new_sale,
-                        "item": Item.objects.get(id=int(item["id"])),
-                        "price": float(item["price"]),
-                        "quantity": int(item["quantity"]),
-                        "total_detail": float(item["total_item"])
-                    }
-                    SaleDetail.objects.create(**detail_attributes)
-                    logger.info(f"Sale detail created: {detail_attributes}")
+                        item_instance = Item.objects.get(id=int(item["id"]))
+                        if item_instance.quantity < int(item["quantity"]):
+                            raise ValueError(f"Not enough stock for item: {item_instance.name}")
+
+                        detail_attributes = {
+                            "sale": new_sale,
+                            "item": item_instance,
+                            "price": float(item["price"]),
+                            "quantity": int(item["quantity"]),
+                            "total_detail": float(item["total_item"])
+                        }
+                        SaleDetail.objects.create(**detail_attributes)
+                        logger.info(f"Sale detail created: {detail_attributes}")
+
+                        # Reduce item quantity
+                        item_instance.quantity -= int(item["quantity"])
+                        item_instance.save()
 
                 return JsonResponse(
                     {
