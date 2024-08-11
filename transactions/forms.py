@@ -19,12 +19,15 @@ class PurchaseForm(BootstrapMixin, forms.ModelForm):
     class Meta:
         model = Purchase
         fields = [
-            'item', 'description', 'vendor', 'delivery_date',
-            'quantity', 'delivery_status', 'price', 'total_value'
+            'item',  'price', 'description', 'vendor',
+            'quantity', 'delivery_date', 'delivery_status'
         ]
         widgets = {
             'delivery_date': forms.DateInput(
-                attrs={'class': 'form-control', 'type': 'date'}
+                attrs={
+                    'class': 'form-control',
+                    'type': 'datetime-local'
+                }
             ),
             'description': forms.Textarea(
                 attrs={'rows': 1, 'cols': 40}

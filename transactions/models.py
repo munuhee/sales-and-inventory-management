@@ -125,9 +125,7 @@ class Purchase(models.Model):
     delivery_date = models.DateTimeField(
         blank=True, null=True, verbose_name="Delivery Date"
     )
-    quantity = models.DecimalField(
-        max_digits=10, decimal_places=2, default=0.0
-    )
+    quantity = models.PositiveIntegerField(default=0)
     delivery_status = models.CharField(
         choices=DELIVERY_CHOICES,
         max_length=1,
@@ -148,6 +146,9 @@ class Purchase(models.Model):
         """
         self.total_value = self.price * self.quantity
         super().save(*args, **kwargs)
+        # Update the item quantity
+        self.item.quantity += self.quantity
+        self.item.save()
 
     def __str__(self):
         """

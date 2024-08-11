@@ -274,21 +274,6 @@ class PurchaseCreateView(LoginRequiredMixin, CreateView):
         """
         return reverse("purchaseslist")
 
-    def form_valid(self, form):
-        """
-        Validates the form and updates item quantity and total value.
-        """
-        item = form.cleaned_data["item"]
-        quantity = form.cleaned_data["quantity"]
-        total_value = item.selling_price * quantity
-
-        form.instance.total_value = total_value
-        form.instance.price = item.selling_price
-        item.quantity += quantity
-        item.save()
-
-        return super().form_valid(form)
-
 
 class PurchaseUpdateView(LoginRequiredMixin, UpdateView):
     """
