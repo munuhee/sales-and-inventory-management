@@ -99,7 +99,10 @@ def export_purchases_to_excel(request):
 
     for purchase in purchases:
         # Convert timezone-aware datetime to naive datetime
-        if purchase.delivery_date.tzinfo or purchase.order_date.tzinfo is not None:
+        delivery_tzinfo = purchase.delivery_date.tzinfo
+        order_tzinfo = purchase.order_date.tzinfo
+
+        if delivery_tzinfo or order_tzinfo is not None:
             delivery_date = purchase.delivery_date.replace(tzinfo=None)
             order_date = purchase.order_date.replace(tzinfo=None)
         else:
