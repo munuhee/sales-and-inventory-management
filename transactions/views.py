@@ -80,6 +80,56 @@ def export_sales_to_excel(request):
     return response
 
 
+def export_purchases_to_excel(request):
+    # Create a workbook and select the active worksheet.
+    workbook = Workbook()
+    worksheet = workbook.active
+    worksheet.title = 'Purchases'
+
+    # Define the column headers
+    columns = [
+        'ID', 'Item', 'Description', 'Vendor', 'Order Date',
+        'Delivery Date', 'Quantity', 'Delivery Status',
+        'Price per item (Ksh)', 'Total Value'
+    ]
+    worksheet.append(columns)
+
+    # Fetch purchases data
+    purchases = Purchase.objects.all()
+
+    for purchase in purchases:
+        # Convert timezone-aware datetime to naive datetime
+        if purchase.delivery_date.tzinfo or purchase.order_date.tzinfo is not None:
+            delivery_date = purchase.delivery_date.replace(tzinfo=None)
+            order_date = purchase.order_date.replace(tzinfo=None)
+        else:
+            delivery_date = purchase.delivery_date
+            order_date = purchase.order_date
+        worksheet.append([
+            purchase.id,
+            purchase.item.name,
+            purchase.description,
+            purchase.vendor.name,
+            order_date,
+            delivery_date,
+            purchase.quantity,
+            purchase.get_delivery_status_display(),
+            purchase.price,
+            purchase.total_value
+        ])
+
+    # Set up the response to send the file
+    response = HttpResponse(
+        content_type=(
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+    )
+    response['Content-Disposition'] = 'attachment; filename=purchases.xlsx'
+    workbook.save(response)
+
+    return response
+
+
 class SaleListView(LoginRequiredMixin, ListView):
     """
     View to list all sales with pagination.
