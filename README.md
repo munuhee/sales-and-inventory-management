@@ -4,8 +4,8 @@
 </div>
 
 # Django-inventory-management
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Python Version](https://img.shields.io/badge/Python-3.10-green)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/license/mit)
+[![Python Version](https://img.shields.io/badge/Python-3.12-green)](https://www.python.org/downloads/)
 
 ## Table of Contents
 - [Django-inventory-management](#django-inventory-management)
@@ -22,16 +22,15 @@
   - [Authors](#authors)
 
 ## Description
-This Django application offers a solution for managing business operations with an emphasis on user experience and modern web technologies. It integrates Bootstrap for front-end design and employs Ajax for dynamic sales creation. The application features models for user profiles, vendors, customers, and transactions, including detailed billing, invoicing, and inventory management.
+This Django application offers a solution for managing business operations with an emphasis on user experience and modern web technologies. It integrates Bootstrap for front-end design and employs Ajax for dynamic sales creation. The application features models for user profiles, vendors, customers, and transactions, including billing, invoicing, and inventory management.
 
 ## Prerequisites
-
-- **Python**
-- **Django**
+- **Python installed**: Ensure Python is installed on your system. You can download it from the official [Python website](https://www.python.org/).
+- **Understand Python and Django**: Basic understanding of Python programming and familiarity with Django web framework.
 
 ## Installation
 
-Before you can run the application, ensure you have the following prerequisites and dependencies.
+Follow these steps to install the necessary dependencies and set up the application:
 
 ### Clone the Repository
 
