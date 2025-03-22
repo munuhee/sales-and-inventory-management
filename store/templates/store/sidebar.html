@@ -137,9 +137,12 @@
 
     <!-- Sidebar Footer -->
     <div class="sidebar-footer position-absolute bottom-0 w-100 text-center py-3 bg-dark border-top border-secondary">
-        <a class="btn btn-danger btn-sm w-75" href="{% url 'user-logout' %}">
-            <i class="fa fa-sign-out me-2"></i> Logout
-        </a>
+        <form method="post" action="{% url 'user-logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger btn-sm w-75">
+                <i class="fa fa-sign-out me-2"></i> Logout
+            </button>
+        </form>
     </div>
 </aside>
 
