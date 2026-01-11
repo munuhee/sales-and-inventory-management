@@ -90,7 +90,6 @@ jobs:
           name: sca-trivy-report
           path: trivy_report.txt
 
-          
 
       # 2. BANDIT (SAST) - Analiza kodu Python
       - name: Install and Run Bandit (SAST)
