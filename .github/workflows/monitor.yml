@@ -33,14 +33,15 @@ jobs:
           HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" ${{ env.TARGET_URL }})
           
           # Zapisz kod do zmiennych środowiskowych, aby był dostępny w następnym kroku (nawet przy błędzie)
-          echo "DETECTED_CODE=$HTTP_CODE" >> $GITHUB_ENV
+          echo "detected_code=$HTTP_CODE" >> $GITHUB_OUTPUT 
+        #  echo "DETECTED_CODE=$HTTP_CODE" >> $GITHUB_ENV
 
           if [ "$HTTP_CODE" -eq 200 ]; then
             echo "App is working normally (HTTP 200)"
-            echo "status=up" >> $GITHUB_OUTPUT
+          #  echo "status=up" >> $GITHUB_OUTPUT
           else
             echo "::error::App is not responding. Code: $HTTP_CODE"
-            echo "status=down" >> $GITHUB_OUTPUT
+           # echo "status=down" >> $GITHUB_OUTPUT
             # To jest kluczowe - exit 1 powoduje, że krok kończy się statusem 'failure'
             exit 1
           fi
@@ -61,6 +62,8 @@ jobs:
         run: |
           echo "Incident occurred. Code from previous job: $FAIL_CODE"
           echo "${{ secrets.ADO_PAT }}" | az devops login --organization "https://dev.azure.com/${{ env.ADO_ORG }}"
+
+          FINAL_CODE=${FAIL_CODE:-Unknown}
  
           TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
 
@@ -72,6 +75,7 @@ jobs:
             --project "${{ env.ADO_PROJECT }}" \
             --description "<h3>Incident info:</h3> \
               <b>Status:</b> App is not responding.<br> \
-              <b>Code HTTP:</b> ${{ env.DETECTED_CODE }}<br> \
+              #<b>Code HTTP:</b> ${{ env.DETECTED_CODE }}<br> \
+              <b>Code HTTP:</b> $FINAL_CODE<br> \
               <b>Time:</b> $TIMESTAMP<br><br> \
               <b>GHA Logs:</b> ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
