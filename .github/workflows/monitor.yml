@@ -1,0 +1,81 @@
+name: Continuous Monitoring
+
+on:
+  # schedule:
+  #   - cron: '*/60 * * * *'
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["DevSecOps CI/CD Pipeline"]
+    branches: [main]
+    types:
+      - completed
+
+env:
+  TARGET_URL: "http://zbi-inventory-app-axfcfebbawe7abet.italynorth-01.azurewebsites.net/accounts/login/"
+  ADO_ORG: "ZBI-projekt"
+  ADO_PROJECT: "ZBI-projekt"
+  DEV_GROUP: "@ZBI-project/Operations"
+
+jobs:
+  check-uptime:
+    name: Check App Availability
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name != 'workflow_run' }}
+
+    steps:
+      - name: Ping App
+        id: ping
+        run: |
+          echo "Waiting for app to warm up/deploy..."
+          sleep 60 
+          
+          echo "Checking availability: ${{ env.TARGET_URL }}"
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" ${{ env.TARGET_URL }})
+          
+          # Zapisz kod do zmiennych środowiskowych, aby był dostępny w następnym kroku (nawet przy błędzie)
+          echo "detected_code=$HTTP_CODE" >> $GITHUB_OUTPUT 
+        #  echo "DETECTED_CODE=$HTTP_CODE" >> $GITHUB_ENV
+
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            echo "App is working normally (HTTP 200)"
+          #  echo "status=up" >> $GITHUB_OUTPUT
+          else
+            echo "::error::App is not responding. Code: $HTTP_CODE"
+           # echo "status=down" >> $GITHUB_OUTPUT
+            # To jest kluczowe - exit 1 powoduje, że krok kończy się statusem 'failure'
+            exit 1
+          fi
+
+# --- JOB 2: ALERTOWANIE (Tylko gdy Job 1 padnie) ---
+  alert-handler:
+    name: Create Alert in Azure DevOps
+    runs-on: ubuntu-latest
+    needs: check-uptime
+    if: ${{ always() && needs.check-uptime.result == 'failure' }}
+    
+    steps:
+      - name: Create Azure DevOps Issue
+        env:
+          AZURE_DEVOPS_EXT_PAT: ${{ secrets.ADO_PAT }}
+          # Pobieramy kod HTTP z outputs poprzedniego joba
+          FAIL_CODE: ${{ needs.check-uptime.outputs.http_code }}
+        run: |
+          echo "Incident occurred. Code from previous job: $FAIL_CODE"
+          echo "${{ secrets.ADO_PAT }}" | az devops login --organization "https://dev.azure.com/${{ env.ADO_ORG }}"
+
+          FINAL_CODE=${FAIL_CODE:-Unknown}
+ 
+          TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
+
+          echo "Creating an ISSUE..."
+          az boards work-item create \
+            --title "CRITICAL: Production App is DOWN" \
+            --type "Issue" \
+            --org "https://dev.azure.com/${{ env.ADO_ORG }}" \
+            --project "${{ env.ADO_PROJECT }}" \
+            --description "<h3>Incident info:</h3> \
+              <b>Status:</b> App is not responding.<br> \
+              #<b>Code HTTP:</b> ${{ env.DETECTED_CODE }}<br> \
+              <b>Code HTTP:</b> $FINAL_CODE<br> \
+              <b>Time:</b> $TIMESTAMP<br><br> \
+              <b>GHA Logs:</b> ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

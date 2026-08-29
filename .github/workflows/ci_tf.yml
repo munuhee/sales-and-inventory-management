@@ -1,0 +1,226 @@
+name: DevSecOps CI
+
+#on:
+#  push:
+#    branches: ["release", "main"]
+#  pull_request:
+#    branches: ["release", "main"]
+
+permissions:
+  contents: read
+  security-events: write
+#  pull-requests: write # moze byc przydatne dla terraforma ale jeszcze nie wiem
+  id-token: write #to do azure jesli uzywa sie OIDC
+
+jobs:
+  # ---------------------------------------------------
+  # JOB 1: QUALTY & TESTS (Jakość kodu i testy funkcjonalne)
+  # ---------------------------------------------------
+  build-and-test:
+    name: Build, Lint
+    runs-on: ubuntu-latest
+
+    env:
+      SECRET_KEY: ${{ secrets.DJANGO_CI_KEY }}
+      DEBUG: 'False'
+      DB_NAME: 'db.sqlite3'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 bandit coverage
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      # LINTING (Czystość kodu)
+      - name: Lint with flake8
+        run: |
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+      # SYSTEM CHECK (Czy Django w ogóle działa)
+      - name: Django System Check
+        run: python manage.py check
+
+      # UNIT & INTEGRATION TESTS 
+
+  # ---------------------------------------------------
+  # JOB 2: SECURITY SAST & SCA (Bezpieczeństwo statyczne)
+  # ---------------------------------------------------
+  security-scans:
+    name: Security Checks (SAST, SCA, Secrets)
+    runs-on: ubuntu-latest
+    needs: build-and-test # Uruchom tylko, jeśli build przeszedł
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.10'
+
+      # 1. SAST: Bandit (uruchamiany bezpośrednio)
+      - name: Install and Run Bandit (SAST)
+        run: |
+          pip install bandit
+          bandit -r . -ll || true
+          bandit -r . -ll -f json -o bandit_report.json || true
+
+      - name: Upload Bandit Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sast-bandit-report
+          path: bandit_report.json
+
+      # -------------------------------------------------------
+      # 2. TRIVY (SCA & Secrets) - Oficjalna Akcja
+      # Konfiguracja: scan-type: 'fs' (FileSystem)
+      # -------------------------------------------------------
+      - name: Run Trivy Vulnerability Scanner
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          scan-type: 'fs'        # KLUCZOWE: Skanuj pliki, nie obrazy Dockera
+          scan-ref: '.'          # Skanuj obecny katalog
+          hide-progress: false
+          format: 'table'
+          output: 'trivy_report.txt'
+          exit-code: '0'         # 0 = nie blokuj pipeline (dla nauki), 1 = blokuj
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          scanners: 'vuln,secret,config' # Skanuj podatności, sekrety i config
+
+      - name: Upload Trivy Report
+        if: always()
+        run: cat trivy_report.txt
+
+      - name: Archive Trivy Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sca-trivy-report
+          path: trivy_report.txt
+
+  # ---------------------------------------------------
+  # JOB 3: DAST (Dynamiczne skanowanie)
+  # ---------------------------------------------------
+  dast-scan:
+    name: DAST (OWASP ZAP)
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      # Aby zrobić DAST, aplikacja musi działać.
+      # Uruchamiamy ją w tle w kontenerze/procesie, a potem skanujemy.
+      - name: Set up Python & Run App
+        run: |
+          pip install -r requirements.txt
+          python manage.py migrate
+          python manage.py runserver 0.0.0.0:8000 &
+          sleep 10
+        # Czekamy aż wstanie
+
+      - name: OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.15.0
+        with:
+          target: 'http://localhost:8000'
+          # Fail tylko na bardzo poważnych błędach, bo ZAP często zgłasza "false positives"
+          fail_action: false
+          allow_issue_writing: false  # <--- Wyłączamy próbę tworzenia Issue
+          cmd_options: '-a'
+
+      - name: Upload ZAP Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-scan-report
+          path: |
+            report_zap_html.html
+            report_zap_json.json
+
+  # ---------------------------------------------------
+  # JOB 4: Terraform Docker (deploy -> release)
+  # Uruchamia sie po przejsciu testow
+  # ---------------------------------------------------
+  terraform-docker:
+    name: Terraform Docker (Local Environment)
+    runs-on: ubuntu latest
+    needs: build-and-test # jakie skany potrzebujemy !!
+    if: github.event_name == 'pull_request' && github.base_ref == 'release' && github.head_ref == 'deploy'
+
+    defaults:
+      run:
+        working-directory: ./terraform/docker
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+
+        - name: Setup Terraform
+          uses: hashicorp/setup-terraform@v3
+
+        - name: Terraform Init
+          run: terraform init
+
+        - name: Terraform Plan
+          env:
+            TF_VAR_django_secret_key: ${{ secrets.DJANGO_CI_KEY }}
+          run: terraform plan -input=false
+
+        - name: Terraform Apply
+          env:
+            TF_VAR_django_secret_key: ${{ secrets.DJANGO_CI_KEY }}
+          run: terraform apply -auto-approve -input=false
+
+  # ---------------------------------------------------
+  # JOB 5: Terraform Azure (release -> main)
+  # ---------------------------------------------------
+  terraform-azure:
+    name: Terraform Azure (prod)
+    runs-on: ubuntu-latest
+    needs: [build-and-test, security-scans] # jakie skany potrzebujemy !!
+    if: github.event_name == 'pull_request' && github.base_ref == 'main' && github.head_ref == 'release'
+
+    defaults:
+      run:
+        working-directory: ./terraform/azure
+
+    env: # to dodac pozniej jak bedzie dzialac tf
+      ARM_CLIENT_ID: ${{  }}
+      ARM_CLIENT_SECRET: ${{  }}
+      ARM_SUBSCRIPTION_ID: ${{  }}
+      ARM_TENANT_ID: ${{  }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create SSH Key File # to mamy w main w azure ze potrzebujemy ssh klucza
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PUBLIC_KEY }}" > ~/.ssh/id_rsa.pub
+          chmod 644 ~/.ssh/id_rsa.pub
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        run: terraform plan -input=false
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -input=false

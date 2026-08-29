@@ -112,3 +112,8 @@ ipython_config.py
 
 # pytype
 .pytype/
+
+.terraform/
+**/.terraform/*
+*.tfstate
+*.tfstate.backup

@@ -1,0 +1,222 @@
+name: DevSecOps CI/CD Pipeline (Live Demo)
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+# Zmienne globalne do konfiguracji raportowania
+
+env:
+  ADO_ORG: "ZBI-projekt"       # np. uniwersytet-projekt
+  ADO_PROJECT: "ZBI-projekt"        # np. ZBI-Security
+  DEV_GROUP: "@ZBI-projekt/Developers"  # Grupa na GitHubie do powiadomień
+  SECRET_KEY: ${{ secrets.DJANGO_CI_KEY }}
+  DEBUG: 'False'
+  DB_NAME: 'db.sqlite3'
+
+permissions:
+  contents: read
+  issues: write           # Wymagane do tworzenia Issue na GH
+  security-events: write  # Wymagane do uploadu raportów SARIF
+
+jobs:
+  # ---------------------------------------------------
+  # JOB 1: BUILD & TEST
+  # ---------------------------------------------------
+  build-and-test:
+    name: Build & Lint Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 bandit coverage
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Lint with flake8
+        run: |
+          # Quality Gate: Linting nie blokuje pipeline (exit-zero), ale raportuje
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+      - name: Django System Check
+        run: python manage.py check
+
+  # ---------------------------------------------------
+  # JOB 2: SECURITY SAST & SCA (Quality Gate: STRICT)
+  # ---------------------------------------------------
+  security-scans:
+    name: Security Gates (SAST/SCA)
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      # 1. TRIVY (SCA) - Skanowanie zależności
+      - name: Run Trivy Scanner (SCA)
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          hide-progress: false
+          format: 'table'
+          # QUALITY GATE: Tu zmieniamy na '1'. Jeśli znajdzie Critical, pipeline PADA.
+          output: 'trivy_report.txt'
+          exit-code: '1' # '0'
+          severity: 'CRITICAL' 
+          scanners: 'vuln,secret,config' # Skanuj podatności, sekrety i config
+          ignore-unfixed: true
+
+      - name: Upload Trivy Report
+        if: always()
+        run: cat trivy_report.txt
+      
+      - name: Archive Trivy Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sca-trivy-report
+          path: trivy_report.txt
+
+
+      # 2. BANDIT (SAST) - Analiza kodu Python
+      - name: Install and Run Bandit (SAST)
+        if: always()
+        run: |
+          pip install bandit
+          # QUALITY GATE: Usunąłem "|| true". 
+          # -lll oznacza raportowanie High/Medium/Low, ale failuje tylko na High
+          bandit -r . -lll -f json -o bandit_report.json # || true
+
+      - name: Upload Bandit Report
+        if: always() # Raport załączamy nawet jak test obleje
+        uses: actions/upload-artifact@v4
+        with:
+          name: sast-bandit-report
+          path: bandit_report.json
+
+  # ---------------------------------------------------
+  # JOB 3: DAST (Dynamiczne skanowanie)
+  # ---------------------------------------------------
+
+  dast-scan:
+    name: DAST (OWASP ZAP)
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      # Aby zrobić DAST, aplikacja musi działać.
+      # Uruchamiamy ją w tle w kontenerze/procesie, a potem skanujemy.
+      - name: Set up Python & Run App
+        run: |
+          pip install -r requirements.txt
+          python manage.py migrate
+          python manage.py runserver 0.0.0.0:8000 &
+          sleep 10 
+        # Czekamy aż wstanie
+
+      - name: OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.15.0
+        with:
+          target: 'http://localhost:8000'
+          # Fail tylko na bardzo poważnych błędach, bo ZAP często zgłasza "false positives"
+          fail_action: true
+          allow_issue_writing: false  # <--- Wyłączamy próbę tworzenia Issue
+          cmd_options: '-a'
+
+      - name: Upload ZAP Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-scan-report
+          path: |
+            report_zap_html.html
+            report_zap_json.json
+
+  # ---------------------------------------------------
+  # JOB 4: FAILURE HANDLING (Dual Reporting)
+  # Uruchamia się TYLKO gdy któryś z powyższych jobów padnie
+  # ---------------------------------------------------
+  handle-failure:
+    name: Report Security Failure
+    runs-on: ubuntu-latest
+    if: failure() 
+    needs: [build-and-test, security-scans, dast-scan]
+    
+    steps:
+      - name: Checkout (potrzebne do kontekstu)
+        uses: actions/checkout@v5
+
+      # A. GITHUB ISSUE
+      - name: Create GitHub Issue
+        uses: dacbd/create-issue-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: "Security Gate Failed: Commit ${{ github.sha }}"
+          # Przypisuje autora commita
+          assignees: ${{ github.actor }} 
+          body: |
+            ### Security Pipeline Failed
+            Wykryto krytyczne błędy bezpieczeństwa. Wdrożenie zostało zablokowane.
+            
+            **Szczegóły:**
+            - Commit: `${{ github.sha }}`
+            - Autor: @${{ github.actor }}
+            - Grupa odpowiedzialna: ${{ env.DEV_GROUP }}
+            
+            Proszę sprawdzić logi w zakładce Actions oraz pobrać raporty (Artifacts).
+            [Link do Pipeline'u](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+      # B. AZURE DEVOPS BUG
+      - name: Create Azure DevOps Issue
+        env:
+          AZURE_DEVOPS_EXT_PAT: ${{ secrets.ADO_PAT }}
+        run: |
+          echo ${{ secrets.ADO_PAT }} | az devops login
+          
+          az boards work-item create \
+            --title "Security Breach: Pipeline Failed" \
+            --type "Issue" \
+            --org "https://dev.azure.com/${{ env.ADO_ORG }}" \
+            --project "${{ env.ADO_PROJECT }}" \
+            --description "Automatyczne zgłoszenie Critical Security Issue.<br>Pipeline URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}<br>CC: ${{ env.DEV_GROUP }}"
+
+# ---------------------------------------------------
+  # JOB 4: DEPLOY TO AZURE (Wdrożenie na prod)
+  # ---------------------------------------------------
+  deploy:
+    name: Deploy to Azure Web App
+    runs-on: ubuntu-latest
+    # Deploy wykonaj TYLKO, jeśli przeszły testy jakości, SAST i DAST
+    needs: [build-and-test, security-scans, dast-scan] 
+    environment:
+      name: 'Production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'zbi-inventory-app'  # np. zbi-sales-app
+          slot-name: 'production'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: .
