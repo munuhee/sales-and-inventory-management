@@ -13,6 +13,7 @@ from django.views.generic import DetailView, ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
 # Authentication and permissions
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
 # Third-party packages
@@ -32,6 +33,7 @@ def is_ajax(request):
     return request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
 
 
+@login_required
 def export_sales_to_excel(request):
     # Create a workbook and select the active worksheet.
     workbook = Workbook()
@@ -80,6 +82,7 @@ def export_sales_to_excel(request):
     return response
 
 
+@login_required
 def export_purchases_to_excel(request):
     # Create a workbook and select the active worksheet.
     workbook = Workbook()
