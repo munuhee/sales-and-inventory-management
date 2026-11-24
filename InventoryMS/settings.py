@@ -5,6 +5,7 @@ All environment specific values are read from environment variables (a local
 .env file is loaded automatically in development). See .env.example.
 """
 import os
+import sys
 from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
@@ -31,6 +32,11 @@ def env_list(name, default=''):
 # Core security
 # ---------------------------------------------------------------------------
 DEBUG = env_bool('DEBUG', default=False)
+
+# True while running "manage.py test". Tests talk plain HTTP to an
+# un-collected static tree, so the HTTPS redirect and the manifest static
+# storage are switched off for them (see below), whatever DEBUG is.
+TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
 if not SECRET_KEY:
@@ -196,7 +202,7 @@ STORAGES = {
     'staticfiles': {
         'BACKEND': (
             'django.contrib.staticfiles.storage.StaticFilesStorage'
-            if DEBUG else
+            if DEBUG or TESTING else
             'whitenoise.storage.CompressedManifestStaticFilesStorage'
         ),
     },
@@ -239,7 +245,7 @@ LOYALTY = {
 # ---------------------------------------------------------------------------
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    SECURE_SSL_REDIRECT = env_bool('SECURE_SSL_REDIRECT', default=True)
+    SECURE_SSL_REDIRECT = env_bool('SECURE_SSL_REDIRECT', default=not TESTING)
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = int(os.environ.get('SECURE_HSTS_SECONDS', '3600'))
