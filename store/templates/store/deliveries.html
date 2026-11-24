@@ -4,7 +4,7 @@
 <div class="page-header">
   <div><h1>Deliveries</h1></div>
   <div class="page-actions">
-    {% if can_manage %}<a class="btn btn-light" href="{% querystring _export='xlsx' page=None %}"><i class="fa-solid fa-file-excel me-1"></i> Export</a>{% endif %}
+    {% if can_manage %}<a class="btn btn-export" href="{% querystring _export='xlsx' page=None %}" title="Download deliveries as an Excel workbook"><span class="export-icon"><i class="fa-solid fa-file-excel"></i></span><span>Export</span><span class="export-format">XLSX</span></a>{% endif %}
     <a class="btn btn-primary" href="{% url 'delivery-create' %}"><i class="fa-solid fa-plus me-1"></i> Schedule delivery</a>
   </div>
 </div>

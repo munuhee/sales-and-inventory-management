@@ -1,7 +1,8 @@
 {% extends "store/form_page.html" %}
 {% block title %}Edit staff{% endblock %}
-{% block heading %}Edit {{ object.user.username }}{% endblock %}
-{% block subheading %}<p class="sub">Set status to Active to let this person sign in. Inactive or On leave signs them out immediately.</p>{% endblock %}
+{% block eyebrow %}Staff management · Access settings{% endblock %}
+{% block heading %}{{ object.display_name }}{% endblock %}
+{% block subheading %}<p class="sub">Change this staff member’s role, employment status, or sign-in access. Role and access changes apply immediately.</p>{% endblock %}
 {% block submit_label %}Save changes{% endblock %}
 {% block cancel_url %}{% url 'profile_list' %}{% endblock %}
 {% block cancel_url2 %}{% url 'profile_list' %}{% endblock %}

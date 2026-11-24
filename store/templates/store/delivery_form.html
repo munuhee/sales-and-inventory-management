@@ -1,5 +1,12 @@
 {% extends "store/form_page.html" %}
+{% load crispy_forms_tags %}
 {% block title %}{% if object %}Edit delivery{% else %}Schedule delivery{% endif %}{% endblock %}
 {% block heading %}{% if object %}Edit delivery{% else %}Schedule delivery{% endif %}{% endblock %}
+{% block eyebrow %}Operations · Delivery{% endblock %}
+{% block subheading %}<p class="sub">Set a delivery date and add customer contact details.</p>{% endblock %}
 {% block cancel_url %}{% url 'deliveries' %}{% endblock %}
 {% block cancel_url2 %}{% url 'deliveries' %}{% endblock %}
+{% block form_body %}
+  {% if not form.has_items %}<div class="field-guidance field-guidance-warn mb-3"><i class="fa-solid fa-circle-info"></i><span>There are no products to attach yet. You can schedule without one{% if can_manage %}, or <a href="{% url 'product-create' %}">add a product</a>{% else %}, or ask a manager to add one{% endif %}.</span></div>{% endif %}
+  {{ form|crispy }}
+{% endblock %}

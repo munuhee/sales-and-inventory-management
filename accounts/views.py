@@ -4,6 +4,7 @@ from django.contrib.auth import views as auth_views
 from django.contrib.auth.models import User
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import PermissionDenied, ValidationError
+from django.db import transaction
 from django.db.models import Q
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -16,10 +17,13 @@ from .forms import (
     CreateUserForm, CustomerForm, LoginForm, LoyaltyAdjustmentForm,
     ProfileUpdateForm, StaffCreateForm, StaffUpdateForm, UserUpdateForm, VendorForm,
 )
-from .models import Customer, Profile, Vendor
+from .models import (
+    Customer, Profile, StaffAuditLog, Vendor, STATUS_CHOICES, ROLE_CHOICES,
+)
 from .permissions import (
-    AdminRequiredMixin, ManagerRequiredMixin, RoleRequiredMixin,
-    is_manager, role_required, EXECUTIVE, OPERATIVE,
+    ManagerRequiredMixin, RoleRequiredMixin, StaffCreateRequiredMixin,
+    StaffDeleteRequiredMixin, StaffUpdateRequiredMixin, StaffViewRequiredMixin,
+    capability_required, is_manager, role_required, EXECUTIVE, OPERATIVE,
 )
 
 
@@ -49,7 +53,18 @@ def register(request):
     if request.method == 'POST':
         form = CreateUserForm(request.POST)
         if form.is_valid():
-            form.save()
+            user = form.save()
+            user.profile.status = 'PEN'
+            user.profile.save(update_fields=['status'])
+            StaffAuditLog.objects.create(
+                actor_username='Self sign-up',
+                target_user=user,
+                target_username=user.get_username(),
+                action=StaffAuditLog.CREATED,
+                new_role=user.profile.role,
+                new_status=user.profile.status,
+                new_login_enabled=False,
+            )
             messages.success(
                 request,
                 'Account created. An administrator needs to approve it before you can sign in.'
@@ -71,8 +86,10 @@ def profile_update(request):
         u_form = UserUpdateForm(request.POST, instance=request.user)
         p_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
         if u_form.is_valid() and p_form.is_valid():
-            u_form.save()
-            p_form.save()
+            user = u_form.save()
+            profile = p_form.save()
+            user.email = profile.email or ''
+            user.save(update_fields=['email'])
             messages.success(request, 'Profile updated.')
             return redirect('user-profile')
     else:
@@ -84,7 +101,7 @@ def profile_update(request):
 # ---------------------------------------------------------------------------
 # Staff (admins only)
 # ---------------------------------------------------------------------------
-class ProfileListView(AdminRequiredMixin, SearchMixin, ListView):
+class ProfileListView(StaffViewRequiredMixin, SearchMixin, ListView):
     model = Profile
     template_name = 'accounts/stafflist.html'
     context_object_name = 'profiles'
@@ -93,49 +110,154 @@ class ProfileListView(AdminRequiredMixin, SearchMixin, ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset().select_related('user')
+        status = self.request.GET.get('status', '').strip()
+        role = self.request.GET.get('role', '').strip()
         if self.request.GET.get('pending') == '1':
-            queryset = queryset.filter(status='INA')
+            status = 'PEN'
+        if status == 'BLOCKED':
+            queryset = queryset.filter(
+                Q(status__in=['INA', 'OL']) | Q(user__is_active=False)
+            )
+        elif status == 'DISABLED':
+            queryset = queryset.filter(user__is_active=False)
+        elif status in {'PEN', 'A', 'INA', 'OL'}:
+            queryset = queryset.filter(status=status)
+        if role in {'OP', 'EX', 'AD'}:
+            queryset = queryset.filter(role=role)
         return queryset.order_by('status', 'user__username')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['pending_count'] = Profile.objects.filter(status='INA').count()
+        context['pending_count'] = Profile.objects.filter(status='PEN').count()
+        context['active_count'] = Profile.objects.filter(
+            status='A', user__is_active=True
+        ).count()
+        context['inactive_count'] = Profile.objects.filter(
+            Q(status__in=['INA', 'OL']) | Q(user__is_active=False)
+        ).distinct().count()
+        context['staff_count'] = Profile.objects.count()
+        context['audit_events'] = StaffAuditLog.objects.select_related('actor')[:8]
+        context['selected_status'] = self.request.GET.get('status', '')
+        context['selected_role'] = self.request.GET.get('role', '')
+        context['status_options'] = list(STATUS_CHOICES) + [
+            ('DISABLED', 'Login disabled'),
+            ('BLOCKED', 'Inactive or on leave')
+        ]
+        context['role_options'] = ROLE_CHOICES
         return context
 
 
-class ProfileCreateView(AdminRequiredMixin, SuccessMessageMixin, CreateView):
+class ProfileCreateView(StaffCreateRequiredMixin, SuccessMessageMixin, CreateView):
     form_class = StaffCreateForm
     template_name = 'accounts/staffcreate.html'
     success_url = reverse_lazy('profile_list')
     success_message = 'Staff account %(username)s created.'
-
-
-class ProfileUpdateView(AdminRequiredMixin, SuccessMessageMixin, UpdateView):
-    model = Profile
-    form_class = StaffUpdateForm
-    template_name = 'accounts/staffupdate.html'
-    success_url = reverse_lazy('profile_list')
-    success_message = 'Staff member updated.'
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['acting_user'] = self.request.user
         return kwargs
 
+    @transaction.atomic
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        profile = self.object.profile
+        StaffAuditLog.objects.create(
+            actor=self.request.user,
+            actor_username=self.request.user.get_username(),
+            target_user=self.object,
+            target_username=self.object.get_username(),
+            action=StaffAuditLog.CREATED,
+            new_role=profile.role,
+            new_status=profile.status,
+            new_login_enabled=self.object.is_active and profile.status == 'A',
+        )
+        return response
 
-@role_required('AD')
+
+class ProfileUpdateView(StaffUpdateRequiredMixin, SuccessMessageMixin, UpdateView):
+    model = Profile
+    form_class = StaffUpdateForm
+    template_name = 'accounts/staffupdate.html'
+    success_url = reverse_lazy('profile_list')
+    success_message = 'Staff member updated.'
+
+    def get_object(self, queryset=None):
+        target = super().get_object(queryset)
+        if not self.request.user.is_superuser and (
+            target.user.is_superuser or target.role == 'AD'
+        ):
+            raise PermissionDenied('Only a superuser can modify an Admin account.')
+        return target
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['acting_user'] = self.request.user
+        return kwargs
+
+    @transaction.atomic
+    def form_valid(self, form):
+        old_role = self.object.role
+        old_status = self.object.status
+        old_login_enabled = self.object.user.is_active and old_status == 'A'
+        response = super().form_valid(form)
+        new_login_enabled = self.object.user.is_active and self.object.status == 'A'
+        if (old_role, old_status, old_login_enabled) != (
+            self.object.role, self.object.status, new_login_enabled
+        ):
+            StaffAuditLog.objects.create(
+                actor=self.request.user,
+                actor_username=self.request.user.get_username(),
+                target_user=self.object.user,
+                target_username=self.object.user.get_username(),
+                action=StaffAuditLog.UPDATED,
+                previous_role=old_role,
+                new_role=self.object.role,
+                previous_status=old_status,
+                new_status=self.object.status,
+                previous_login_enabled=old_login_enabled,
+                new_login_enabled=new_login_enabled,
+            )
+        return response
+
+
+@capability_required('staff.approve')
 def profile_approve(request, pk):
     """One click approval for a pending sign-up."""
     if request.method != 'POST':
         raise Http404
     target = get_object_or_404(Profile.objects.select_related('user'), pk=pk)
-    target.status = 'A'
-    target.save(update_fields=['status'])
+    if target.status != 'PEN':
+        messages.info(request, 'This account is no longer waiting for approval.')
+        return redirect('profile_list')
+    if target.role == 'AD' and not request.user.is_superuser:
+        raise PermissionDenied('Only a superuser can approve an Admin account.')
+    was_login_enabled = target.user.is_active and target.status == 'A'
+    with transaction.atomic():
+        updated = Profile.objects.filter(pk=target.pk, status='PEN').update(status='A')
+        if not updated:
+            messages.info(request, 'This account is no longer waiting for approval.')
+            return redirect('profile_list')
+        target.user.is_active = True
+        target.user.save(update_fields=['is_active'])
+        StaffAuditLog.objects.create(
+            actor=request.user,
+            actor_username=request.user.get_username(),
+            target_user=target.user,
+            target_username=target.user.get_username(),
+            action=StaffAuditLog.APPROVED,
+            previous_role=target.role,
+            new_role=target.role,
+            previous_status=target.status,
+            new_status='A',
+            previous_login_enabled=was_login_enabled,
+            new_login_enabled=True,
+        )
     messages.success(request, f'{target.user.username} can now sign in as {target.get_role_display()}.')
     return redirect('profile_list')
 
 
-class ProfileDeleteView(AdminRequiredMixin, DeleteView):
+class ProfileDeleteView(StaffDeleteRequiredMixin, DeleteView):
     """Deletes the staff member's user account (and its profile)."""
 
     model = Profile
@@ -146,12 +268,26 @@ class ProfileDeleteView(AdminRequiredMixin, DeleteView):
         target = super().get_object(queryset)
         if target.user_id == self.request.user.pk:
             raise PermissionDenied('You cannot delete your own account.')
-        if target.user.is_superuser and not self.request.user.is_superuser:
-            raise PermissionDenied('Only a superuser can delete a superuser.')
+        if not self.request.user.is_superuser and (
+            target.user.is_superuser or target.role == 'AD'
+        ):
+            raise PermissionDenied('Only a superuser can delete an Admin account.')
         return target
 
+    @transaction.atomic
     def form_valid(self, form):
-        username = self.object.user.username
+        target = self.object.user
+        username = target.username
+        StaffAuditLog.objects.create(
+            actor=self.request.user,
+            actor_username=self.request.user.get_username(),
+            target_user=target,
+            target_username=username,
+            action=StaffAuditLog.DELETED,
+            previous_role=self.object.role,
+            previous_status=self.object.status,
+            previous_login_enabled=target.is_active and self.object.status == 'A',
+        )
         User.objects.filter(pk=self.object.user_id).delete()
         messages.success(self.request, f'Staff account {username} deleted.')
         return redirect(self.success_url)

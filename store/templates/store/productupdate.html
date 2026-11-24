@@ -1,6 +1,9 @@
 {% extends "store/form_page.html" %}
 {% block title %}Edit product{% endblock %}
+{% block eyebrow %}Inventory · Edit product{% endblock %}
 {% block heading %}Edit {{ object.name }}{% endblock %}
+{% block subheading %}<p class="sub">Update product details and stock information.</p>{% endblock %}
 {% block submit_label %}Save changes{% endblock %}
 {% block cancel_url %}{% url 'productslist' %}{% endblock %}
 {% block cancel_url2 %}{% url 'productslist' %}{% endblock %}
+{% block form_body %}{% include "store/partials/product_form_fields.html" %}{% endblock %}

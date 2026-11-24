@@ -1,0 +1,19 @@
+{% load crispy_forms_tags %}
+{% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+<div class="form-grid">
+  <div class="form-field form-field-wide">{{ form.name|as_crispy_field }}</div>
+  <div class="form-field form-field-wide">{{ form.description|as_crispy_field }}</div>
+  <div class="form-field">
+    {{ form.category|as_crispy_field }}
+    {% if not form.has_categories %}<div class="field-guidance field-guidance-warn"><i class="fa-solid fa-circle-info"></i><span>No categories yet. Create one in another tab, then refresh this form.</span></div>{% endif %}
+    <a class="field-action" href="{% url 'category-create' %}" target="_blank" rel="noopener"><i class="fa-solid fa-plus"></i> Create category</a>
+  </div>
+  <div class="form-field">
+    {{ form.vendor|as_crispy_field }}
+      {% if not form.has_vendors %}<div class="field-guidance">No vendors yet. This field is optional; add one in another tab if needed.</div>{% endif %}
+      <a class="field-action" href="{% url 'vendor-create' %}" target="_blank" rel="noopener"><i class="fa-solid fa-plus"></i> Add vendor</a>
+  </div>
+  <div class="form-field">{{ form.quantity|as_crispy_field }}</div>
+  <div class="form-field">{{ form.price|as_crispy_field }}</div>
+  <div class="form-field form-field-wide">{{ form.expiring_date|as_crispy_field }}</div>
+</div>

@@ -1,49 +1,92 @@
 {% extends "store/base.html" %}
-{% block title %}Staff{% endblock %}
+{% block title %}Staff management{% endblock %}
 {% block content %}
-<div class="page-header">
-  <div><h1>Staff</h1><p class="sub">Operatives sell, Executives manage stock and finance, Admins also manage staff.</p></div>
-  <div class="page-actions"><a class="btn btn-primary" href="{% url 'profile-create' %}"><i class="fa-solid fa-plus me-1"></i> Add staff</a></div>
+<div class="page-header staff-page-heading">
+  <div><div class="eyebrow">Access control</div><h1>Staff management</h1><p class="sub">Manage staff accounts, roles, and sign-in access.</p></div>
+  <div class="page-actions"><a class="btn btn-primary" href="{% url 'profile-create' %}"><i class="fa-solid fa-user-plus me-2"></i>Add staff</a></div>
 </div>
+
+<div class="row g-3 staff-metrics">
+  <div class="col-6 col-xl-3"><a class="staff-metric" href="{% url 'profile_list' %}"><span class="staff-metric-icon"><i class="fa-solid fa-users"></i></span><span><small>Total staff</small><strong>{{ staff_count }}</strong></span></a></div>
+  <div class="col-6 col-xl-3"><a class="staff-metric staff-metric-active" href="?status=A"><span class="staff-metric-icon"><i class="fa-solid fa-user-check"></i></span><span><small>Active</small><strong>{{ active_count }}</strong></span></a></div>
+  <div class="col-6 col-xl-3"><a class="staff-metric staff-metric-pending" href="?status=PEN"><span class="staff-metric-icon"><i class="fa-solid fa-user-clock"></i></span><span><small>Needs approval</small><strong>{{ pending_count }}</strong></span></a></div>
+  <div class="col-6 col-xl-3"><a class="staff-metric staff-metric-paused" href="?status=BLOCKED"><span class="staff-metric-icon"><i class="fa-solid fa-user-lock"></i></span><span><small>Inactive or on leave</small><strong>{{ inactive_count }}</strong></span></a></div>
+</div>
+
 {% if pending_count %}
-<div class="alert alert-warning py-2 d-flex justify-content-between align-items-center">
-  <span>{{ pending_count }} account{{ pending_count|pluralize }} waiting for approval.</span>
-  <a href="?pending=1" class="alert-link">Show</a>
-</div>
+<div class="staff-approval-callout"><span class="staff-callout-icon"><i class="fa-solid fa-circle-exclamation"></i></span><div><strong>{{ pending_count }} account{{ pending_count|pluralize }} need{{ pending_count|pluralize:"s," }} your review</strong><p>Approve requests to let staff sign in, or edit their access first.</p></div><a class="btn btn-sm btn-outline-primary" href="?status=PEN">Review requests <i class="fa-solid fa-arrow-right ms-1"></i></a></div>
 {% endif %}
-<div class="card table-card">
-  <div class="toolbar">{% include "partials/search.html" with placeholder="Search username, name, email" %}</div>
+
+<section class="card staff-directory">
+  <div class="staff-directory-top">
+    <div><h2>Team directory</h2><p>Search staff and filter by access or account state.</p></div>
+    <form class="staff-filters" method="get">
+      <label class="staff-search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" name="q" value="{{ q }}" placeholder="Name, username, or email" aria-label="Search staff"></label>
+      <select class="form-select" name="role" aria-label="Filter by role">
+        <option value="">All roles</option>
+        {% for value, label in role_options %}<option value="{{ value }}" {% if selected_role == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+      <select class="form-select" name="status" aria-label="Filter by access status">
+        <option value="">All account states</option>
+        {% for value, label in status_options %}<option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+      <button class="btn btn-light" type="submit">Filter</button>
+      {% if q or selected_role or selected_status %}<a class="staff-filter-clear" href="{% url 'profile_list' %}">Clear</a>{% endif %}
+    </form>
+  </div>
   {% if profiles %}
   <div class="table-responsive">
-  <table class="table table-hover align-middle">
-    <thead><tr><th>Name</th><th>Username</th><th>Email</th><th>Role</th><th>Status</th><th></th></tr></thead>
-    <tbody>
+    <table class="table table-hover align-middle staff-table">
+      <thead><tr><th>Staff member</th><th>Username</th><th>Email</th><th>Role</th><th>Account state</th><th>Last sign-in</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
+      <tbody>
       {% for profile in profiles %}
-      <tr>
-        <td><div class="d-flex align-items-center gap-2">{% include "partials/avatar.html" with profile=profile %}<span>{{ profile.display_name }}</span></div></td>
-        <td>{{ profile.user.username }}</td>
-        <td>{{ profile.email|default:profile.user.email|default:"" }}</td>
-        <td>{% if profile.user.is_superuser %}Admin (superuser){% else %}{{ profile.get_role_display }}{% endif %}</td>
-        <td>
-          {% if profile.status == 'A' %}<span class="status ok">Active</span>
-          {% elif profile.status == 'INA' %}<span class="status warn">Pending approval</span>
-          {% else %}<span class="status">{{ profile.get_status_display }}</span>{% endif %}
-        </td>
-        <td class="row-actions">
-          {% if profile.status == 'INA' %}
-          <form method="post" action="{% url 'profile-approve' profile.pk %}" class="d-inline">{% csrf_token %}<button type="submit" title="Approve"><i class="fa-solid fa-check"></i></button></form>
-          {% endif %}
-          <a href="{% url 'profile-update' profile.pk %}" title="Edit"><i class="fa-solid fa-pen"></i></a>
-          {% if profile.user_id != request.user.pk %}<a class="danger" href="{% url 'profile-delete' profile.pk %}" title="Delete"><i class="fa-solid fa-trash"></i></a>{% endif %}
-        </td>
-      </tr>
+        <tr>
+          <td><div class="staff-person">{% include "partials/avatar.html" with profile=profile %}<div><strong>{{ profile.display_name }}</strong>{% if profile.user.is_superuser %}<small>Protected superuser</small>{% endif %}</div></div></td>
+          <td class="staff-username">{{ profile.user.username }}</td>
+          <td>{{ profile.email|default:profile.user.email|default:"—" }}</td>
+          <td>{% if profile.user.is_superuser %}<span class="staff-role-badge role-root"><i class="fa-solid fa-shield-halved"></i>Superuser</span>{% else %}<span class="staff-role-badge role-{{ profile.role|lower }}">{{ profile.get_role_display }}</span>{% endif %}</td>
+          <td>
+            {% if not profile.user.is_active %}<span class="staff-state state-inactive"><span></span>Login disabled</span>
+            {% elif profile.status == 'PEN' %}<span class="staff-state state-pending"><span></span>Pending approval</span>
+            {% elif profile.status == 'A' %}<span class="staff-state state-active"><span></span>Active</span>
+            {% elif profile.status == 'OL' %}<span class="staff-state state-away"><span></span>On leave</span>
+            {% else %}<span class="staff-state state-inactive"><span></span>Inactive</span>{% endif %}
+          </td>
+          <td class="staff-last-login">{% if profile.user.last_login %}{{ profile.user.last_login|date:"j M Y" }}{% else %}<span>Never</span>{% endif %}</td>
+          <td class="staff-actions">
+            {% if profile.status == 'PEN' %}<form method="post" action="{% url 'profile-approve' profile.pk %}">{% csrf_token %}<button class="btn btn-sm btn-approve" type="submit" title="Approve account">Approve</button></form>{% endif %}
+            {% if request.user.is_superuser or not profile.user.is_superuser and profile.role != 'AD' %}<a class="staff-icon-action" href="{% url 'profile-update' profile.pk %}" title="Edit access for {{ profile.display_name }}" aria-label="Edit access for {{ profile.display_name }}"><i class="fa-solid fa-pen"></i></a>{% endif %}
+            {% if profile.user_id != request.user.pk %}{% if request.user.is_superuser or not profile.user.is_superuser and profile.role != 'AD' %}<a class="staff-icon-action staff-delete-action" href="{% url 'profile-delete' profile.pk %}" title="Remove {{ profile.display_name }}" aria-label="Remove {{ profile.display_name }}"><i class="fa-regular fa-trash-can"></i></a>{% endif %}{% endif %}
+          </td>
+        </tr>
       {% endfor %}
-    </tbody>
-  </table>
+      </tbody>
+    </table>
   </div>
   {% include "partials/pagination.html" %}
   {% else %}
-    {% include "partials/empty.html" with icon="fa-id-badge" text="No staff accounts." %}
+    {% include "partials/empty.html" with icon="fa-user-group" text="No staff match these filters." %}
   {% endif %}
-</div>
+</section>
+
+<section class="card staff-audit-card">
+  <div class="card-header staff-audit-heading"><span class="staff-audit-icon"><i class="fa-solid fa-clock-rotate-left"></i></span><div><h2>Recent access activity</h2><p>Changes to staff roles and account access</p></div></div>
+  {% if audit_events %}
+  <div class="table-responsive"><table class="table align-middle staff-audit-table"><thead><tr><th>Change</th><th>Staff member</th><th>Performed by</th><th>Access change</th><th>Date</th></tr></thead><tbody>
+    {% for event in audit_events %}<tr>
+      <td><span class="audit-action audit-{{ event.action|lower }}">{{ event.get_action_display }}</span></td>
+      <td>{{ event.target_username }}</td>
+      <td>{{ event.actor_username }}</td>
+      <td>{% if event.previous_role or event.new_role %}{% if event.previous_role %}{{ event.get_previous_role_display }}{% else %}—{% endif %} → {{ event.get_new_role_display }}{% endif %}{% if event.previous_status or event.new_status %}<small class="audit-status-change">{% if event.previous_status %}{{ event.get_previous_status_display }}{% else %}—{% endif %} → {{ event.get_new_status_display }}</small>{% endif %}{% if event.action == 'CREATED' %}<small class="audit-status-change">Sign-in: {% if event.new_login_enabled %}Enabled{% else %}Disabled{% endif %}</small>{% elif event.previous_login_enabled != event.new_login_enabled and event.action != 'DELETED' %}<small class="audit-status-change">Sign-in: {% if event.previous_login_enabled %}Enabled{% else %}Disabled{% endif %} → {% if event.new_login_enabled %}Enabled{% else %}Disabled{% endif %}</small>{% endif %}</td>
+      <td>{{ event.created_at|date:"j M Y, H:i" }}</td>
+    </tr>{% endfor %}
+  </tbody></table></div>
+  {% else %}<div class="staff-audit-empty"><i class="fa-regular fa-circle-check"></i> Staff access changes will appear here.</div>{% endif %}
+</section>
+
+<section class="staff-roles-card">
+  <div><span class="staff-role-badge role-op">Operative</span><p>Point of sale, customers, deliveries, and day-to-day lookup.</p></div>
+  <div><span class="staff-role-badge role-ex">Executive</span><p>Everything in Operative, plus inventory, purchasing, vendors, and finance.</p></div>
+  <div><span class="staff-role-badge role-ad">Admin</span><p>Everything in Executive, plus staff access and account approvals.</p></div>
+</section>
 {% endblock content %}

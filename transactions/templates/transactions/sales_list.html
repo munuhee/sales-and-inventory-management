@@ -5,7 +5,7 @@
 <div class="page-header">
   <div><h1>Sales</h1><p class="sub">{{ paginator.count }} sale{{ paginator.count|pluralize }}</p></div>
   <div class="page-actions">
-    {% if can_manage %}<a class="btn btn-light" href="{% url 'sales-export' %}"><i class="fa-solid fa-file-excel me-1"></i> Export</a>{% endif %}
+    {% if can_manage %}<a class="btn btn-export" href="{% url 'sales-export' %}" title="Download sales as an Excel workbook"><span class="export-icon"><i class="fa-solid fa-file-excel"></i></span><span>Export</span><span class="export-format">XLSX</span></a>{% endif %}
     <a class="btn btn-primary" href="{% url 'sale-create' %}"><i class="fa-solid fa-plus me-1"></i> New sale</a>
   </div>
 </div>

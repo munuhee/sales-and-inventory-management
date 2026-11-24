@@ -2,17 +2,40 @@
 {% load crispy_forms_tags %}
 {% block title %}Edit profile{% endblock %}
 {% block content %}
-<a class="back-link" href="{% url 'user-profile' %}"><i class="fa-solid fa-arrow-left"></i> Profile</a>
-<div class="page-header"><div><h1>Edit profile</h1></div></div>
-<div class="card form-narrow"><div class="card-body">
-  <form method="post" enctype="multipart/form-data" novalidate>
-    {% csrf_token %}
-    {{ u_form|crispy }}
-    {{ p_form|crispy }}
-    <div class="d-flex gap-2 mt-3">
-      <button type="submit" class="btn btn-primary">Save changes</button>
-      <a class="btn btn-light" href="{% url 'user-profile' %}">Cancel</a>
-    </div>
-  </form>
-</div></div>
+<div class="profile-edit-page">
+  <a class="back-link" href="{% url 'user-profile' %}"><i class="fa-solid fa-arrow-left"></i> My profile</a>
+  <div class="page-header profile-edit-heading">
+    <div><div class="eyebrow">Account settings</div><h1>Edit your profile</h1><p class="sub">Keep your personal and contact details up to date.</p></div>
+  </div>
+  <section class="card profile-edit-card">
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      {% if u_form.non_field_errors %}<div class="alert alert-danger m-4 mb-0">{{ u_form.non_field_errors }}</div>{% endif %}
+      {% if p_form.non_field_errors %}<div class="alert alert-danger m-4 mb-0">{{ p_form.non_field_errors }}</div>{% endif %}
+      <div class="profile-edit-section">
+        <div class="profile-edit-section-heading"><span class="profile-card-icon"><i class="fa-regular fa-user"></i></span><div><h2>Personal details</h2><p>Your name and account username</p></div></div>
+        <div class="profile-edit-fields profile-edit-fields-two">
+          {{ p_form.first_name|as_crispy_field }}
+          {{ p_form.last_name|as_crispy_field }}
+          <div class="profile-edit-field-wide">{{ u_form.username|as_crispy_field }}</div>
+        </div>
+      </div>
+      <div class="profile-edit-section">
+        <div class="profile-edit-section-heading"><span class="profile-card-icon profile-card-icon-blue"><i class="fa-regular fa-address-card"></i></span><div><h2>Contact information</h2><p>Used for account and team communication</p></div></div>
+        <div class="profile-edit-fields profile-edit-fields-two">
+          {{ p_form.email|as_crispy_field }}
+          {{ p_form.telephone|as_crispy_field }}
+        </div>
+      </div>
+      <div class="profile-edit-section profile-photo-section">
+        <div class="profile-edit-section-heading"><span class="profile-card-icon profile-card-icon-amber"><i class="fa-regular fa-image"></i></span><div><h2>Profile photo</h2><p>Choose a clear square image, up to 2 MB</p></div></div>
+        {{ p_form.profile_picture|as_crispy_field }}
+      </div>
+      <div class="profile-edit-actions">
+        <a class="btn btn-light" href="{% url 'user-profile' %}">Cancel</a>
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check me-2"></i>Save changes</button>
+      </div>
+    </form>
+  </section>
+</div>
 {% endblock content %}

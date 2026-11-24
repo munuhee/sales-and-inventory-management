@@ -23,7 +23,7 @@ class RegistrationAndLoginTests(TestCase):
         })
         self.assertRedirects(response, reverse('user-login'))
         user = User.objects.get(username='newbie')
-        self.assertEqual(user.profile.status, 'INA')
+        self.assertEqual(user.profile.status, 'PEN')
 
         response = self.login('newbie')
         self.assertEqual(response.status_code, 200)
@@ -32,7 +32,7 @@ class RegistrationAndLoginTests(TestCase):
 
     def test_admin_approves_signup(self):
         make_user('admin', superuser=True)
-        pending = make_user('pending', status='INA')
+        pending = make_user('pending', status='PEN')
         self.client.login(username='admin', password=PASSWORD)
         self.client.post(reverse('profile-approve', args=[pending.profile.pk]))
         self.client.logout()
@@ -161,8 +161,8 @@ class StaffManagementTests(TestCase):
             'first_name': '', 'last_name': '', 'telephone': '', 'email': '',
             'role': 'OP', 'status': 'A',
         })
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'cannot remove your own admin role')
+        # Only a superuser may change an Admin account, including your own.
+        self.assertEqual(response.status_code, 403)
         self.admin.profile.refresh_from_db()
         self.assertEqual(self.admin.profile.role, 'AD')
 

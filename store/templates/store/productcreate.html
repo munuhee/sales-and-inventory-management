@@ -1,6 +1,9 @@
 {% extends "store/form_page.html" %}
 {% block title %}Add product{% endblock %}
+{% block eyebrow %}Inventory · New product{% endblock %}
 {% block heading %}Add product{% endblock %}
 {% block submit_label %}Add product{% endblock %}
 {% block cancel_url %}{% url 'productslist' %}{% endblock %}
 {% block cancel_url2 %}{% url 'productslist' %}{% endblock %}
+{% block subheading %}<p class="sub">Add the details your team needs to identify and track this item.</p>{% endblock %}
+{% block form_body %}{% include "store/partials/product_form_fields.html" %}{% endblock %}

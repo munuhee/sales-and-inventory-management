@@ -1,6 +1,12 @@
 {% extends "store/form_page.html" %}
+{% load crispy_forms_tags %}
 {% block title %}{% if object %}Edit purchase order{% else %}New purchase order{% endif %}{% endblock %}
+{% block eyebrow %}Inventory · Purchasing{% endblock %}
 {% block heading %}{% if object %}Edit purchase order{% else %}New purchase order{% endif %}{% endblock %}
 {% block subheading %}<p class="sub">Stock goes up when the delivery status is Successful. Changing a received order adjusts stock by the difference.</p>{% endblock %}
 {% block cancel_url %}{% url 'purchaseslist' %}{% endblock %}
 {% block cancel_url2 %}{% url 'purchaseslist' %}{% endblock %}
+{% block form_body %}
+  {% if not form.has_items or not form.has_vendors %}<div class="field-guidance field-guidance-warn mb-3"><i class="fa-solid fa-circle-info"></i><span>{% if not form.has_items %}Add a <a href="{% url 'product-create' %}">product</a>{% endif %}{% if not form.has_items and not form.has_vendors %} and {% endif %}{% if not form.has_vendors %}a <a href="{% url 'vendor-create' %}">vendor</a>{% endif %} before creating a purchase order.</span></div>{% endif %}
+  {{ form|crispy }}
+{% endblock %}

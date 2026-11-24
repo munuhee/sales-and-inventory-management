@@ -86,7 +86,7 @@ class Command(BaseCommand):
             manager = self._user('manager', 'Joyce', 'Njeri', 'EX')
             cashier = self._user('cashier', 'Mary', 'Wanjiku', 'OP')
             pending = self._user('kevin', 'Kevin', 'Omondi', 'OP')
-            pending.profile.status = 'INA'
+            pending.profile.status = 'PEN'
             pending.profile.save()
 
             vendors = [Vendor.objects.create(name=n, phone_number=p, address=a) for n, p, a in VENDORS]

@@ -11,8 +11,9 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 # Profile status and roles. Only Active profiles may sign in.
 STATUS_CHOICES = [
-    ('INA', 'Inactive'),
+    ('PEN', 'Pending approval'),
     ('A', 'Active'),
+    ('INA', 'Inactive'),
     ('OL', 'On leave')
 ]
 
@@ -107,6 +108,45 @@ class Profile(models.Model):
         ordering = ['slug']
         verbose_name = 'Profile'
         verbose_name_plural = 'Profiles'
+
+
+class StaffAuditLog(models.Model):
+    """Immutable record of staff account and access-control changes."""
+
+    CREATED = 'CREATED'
+    UPDATED = 'UPDATED'
+    APPROVED = 'APPROVED'
+    DELETED = 'DELETED'
+    ACTION_CHOICES = [
+        (CREATED, 'Account created'),
+        (UPDATED, 'Access updated'),
+        (APPROVED, 'Account approved'),
+        (DELETED, 'Account deleted'),
+    ]
+
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='staff_audit_actions',
+    )
+    actor_username = models.CharField(max_length=150)
+    target_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='staff_audit_events',
+    )
+    target_username = models.CharField(max_length=150)
+    action = models.CharField(max_length=12, choices=ACTION_CHOICES)
+    previous_role = models.CharField(max_length=12, blank=True, choices=ROLE_CHOICES)
+    new_role = models.CharField(max_length=12, blank=True, choices=ROLE_CHOICES)
+    previous_status = models.CharField(max_length=12, blank=True, choices=STATUS_CHOICES)
+    new_status = models.CharField(max_length=12, blank=True, choices=STATUS_CHOICES)
+    previous_login_enabled = models.BooleanField(null=True, blank=True)
+    new_login_enabled = models.BooleanField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['-created_at', '-pk']
+        verbose_name = 'Staff audit event'
+        verbose_name_plural = 'Staff audit events'
 
 
 class Vendor(models.Model):

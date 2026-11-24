@@ -44,6 +44,17 @@ class ItemForm(forms.ModelForm):
             'vendor': forms.Select(attrs={'class': 'form-select'}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        category = self.fields['category']
+        vendor = self.fields['vendor']
+        category.empty_label = 'Choose a category'
+        vendor.empty_label = 'No vendor (optional)'
+        self.has_categories = category.queryset.exists()
+        self.has_vendors = vendor.queryset.exists()
+        category.help_text = 'Required to keep your inventory organized.'
+        vendor.help_text = 'Optional. Link this product to its supplier.'
+
 
 class CategoryForm(forms.ModelForm):
     """
@@ -95,3 +106,8 @@ class DeliveryForm(forms.ModelForm):
             }, format='%Y-%m-%dT%H:%M'),
             'is_delivered': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['item'].empty_label = 'Choose an item (optional)'
+        self.has_items = self.fields['item'].queryset.exists()

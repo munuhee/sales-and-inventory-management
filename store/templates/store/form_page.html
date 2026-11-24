@@ -1,23 +1,26 @@
 {% extends "store/base.html" %}
 {% load crispy_forms_tags %}
 {% block content %}
+<div class="form-page">
 <a class="back-link" href="{% block cancel_url %}{% url 'dashboard' %}{% endblock %}"><i class="fa-solid fa-arrow-left"></i> Back</a>
-<div class="page-header">
+<div class="page-header form-heading">
   <div>
+    <div class="eyebrow">{% block eyebrow %}Workspace{% endblock %}</div>
     <h1>{% block heading %}{% endblock %}</h1>
     {% block subheading %}{% endblock %}
   </div>
 </div>
-<div class="card form-narrow">
+<div class="card form-narrow form-card">
   <div class="card-body">
     <form method="post" enctype="multipart/form-data" novalidate>
       {% csrf_token %}
       {% block form_body %}{{ form|crispy }}{% endblock %}
-      <div class="d-flex gap-2 mt-3">
+      <div class="form-actions">
         <button type="submit" class="btn btn-primary">{% block submit_label %}Save{% endblock %}</button>
         <a class="btn btn-light" href="{% block cancel_url2 %}{% endblock %}">Cancel</a>
       </div>
     </form>
   </div>
+</div>
 </div>
 {% endblock content %}

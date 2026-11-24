@@ -1,7 +1,8 @@
 {% extends "store/form_page.html" %}
 {% block title %}Add staff{% endblock %}
+{% block eyebrow %}Staff management · New account{% endblock %}
 {% block heading %}Add staff member{% endblock %}
-{% block subheading %}<p class="sub">The account can sign in straight away with the role you choose.</p>{% endblock %}
+{% block subheading %}<p class="sub">Create a named staff account and grant only the access their job requires. Active accounts can sign in immediately.</p>{% endblock %}
 {% block submit_label %}Create account{% endblock %}
 {% block cancel_url %}{% url 'profile_list' %}{% endblock %}
 {% block cancel_url2 %}{% url 'profile_list' %}{% endblock %}

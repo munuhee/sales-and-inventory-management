@@ -14,7 +14,7 @@ from functools import wraps
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.views import redirect_to_login
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 
 OPERATIVE = 'OP'
 EXECUTIVE = 'EX'
@@ -22,11 +22,33 @@ ADMIN = 'AD'
 
 ROLE_LEVELS = {OPERATIVE: 1, EXECUTIVE: 2, ADMIN: 3}
 
+OPERATIVE_CAPABILITIES = frozenset({
+    'dashboard.view', 'sales.view', 'sales.create', 'customers.view',
+    'customers.create', 'customers.update', 'deliveries.view',
+    'deliveries.create', 'deliveries.update', 'inventory.view',
+    'categories.view', 'invoices.view', 'profile.self.view',
+    'profile.self.update',
+})
+EXECUTIVE_CAPABILITIES = OPERATIVE_CAPABILITIES | frozenset({
+    'inventory.manage', 'categories.manage', 'purchases.manage',
+    'vendors.manage', 'finance.manage', 'sales.void', 'exports.run',
+    'customers.delete', 'customers.loyalty.adjust', 'invoices.manage',
+})
+ADMIN_CAPABILITIES = EXECUTIVE_CAPABILITIES | frozenset({
+    'staff.view', 'staff.create', 'staff.update', 'staff.delete',
+    'staff.approve',
+})
+ROLE_CAPABILITIES = {
+    OPERATIVE: OPERATIVE_CAPABILITIES,
+    EXECUTIVE: EXECUTIVE_CAPABILITIES,
+    ADMIN: ADMIN_CAPABILITIES,
+}
+
 
 def get_profile(user):
     try:
         return user.profile
-    except Exception:  # RelatedObjectDoesNotExist
+    except ObjectDoesNotExist:
         return None
 
 
@@ -51,7 +73,19 @@ def role_level(user):
 
 
 def has_role(user, min_role):
-    return role_level(user) >= ROLE_LEVELS[min_role]
+    minimum = ROLE_LEVELS.get(min_role)
+    return minimum is not None and role_level(user) >= minimum
+
+
+def has_capability(user, capability):
+    """Check an explicit application capability; unknown capabilities fail closed."""
+    if not is_active_member(user):
+        return False
+    if user.is_superuser:
+        return True
+    profile = get_profile(user)
+    role = profile.role if profile and profile.role in ROLE_CAPABILITIES else OPERATIVE
+    return capability in ROLE_CAPABILITIES[role]
 
 
 def is_manager(user):
@@ -92,3 +126,40 @@ def role_required(min_role=OPERATIVE):
             return view_func(request, *args, **kwargs)
         return wrapper
     return decorator
+
+
+def capability_required(capability):
+    """Function view guard for an explicit application capability."""
+    def decorator(view_func):
+        @wraps(view_func)
+        def wrapper(request, *args, **kwargs):
+            if not request.user.is_authenticated:
+                return redirect_to_login(request.get_full_path())
+            if not has_capability(request.user, capability):
+                raise PermissionDenied
+            return view_func(request, *args, **kwargs)
+        return wrapper
+    return decorator
+
+
+class CapabilityRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
+    required_capability = ''
+
+    def test_func(self):
+        return has_capability(self.request.user, self.required_capability)
+
+
+class StaffViewRequiredMixin(CapabilityRequiredMixin):
+    required_capability = 'staff.view'
+
+
+class StaffCreateRequiredMixin(CapabilityRequiredMixin):
+    required_capability = 'staff.create'
+
+
+class StaffUpdateRequiredMixin(CapabilityRequiredMixin):
+    required_capability = 'staff.update'
+
+
+class StaffDeleteRequiredMixin(CapabilityRequiredMixin):
+    required_capability = 'staff.delete'

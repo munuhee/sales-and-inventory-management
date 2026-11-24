@@ -11,6 +11,11 @@ class BootstrapMixin(forms.ModelForm):
         for field in self.fields.values():
             css = 'form-select' if isinstance(field.widget, forms.Select) else 'form-control'
             field.widget.attrs.setdefault('class', css)
+        if 'item' in self.fields:
+            self.fields['item'].empty_label = 'Choose a product'
+            self.fields['vendor'].empty_label = 'Choose a vendor'
+            self.has_items = self.fields['item'].queryset.exists()
+            self.has_vendors = self.fields['vendor'].queryset.exists()
 
 
 class PurchaseForm(BootstrapMixin, forms.ModelForm):

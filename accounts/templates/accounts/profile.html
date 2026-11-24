@@ -1,23 +1,54 @@
 {% extends "store/base.html" %}
 {% block title %}My profile{% endblock %}
 {% block content %}
-<div class="page-header">
-  <div class="d-flex align-items-center gap-3">
-    {% include "partials/avatar.html" with profile=user.profile size="avatar-lg" %}
-    <div><h1>{{ user.profile.display_name }}</h1><p class="sub">{% if user.is_superuser %}Admin{% else %}{{ user.profile.get_role_display }}{% endif %}</p></div>
+<section class="profile-hero">
+  <div class="profile-hero-art" aria-hidden="true"><span></span><span></span><span></span></div>
+  <div class="profile-hero-content">
+    {% include "partials/avatar.html" with profile=user.profile size="avatar-lg profile-avatar" %}
+    <div class="profile-identity">
+      <div class="eyebrow">My account</div>
+      <h1>{{ user.profile.display_name }}</h1>
+      <p>{{ user.email|default:user.profile.email|default:"Add an email address to your profile" }}</p>
+      <div class="profile-badges">
+        <span class="profile-role"><i class="fa-solid fa-id-badge"></i>{% if user.is_superuser %}Admin{% else %}{{ user.profile.get_role_display }}{% endif %}</span>
+        {% if user.profile.status == "A" %}<span class="profile-status is-active"><span></span>Active</span>
+        {% elif user.profile.status == "OL" %}<span class="profile-status is-away"><span></span>On leave</span>
+        {% else %}<span class="profile-status is-inactive"><span></span>Inactive</span>{% endif %}
+      </div>
+    </div>
+    <div class="profile-hero-actions">
+      <a class="btn btn-light" href="{% url 'password-change' %}"><i class="fa-solid fa-lock me-2"></i>Change password</a>
+      <a class="btn btn-primary" href="{% url 'user-profile-update' %}"><i class="fa-solid fa-pen-to-square me-2"></i>Edit profile</a>
+    </div>
   </div>
-  <div class="page-actions">
-    <a class="btn btn-light" href="{% url 'password-change' %}"><i class="fa-solid fa-key me-1"></i> Change password</a>
-    <a class="btn btn-primary" href="{% url 'user-profile-update' %}"><i class="fa-solid fa-pen me-1"></i> Edit profile</a>
+</section>
+
+<div class="row g-3 profile-details-grid">
+  <div class="col-lg-7">
+    <section class="card profile-info-card h-100">
+      <div class="card-header profile-card-heading"><span class="profile-card-icon"><i class="fa-regular fa-address-card"></i></span><div><h2>Contact information</h2><p>How your team can reach you</p></div></div>
+      <div class="card-body">
+        <dl class="profile-detail-list">
+          <div><dt><i class="fa-regular fa-envelope"></i>Email address</dt><dd>{% firstof user.email user.profile.email "Not added" %}</dd></div>
+          <div><dt><i class="fa-solid fa-phone"></i>Telephone</dt><dd>{{ user.profile.telephone|default:"Not added" }}</dd></div>
+          <div><dt><i class="fa-regular fa-user"></i>First name</dt><dd>{{ user.profile.first_name|default:"Not added" }}</dd></div>
+          <div><dt><i class="fa-regular fa-user"></i>Last name</dt><dd>{{ user.profile.last_name|default:"Not added" }}</dd></div>
+        </dl>
+      </div>
+    </section>
+  </div>
+  <div class="col-lg-5">
+    <section class="card profile-info-card h-100">
+      <div class="card-header profile-card-heading"><span class="profile-card-icon profile-card-icon-blue"><i class="fa-solid fa-shield-halved"></i></span><div><h2>Account details</h2><p>Your sign-in and membership</p></div></div>
+      <div class="card-body">
+        <dl class="profile-detail-list profile-account-list">
+          <div><dt>Username</dt><dd>{{ user.username }}</dd></div>
+          <div><dt>Access level</dt><dd>{% if user.is_superuser %}Admin{% else %}{{ user.profile.get_role_display }}{% endif %}</dd></div>
+          <div><dt>Member since</dt><dd>{{ user.date_joined|date:"j F Y" }}</dd></div>
+          <div><dt>Last sign-in</dt><dd>{% if user.last_login %}{{ user.last_login|date:"j F Y, H:i" }}{% else %}This is your first sign-in{% endif %}</dd></div>
+        </dl>
+      </div>
+    </section>
   </div>
 </div>
-<div class="card form-narrow"><div class="card-body">
-  <dl class="kv">
-    <dt>Username</dt><dd>{{ user.username }}</dd>
-    <dt>First name</dt><dd>{{ user.profile.first_name|default:"Not set" }}</dd>
-    <dt>Last name</dt><dd>{{ user.profile.last_name|default:"Not set" }}</dd>
-    <dt>Email</dt><dd>{{ user.email|default:"Not set" }}</dd>
-    <dt>Telephone</dt><dd>{{ user.profile.telephone|default:"Not set" }}</dd>
-  </dl>
-</div></div>
 {% endblock content %}

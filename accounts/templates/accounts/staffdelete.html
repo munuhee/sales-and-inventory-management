@@ -1,6 +1,6 @@
 {% extends "store/confirm_delete.html" %}
 {% block title %}Delete staff{% endblock %}
 {% block heading %}Delete {{ object.user.username }}?{% endblock %}
-{% block message %}This removes the sign-in account. Sales they made stay on record. To keep the account but block access, set the status to Inactive instead.{% endblock %}
+{% block message %}This removes the sign-in account. Sales they made stay on record, and the removal is retained in staff access history. To keep the account but block access, set the status to Inactive instead.{% endblock %}
 {% block confirm_label %}Delete{% endblock %}
 {% block cancel_url %}{% url 'profile_list' %}{% endblock %}

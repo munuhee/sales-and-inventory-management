@@ -5,7 +5,7 @@
 <div class="page-header">
   <div><h1>Purchase orders</h1><p class="sub">Stock is added when an order is marked Successful.</p></div>
   <div class="page-actions">
-    <a class="btn btn-light" href="{% url 'purchases-export' %}"><i class="fa-solid fa-file-excel me-1"></i> Export</a>
+    <a class="btn btn-export" href="{% url 'purchases-export' %}" title="Download purchases as an Excel workbook"><span class="export-icon"><i class="fa-solid fa-file-excel"></i></span><span>Export</span><span class="export-format">XLSX</span></a>
     <a class="btn btn-primary" href="{% url 'purchase-create' %}"><i class="fa-solid fa-plus me-1"></i> New order</a>
   </div>
 </div>
