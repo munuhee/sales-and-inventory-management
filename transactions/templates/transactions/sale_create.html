@@ -1,492 +1,370 @@
 {% extends "store/base.html" %}
-{% load static %}
-<!-- Page title  -->
-{% block title %}Create sale{% endblock title %}
+{% block title %}New sale{% endblock title %}
 
-<!-- Specific Page CSS goes HERE  -->
 {% block stylesheets %}
-<!--Select2 CSS-->
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@1.5.2/dist/select2-bootstrap4.min.css">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
 {% endblock stylesheets %}
 
-<!-- Page Heading -->
-<h2>Add sale</h2>
-
-<!-- Page content  -->
 {% block content %}
-<div class="container py-5">
-    <!-- Go back -->
-    <div class="mb-4">
-        <a href="{% url 'saleslist' %}" class="btn btn-outline-success">
-            <i class="fas fa-arrow-left me-2"></i>
-            Go back
-        </a>
+<div class="page-header">
+  <div><h1>New sale</h1><p class="sub">Prices and totals are confirmed by the server when you complete the sale.</p></div>
+</div>
+
+<form id="sale-form" novalidate>
+  {% csrf_token %}
+  <div class="row g-3">
+    <div class="col-lg-8">
+      <div class="card mb-3">
+        <div class="card-body">
+          <label class="form-label" for="item-search">Add item</label>
+          <select id="item-search" class="form-select" style="width:100%"></select>
+          <div class="form-text">Only items in stock are listed.</div>
+        </div>
+      </div>
+
+      <div class="card table-card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>Items</span>
+          <button type="button" class="btn btn-sm btn-link text-muted p-0" id="clear-cart">Clear all</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table align-middle" id="cart-table">
+            <thead><tr><th>Item</th><th class="num">Price</th><th class="num">Qty</th><th class="num">Amount</th><th></th></tr></thead>
+            <tbody id="cart-body"></tbody>
+          </table>
+        </div>
+        <div id="cart-empty" class="empty-state"><i class="fa-solid fa-basket-shopping"></i><div>Search for an item to start the sale.</div></div>
+      </div>
     </div>
 
-    <!-- Sale items and details -->
-    <form id="form_sale" action="{% url 'sale-create' %}" class="saleForm" method="post">
-        <div class="row">
-            <!-- Left column -->
-            <div class="col-lg-8 mb-4">
-                <div class="card border-light shadow-sm">
-                    <div class="card-header bg-success text-white">
-                        <h5 class="mb-0">Sale Items</h5>
-                    </div>
-                    <div class="card-body">
-                        <!-- Search item -->
-                        <div class="mb-4">
-                            <label for="searchbox_items" class="form-label">Search Item:</label>
-                            <select class="form-select select2" name="searchbox_items" id="searchbox_items" aria-label="Search items"></select>
-                        </div>
+    <div class="col-lg-4">
+      <div class="card">
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label" for="customer">Customer</label>
+            <select id="customer" class="form-select" style="width:100%" required></select>
+            <div class="form-text"><a href="{% url 'customer_create' %}" target="_blank" rel="noopener">Add a new customer</a></div>
+          </div>
 
-                        <!-- Delete all items from sale -->
-                        <button type="button" class="btn btn-danger btn-sm mb-4 deleteAll">
-                            <i class="fas fa-trash-alt me-2"></i> Delete All Items
-                        </button>
+          <div class="mb-3">
+            <label class="form-label" for="tax">Tax rate (%)</label>
+            <input id="tax" type="number" class="form-control" min="0" max="100" step="0.01" value="0">
+            <div class="form-text">Added on top of the subtotal.</div>
+          </div>
 
-                        <!-- Items Table -->
-                        <div class="table-responsive my-3">
-                            <table class="table table-bordered table-striped" id="table_items">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Name</th>
-                                        <th>Price</th>
-                                        <th>Quantity</th>
-                                        <th>Total</th>
-                                        <th class="text-center">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+          {% if loyalty.enabled %}
+          <div class="mb-3" id="loyalty-box" hidden>
+            <label class="form-label" for="redeem">Redeem loyalty points</label>
+            <div class="input-group">
+              <input id="redeem" type="number" class="form-control" min="0" step="1" value="0">
+              <button class="btn btn-light" type="button" id="redeem-max">Use max</button>
             </div>
-            <!-- End Left Column -->
+            <div class="form-text" id="loyalty-hint"></div>
+          </div>
+          {% endif %}
 
-            <!-- Right Column -->
-            <div class="col-lg-4 mb-4">
-                <div class="card border-light shadow-sm">
-                    <div class="card-header bg-success text-white">
-                        <h5 class="mb-0">Sale Details</h5>
-                    </div>
-                    <div class="card-body">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            <label for="customer" class="form-label">Customer</label>
-                            <select name="customer" class="form-select" id="customer" aria-label="Customer" required>
-                                <option value="" selected disabled hidden>Select the customer</option>
-                                {% for customer in customers %}
-                                <option value="{{ customer.value }}">{{ customer.label }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="sub_total" class="form-label">Subtotal</label>
-                            <input name="sub_total" type="number" class="form-control" id="sub_total" aria-label="Subtotal" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="tax_percentage" class="form-label">Tax Inclusive (%)</label>
-                            <input name="tax_percentage" type="number" class="form-control" id="tax_percentage" aria-label="Tax Inclusive" value="0" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="tax_amount" class="form-label">Tax Amount</label>
-                            <input name="tax_amount" type="number" class="form-control" id="tax_amount" aria-label="Tax Amount" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="grand_total" class="form-label">Grand Total</label>
-                            <input name="grand_total" type="number" class="form-control" id="grand_total" aria-label="Grand Total" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="amount_paid" class="form-label">Amount Payed</label>
-                            <input name="amount_paid" type="number" class="form-control" id="amount_paid" aria-label="Amount Paid" required>
-                        </div>
-                        <button type="submit" class="btn btn-success w-100">Create Sale</button>
-                    </div>
-                </div>
+          <table class="totals mb-3">
+            <tr><td>Subtotal</td><td id="t-sub">0.00</td></tr>
+            <tr class="muted" id="row-discount" hidden><td>Loyalty discount</td><td id="t-discount">0.00</td></tr>
+            <tr class="muted"><td>Tax</td><td id="t-tax">0.00</td></tr>
+            <tr class="grand"><td>Total</td><td id="t-total">0.00</td></tr>
+          </table>
+
+          <div class="mb-2">
+            <label class="form-label" for="paid">Amount paid</label>
+            <div class="input-group">
+              <span class="input-group-text">{{ business.currency }}</span>
+              <input id="paid" type="number" class="form-control" min="0" step="0.01" inputmode="decimal">
+              <button class="btn btn-light" type="button" id="paid-exact">Exact</button>
             </div>
-            <!-- End Right Column -->
+          </div>
+          <table class="totals mb-3"><tr class="muted"><td>Change</td><td id="t-change">0.00</td></tr></table>
+
+          <div class="alert alert-danger py-2 small" id="form-error" hidden></div>
+          <button type="submit" class="btn btn-primary w-100 py-2" id="submit-btn">Complete sale</button>
         </div>
-    </form>
+      </div>
+    </div>
+  </div>
+</form>
+
+<div class="modal fade" id="done-modal" tabindex="-1" aria-labelledby="done-title" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-body p-4 text-center">
+        <div class="mb-2"><i class="fa-solid fa-circle-check fa-2x" style="color:#1f6f4a"></i></div>
+        <h2 class="h5" id="done-title">Sale completed</h2>
+        <p class="text-muted mb-1" id="done-receipt"></p>
+        <p class="pos-total mb-1" id="done-change"></p>
+        <p class="text-muted small" id="done-points"></p>
+        <div class="d-flex flex-wrap justify-content-center gap-2 mt-3">
+          <a class="btn btn-primary" id="done-print" target="_blank" rel="noopener"><i class="fa-solid fa-print me-1"></i> Print receipt</a>
+          <a class="btn btn-light" id="done-view">View sale</a>
+          <button class="btn btn-light" type="button" id="done-new">New sale</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
+{{ loyalty|json_script:"loyalty-config" }}
+{{ business.currency|json_script:"currency" }}
 {% endblock content %}
 
-<!-- Specific Page JS goes HERE  -->
 {% block javascripts %}
-<!-- Datatables -->
-<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js" defer></script>
-<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js" defer></script>
-
-<!-- Select2 -->
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js" defer></script>
-
-<!-- Bootstrap Touchspin -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-touchspin/3.1.0/jquery.bootstrap-touchspin.min.js" defer></script>
-
-<!-- Sweet Alert -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.6.15/dist/sweetalert2.all.min.js" defer></script>
-
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
-    // Source: https://stackoverflow.com/a/32605063
-    function roundTo(n, digits) {
-        if (digits === undefined) {
-            digits = 0;
-        }
+(function () {
+  'use strict';
 
-        var multiplicator = Math.pow(10, digits);
-        n = parseFloat((n * multiplicator).toFixed(11));
-        return Math.round(n) / multiplicator;
-    }
+  var currency = JSON.parse(document.getElementById('currency').textContent);
+  var loyaltyCfg = JSON.parse(document.getElementById('loyalty-config').textContent);
+  var csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+  var $ = window.jQuery;
 
-    // Variable for item number in table
-    var number = 1;
+  // Money is handled in integer cents so floating point rounding never shows.
+  function toCents(value) {
+    var n = Number(value);
+    return isFinite(n) ? Math.round(n * 100) : 0;
+  }
+  function fmt(cents) {
+    var s = (Math.abs(cents) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return (cents < 0 ? '-' : '') + currency + ' ' + s;
+  }
+  function el(tag, attrs, text) {
+    var node = document.createElement(tag);
+    Object.keys(attrs || {}).forEach(function (k) { node.setAttribute(k, attrs[k]); });
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
 
-    // Variable to store sale details and products
-    var sale = {
-        products: {
-            customer: 0,
-            sub_total: 0.00,
-            grand_total: 0.00,
-            tax_amount: 0.00,
-            tax_percentage: 0.00,
-            amount_payed: 0.00,
-            amount_change: 0.00,
-            items: []
-        },
-        calculate_sale: function () {
-            // Subtotal of all items added
-            var sub_total = 0.00;
+  var cart = [];        // {id, name, priceCents, stock, qty}
+  var customer = null;  // {id, text, loyalty_points}
 
-            var tax_percentage = $('input[name="tax_percentage"]').val();
+  var body = document.getElementById('cart-body');
+  var emptyState = document.getElementById('cart-empty');
+  var errorBox = document.getElementById('form-error');
 
-            // Calculates the total for each item
-            $.each(this.products.items, function (pos, dict) {
-                dict.pos = pos;
-                dict.total_item = roundTo(dict.quantity * dict.price, 2);
-                // Add the item total to the sale subtotal
-                sub_total += roundTo(dict.total_item, 2);
-            });
+  function renderCart() {
+    body.textContent = '';
+    cart.forEach(function (line, index) {
+      var tr = el('tr');
+      var name = el('td');
+      name.appendChild(el('div', { 'class': 'fw-medium' }, line.name));
+      name.appendChild(el('div', { 'class': 'small text-muted' }, line.stock + ' in stock'));
+      tr.appendChild(name);
+      tr.appendChild(el('td', { 'class': 'num' }, fmt(line.priceCents)));
 
-            // Update the sale subtotal, grand total, and tax amount
-            this.products.sub_total = roundTo(sub_total, 2);
-            this.products.grand_total = roundTo(this.products.sub_total, 2);
-            this.products.tax_amount = roundTo(this.products.sub_total * (tax_percentage / 100), 2);
+      var amount = el('td', { 'class': 'num' }, fmt(line.priceCents * line.qty));
+      var qtyCell = el('td', { 'class': 'num' });
+      var qty = el('input', {
+        type: 'number', min: '1', max: String(line.stock), step: '1',
+        value: String(line.qty), 'class': 'form-control form-control-sm qty-input ms-auto',
+        'aria-label': 'Quantity of ' + line.name
+      });
+      qty.addEventListener('input', function () {
+        var v = parseInt(qty.value, 10);
+        if (!isFinite(v) || v < 1) v = 1;
+        if (v > line.stock) v = line.stock;
+        line.qty = v;
+        amount.textContent = fmt(line.priceCents * line.qty);
+        recalc();
+      });
+      qty.addEventListener('blur', function () { qty.value = String(line.qty); });
+      qtyCell.appendChild(qty);
+      tr.appendChild(qtyCell);
+      tr.appendChild(amount);
 
-            $('input[name="sub_total"]').val(this.products.sub_total);
-            $('input[name="tax_amount"]').val(this.products.tax_amount);
-            $('input[name="grand_total"]').val(this.products.grand_total);
-        },
-        // Adds an item to the sale object
-        add_item: function (item) {
-            this.products.items.push(item);
-            this.list_item();
-        },
-        // Shows the selected item in the table
-        list_item: function () {
-            // Calculate the sale
-            this.calculate_sale();
-
-            tblItems = $("#table_items").DataTable({
-                destroy: true,
-                data: this.products.items,
-                columns: [
-                    {"data": "number"},
-                    {"data": "name"},
-                    {"data": "price"},
-                    {"data": "quantity"},
-                    {"data": "total_item"},
-                    {"data": "id"},
-                ],
-                columnDefs: [
-                    {
-                        // Quantity
-                        class: 'text-center',
-                        targets: [3],
-                        render: function (data, type, row) {
-                            return '<input name="quantity" type="text" class="form-control form-control-xs text-center input-sm" autocomplete="off" value="' + row.quantity + '">';
-                        },
-                    },
-                    {
-                        // Item price and total
-                        class: 'text-right',
-                        targets: [2, 4],
-                        render: function (data, type, row) {
-                            return parseFloat(data).toFixed(2) + ' $';
-                        },
-                    },
-                    {
-                        // Delete button
-                        class: 'text-center',
-                        targets: [-1],
-                        orderable: false,
-                        render: function (data, type, row) {
-                            return '<a rel="delete" type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Delete item"> <i class="fas fa-trash-alt fa-xs"></i> </a>';
-                        },
-                    },
-                ],
-                rowCallback(row, data, displayNun, displayIndex, dataIndex) {
-                    $(row).find("input[name='quantity']").TouchSpin({
-                        min: 1,
-                        max: 100, // Máximo de acuerdo al stock de cada itemo
-                        step: 1,
-                        decimals: 0,
-                        boostat: 1,
-                        maxboostedstep: 3,
-                        postfix: ''
-                    });
-                },
-            });
-        },
-    };
-
-    $(document).ready(function () {
-        // Tax percentage touchspin
-        $("input[name='tax_percentage']").TouchSpin({
-            min: 0,
-            max: 100,
-            step: 1,
-            decimals: 2,
-            boostat: 5,
-            maxboostedstep: 10,
-            postfix: '%'
-        }).on('change', function () {
-            sale.calculate_sale();
-        });
-
-        // Select2 customers
-        $('#searchbox_customers').select2({
-            delay: 250,
-            placeholder: "Select a customer",
-            allowClear: true,
-            minimumInputLength: 1,
-            ajax: {
-                url: "{% url 'get_customers' %}",
-                type: 'POST',
-                data: function (params) {
-                    return {
-                        term: params.term,
-                        csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val() // Include CSRF token
-                    };
-                },
-                processResults: function (data) {
-                    return {
-                        results: data
-                    };
-                }
-            }
-        }).on('select2:select', function (e) {
-            // When a customer is selected
-            var data = e.params.data;
-            sale.products.customer = data.id;
-        });
-
-        // Select2 items searchbox
-        $('#searchbox_items').select2({
-            delay: 250,
-            placeholder: 'Search an item',
-            minimumInputLength: 1,
-            allowClear: true,
-            templateResult: template_item_searchbox,
-            ajax: {
-                url: "{% url 'get_items' %}",
-                type: 'POST',
-                data: function (params) {
-                    return {
-                        term: params.term,
-                        csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val()
-                    };
-                },
-                processResults: function (data) {
-                    return {
-                        results: data
-                    };
-                }
-            }
-        }).on('select2:select', function (e) {
-            // When an item is selected from the searchbox
-            var data = e.params.data;
-            // Add number, subtotal, and quantity of the item to the dictionary
-            data.number = number;
-            number++; // Increase the item number in the table
-            // Add the item to the sale object
-            sale.add_item(data);
-            // Clear the searchbox after the item is selected
-            $(this).val('').trigger('change.select2');
-        });
-
-        // Tables Events
-        $('#table_items tbody').on('click', 'a[rel="delete"]', function () {
-            // When an item is deleted
-            var tr = tblItems.cell($(this).closest('td, li')).index();
-            item_name = (tblItems.row(tr.row).data().name);
-
-            Swal.fire({
-                customClass: {
-                    confirmButton: 'ml-3 btn btn-danger',
-                    cancelButton: 'btn btn-success'
-                },
-                buttonsStyling: false,
-                title: "Are you sure you want to delete this item from the sale?",
-                text: item_name,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Delete',
-                cancelButtonText: 'Cancel',
-                reverseButtons: true,
-            }).then((result) => {
-                // If confirmed
-                if (result.isConfirmed) {
-                    // Delete the item
-                    sale.products.items.splice(tr.row, 1);
-                    // List the table again
-                    sale.list_item();
-                    Swal.fire('The item was eliminated!', '', 'success');
-                }
-            });
-        }).on('change keyup', 'input[name="quantity"]', function () {
-            // When an item changes its quantity
-            var quantity = parseInt($(this).val());
-            var tr = tblItems.cell($(this).closest('td, li')).index();
-            // Update the item quantity in the sale object
-            sale.products.items[tr.row].quantity = quantity;
-            // Calculate the sale with the new quantity
-            sale.calculate_sale();
-            // Find the row to update the item total
-            $('td:eq(4)', tblItems.row(tr.row).node()).html(sale.products.items[tr.row].total_item + ' $');
-        });
-
-        // Delete all items
-        $('.deleteAll').on('click', function () {
-            // If there are no items, don't do anything
-            if (sale.products.items.length === 0) return false;
-            // Alert the user
-            Swal.fire({
-                customClass: {
-                    confirmButton: 'ml-3 btn btn-danger',
-                    cancelButton: 'btn btn-success'
-                },
-                buttonsStyling: false,
-                title: "Are you sure you want to delete all items from the sale?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Delete all',
-                cancelButtonText: 'Cancel',
-                reverseButtons: true,
-            }).then((result) => {
-                // If confirmed
-                if (result.isConfirmed) {
-                    // Remove all items from the sale object
-                    sale.products.items = [];
-                    // Recalculate the sale
-                    sale.list_item();
-                    Swal.fire('All items were eliminated!', '', 'success');
-                }
-            });
-        });
-
-        // Items datatable
-        tblItems = $('#table_items').DataTable({
-            columnDefs: [
-                {
-                    targets: [-1],
-                    orderable: false,
-                }
-            ],
-        });
-
-        // Item searchbox templateResult
-        function template_item_searchbox(repo) {
-            return $(`
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <small class="card-title">${repo.name}</small>
-                    </div>
-                </div>
-            `);
-        }
-
-        // Helper functions
-        function getAjax(type, url, data, successCallback, errorCallback) {
-            $.ajax({
-                type: type,
-                url: url,
-                data: data,
-                success: successCallback,
-                error: errorCallback
-            });
-        }
-
-        // Function to round numbers
-        function roundTo(value, decimals) {
-            const factor = Math.pow(10, decimals);
-            return Math.round(value * factor) / factor;
-        }
-
-        // On form submit
-        $('form#form_sale').on('submit', function (event) {
-            event.preventDefault();
-
-            // Gather sale details
-            var amountPaid = parseFloat($('input[name="amount_paid"]').val());
-            var grandTotal = parseFloat($('input[name="grand_total"]').val());
-            var amountChange = roundTo(amountPaid - grandTotal, 2);
-
-            // Gather sale details
-            var formData = {
-                customer: $('select[name="customer"]').val(),
-                sub_total: $('input[name="sub_total"]').val(),
-                grand_total: grandTotal,
-                amount_paid: amountPaid,
-                amount_change: amountChange,
-                items: sale.products.items
-            };
-
-            // Check if amount_change is present
-            if (isNaN(amountChange)) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Amount change is required!'
-                });
-                return;
-            }
-
-            // Get CSRF token
-            var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
-
-            // Submit the form data via AJAX
-            $.ajax({
-                url: $(this).attr('action'),
-                type: 'POST',
-                contentType: 'application/json',
-                headers: {
-                    'X-CSRFToken': csrftoken
-                },
-                data: JSON.stringify(formData),
-                success: function (response) {
-                    // Handle success response
-                    sale.products.items = [];
-                    sale.list_item();
-                    $('form#form_sale').trigger('reset');
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: 'Sale has been completed successfully!'
-                    });
-                },
-                error: function (xhr) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: xhr.responseJSON.message || 'An error occurred while processing the sale!'
-                    });
-                }
-            });
-        });
+      var actions = el('td', { 'class': 'row-actions' });
+      var remove = el('button', { type: 'button', 'class': 'danger', title: 'Remove', 'aria-label': 'Remove ' + line.name });
+      remove.appendChild(el('i', { 'class': 'fa-solid fa-xmark' }));
+      remove.addEventListener('click', function () { cart.splice(index, 1); renderCart(); });
+      actions.appendChild(remove);
+      tr.appendChild(actions);
+      body.appendChild(tr);
     });
-</script>
+    emptyState.hidden = cart.length > 0;
+    document.getElementById('cart-table').hidden = cart.length === 0;
+    recalc();
+  }
 
+  function maxRedeem(subCents) {
+    if (!customer || !loyaltyCfg.enabled) return 0;
+    var pointCents = toCents(loyaltyCfg.point_value);
+    if (pointCents <= 0) return 0;
+    return Math.max(0, Math.min(customer.loyalty_points, Math.floor(subCents / pointCents)));
+  }
+
+  function totals() {
+    var sub = cart.reduce(function (sum, l) { return sum + l.priceCents * l.qty; }, 0);
+    var redeemInput = document.getElementById('redeem');
+    var redeem = redeemInput ? Math.max(0, parseInt(redeemInput.value, 10) || 0) : 0;
+    redeem = Math.min(redeem, maxRedeem(sub));
+    var discount = redeem * toCents(loyaltyCfg.point_value || 0);
+    var taxRate = Math.min(100, Math.max(0, Number(document.getElementById('tax').value) || 0));
+    var taxable = sub - discount;
+    var tax = Math.round(taxable * taxRate / 100);
+    var total = taxable + tax;
+    var paidRaw = document.getElementById('paid').value;
+    var paid = paidRaw === '' ? null : toCents(paidRaw);
+    return { sub: sub, redeem: redeem, discount: discount, tax: tax, total: total, paid: paid, taxRate: taxRate };
+  }
+
+  function recalc() {
+    var t = totals();
+    document.getElementById('t-sub').textContent = fmt(t.sub);
+    document.getElementById('t-discount').textContent = '-' + fmt(t.discount);
+    document.getElementById('row-discount').hidden = t.discount === 0;
+    document.getElementById('t-tax').textContent = fmt(t.tax);
+    document.getElementById('t-total').textContent = fmt(t.total);
+    var changeEl = document.getElementById('t-change');
+    if (t.paid === null) {
+      changeEl.textContent = fmt(0);
+    } else {
+      changeEl.textContent = t.paid >= t.total ? fmt(t.paid - t.total) : 'Short by ' + fmt(t.total - t.paid);
+    }
+    var box = document.getElementById('loyalty-box');
+    if (box) {
+      box.hidden = !customer || customer.loyalty_points <= 0;
+      if (customer) {
+        document.getElementById('redeem').max = String(maxRedeem(t.sub));
+        document.getElementById('loyalty-hint').textContent =
+          customer.loyalty_points + ' points available, worth ' +
+          fmt(customer.loyalty_points * toCents(loyaltyCfg.point_value)) + '.';
+      }
+    }
+  }
+
+  function showError(message) {
+    errorBox.textContent = message || '';
+    errorBox.hidden = !message;
+  }
+
+  $('#customer').select2({
+    placeholder: 'Search by name or phone',
+    allowClear: true,
+    ajax: {
+      url: '{% url "get_customers" %}',
+      dataType: 'json',
+      delay: 200,
+      data: function (params) { return { term: params.term || '' }; },
+      processResults: function (data) { return data; }
+    },
+    templateResult: function (c) {
+      if (!c.id) return c.text;
+      var wrap = el('div', { 'class': 'select2-option' });
+      wrap.appendChild(el('div', {}, c.text));
+      wrap.appendChild(el('div', { 'class': 'stock' }, [c.phone, (c.loyalty_points || 0) + ' pts'].filter(Boolean).join(' · ')));
+      return $(wrap);
+    }
+  }).on('select2:select', function (e) {
+    customer = { id: e.params.data.id, text: e.params.data.text, loyalty_points: e.params.data.loyalty_points || 0 };
+    var r = document.getElementById('redeem'); if (r) r.value = 0;
+    recalc();
+  }).on('select2:clear', function () { customer = null; recalc(); });
+
+  $('#item-search').select2({
+    placeholder: 'Type a product name',
+    minimumInputLength: 1,
+    ajax: {
+      url: '{% url "get_items" %}',
+      dataType: 'json',
+      delay: 200,
+      data: function (params) { return { term: params.term || '' }; },
+      processResults: function (data) { return { results: data }; }
+    },
+    templateResult: function (item) {
+      if (!item.id) return item.text;
+      var wrap = el('div', { 'class': 'select2-option d-flex justify-content-between gap-3' });
+      wrap.appendChild(el('span', {}, item.name));
+      wrap.appendChild(el('span', { 'class': 'stock' }, fmt(toCents(item.price)) + ' · ' + item.stock + ' in stock'));
+      return $(wrap);
+    }
+  }).on('select2:select', function (e) {
+    var item = e.params.data;
+    var existing = cart.find(function (l) { return String(l.id) === String(item.id); });
+    if (existing) {
+      existing.qty = Math.min(existing.stock, existing.qty + 1);
+    } else {
+      cart.push({ id: item.id, name: item.name, priceCents: toCents(item.price), stock: item.stock, qty: 1 });
+    }
+    $(this).val(null).trigger('change');
+    renderCart();
+  });
+
+  ['tax', 'paid', 'redeem'].forEach(function (id) {
+    var node = document.getElementById(id);
+    if (node) node.addEventListener('input', recalc);
+  });
+  var redeemMax = document.getElementById('redeem-max');
+  if (redeemMax) redeemMax.addEventListener('click', function () {
+    document.getElementById('redeem').value = maxRedeem(totals().sub);
+    recalc();
+  });
+  document.getElementById('paid-exact').addEventListener('click', function () {
+    document.getElementById('paid').value = (totals().total / 100).toFixed(2);
+    recalc();
+  });
+  document.getElementById('clear-cart').addEventListener('click', function () {
+    if (cart.length && window.confirm('Remove all items from this sale?')) { cart = []; renderCart(); }
+  });
+
+  function resetSale() {
+    cart = [];
+    customer = null;
+    $('#customer').val(null).trigger('change');
+    document.getElementById('tax').value = 0;
+    document.getElementById('paid').value = '';
+    var r = document.getElementById('redeem'); if (r) r.value = 0;
+    showError('');
+    renderCart();
+  }
+
+  var modal = new bootstrap.Modal(document.getElementById('done-modal'));
+  document.getElementById('done-new').addEventListener('click', function () { modal.hide(); resetSale(); });
+
+  document.getElementById('sale-form').addEventListener('submit', function (event) {
+    event.preventDefault();
+    showError('');
+    var t = totals();
+    if (!customer) return showError('Select a customer.');
+    if (!cart.length) return showError('Add at least one item.');
+    if (t.paid === null || t.paid < t.total) return showError('Amount paid must cover the total.');
+
+    var button = document.getElementById('submit-btn');
+    button.disabled = true;
+    button.textContent = 'Saving...';
+
+    fetch(window.location.pathname, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+      body: JSON.stringify({
+        customer: customer.id,
+        items: cart.map(function (l) { return { id: l.id, quantity: l.qty }; }),
+        tax_percentage: t.taxRate,
+        amount_paid: (t.paid / 100).toFixed(2),
+        redeem_points: t.redeem
+      })
+    }).then(function (response) {
+      return response.json().catch(function () { return { status: 'error', message: 'Unexpected server response.' }; });
+    }).then(function (data) {
+      if (data.status !== 'success') { showError(data.message || 'The sale could not be saved.'); return; }
+      document.getElementById('done-receipt').textContent = 'Receipt ' + data.receipt_number + ' · total ' + fmt(toCents(data.grand_total));
+      document.getElementById('done-change').textContent = 'Change ' + fmt(toCents(data.change));
+      document.getElementById('done-points').textContent = data.points_earned ? data.points_earned + ' loyalty points earned.' : '';
+      document.getElementById('done-print').href = data.receipt_url;
+      document.getElementById('done-view').href = data.redirect;
+      modal.show();
+    }).catch(function () {
+      showError('Network error. Check the connection and try again.');
+    }).finally(function () {
+      button.disabled = false;
+      button.textContent = 'Complete sale';
+    });
+  });
+
+  renderCart();
+})();
+</script>
 {% endblock javascripts %}

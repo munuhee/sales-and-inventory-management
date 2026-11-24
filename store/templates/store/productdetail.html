@@ -1,3 +1,25 @@
-<div>
-    Product Page
+{% extends "store/base.html" %}
+{% load formatting %}
+{% block title %}{{ object.name }}{% endblock %}
+{% block content %}
+<a class="back-link" href="{% url 'productslist' %}"><i class="fa-solid fa-arrow-left"></i> Products</a>
+<div class="page-header">
+  <div><h1>{{ object.name }}</h1><p class="sub">{{ object.category.name }}</p></div>
+  {% if can_manage %}
+  <div class="page-actions">
+    <a class="btn btn-light" href="{% url 'product-update' object.slug %}"><i class="fa-solid fa-pen me-1"></i> Edit</a>
+  </div>
+  {% endif %}
 </div>
+<div class="card form-narrow">
+  <div class="card-body">
+    <dl class="kv">
+      <dt>Price</dt><dd>{{ object.price|money }}</dd>
+      <dt>In stock</dt><dd>{{ object.quantity }}</dd>
+      <dt>Vendor</dt><dd>{{ object.vendor.name|default:"Not set" }}</dd>
+      <dt>Expires</dt><dd>{{ object.expiring_date|date:"d M Y"|default:"Not set" }}</dd>
+      <dt>Description</dt><dd>{{ object.description|linebreaksbr|default:"None" }}</dd>
+    </dl>
+  </div>
+</div>
+{% endblock content %}

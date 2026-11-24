@@ -1,128 +1,154 @@
 {% extends "store/base.html" %}
-{% load static %}
-{% block title %}Dashboard{% endblock title %}
-
+{% load formatting humanize %}
+{% block title %}Dashboard{% endblock %}
 {% block content %}
-<!-- Dashboard -->
-<div class="d-flex flex-column flex-lg-row h-lg-full bg-surface-secondary">
-    {% load static %}
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
-    <!-- Main content -->
-    <div class="h-screen flex-grow-1 overflow-y-lg-auto">
-        <!-- Main -->
-        <main class="py-6 bg-surface-secondary">
-            <div class="container-fluid">
-                <!-- Card stats -->
-                <div class="row g-6 mb-6">
-                    <style>
-                        a {
-                            text-decoration: none;
-                        }
-                    </style>
-                    <div class="col-xl-3 col-sm-6 col-12" id="products">
-                        <a href="{% url 'productslist' %}">
-                            <div class="card shadow border-0">
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col">
-                                            <span class="h6 font-semibold text-muted text-sm d-block mb-2">Products</span>
-                                            <span class="h3 font-bold mb-0">{{total_items}}</span>
-                                        </div>
-                                        <div class="col-auto">
-                                            <div class="icon icon-shape bg-tertiary text-white text-lg rounded-circle">
-                                                <i class="fa fa-clipboard-list"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="mt-2 mb-0 text-sm">
-                                        <span class="badge badge-pill bg-soft-success text-success me-2">
-                                            <i class="fa fa-arrow-up me-1"></i>13%
-                                        </span>
-                                        <span class="text-nowrap text-xs text-muted">Since last month</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="col-xl-3 col-sm-6 col-12" id="profiles">
-                        <a href="{% url 'profile_list' %}">
-                            <div class="card shadow border-0">
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col">
-                                            <span class="h6 font-semibold text-muted text-sm d-block mb-2">Staff</span>
-                                            <span class="h3 font-bold mb-0">{{profiles_count}}</span>
-                                        </div>
-                                        <div class="col-auto">
-                                            <div class="icon icon-shape bg-primary text-white text-lg rounded-circle">
-                                                <i class="fa-solid fa fa-users"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="mt-2 mb-0 text-sm">
-                                        <span class="badge badge-pill bg-soft-success text-success me-2">
-                                            <i class="fa fa-arrow-up me-1"></i>30%
-                                        </span>
-                                        <span class="text-nowrap text-xs text-muted">Since last month</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="col-xl-3 col-sm-6 col-12" id="deliveries">
-                        <a href="{% url 'deliveries' %}">
-                            <div class="card shadow border-0">
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col">
-                                            <span class="h6 font-semibold text-muted text-sm d-block mb-2">Pending deliveries</span>
-                                            <span class="h3 font-bold mb-0">{{delivery.count}}</span>
-                                        </div>
-                                        <div class="col-auto">
-                                            <div class="icon icon-shape bg-info text-white text-lg rounded-circle">
-                                                <i class="fa fa-truck"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="mt-2 mb-0 text-sm">
-                                        <span class="badge badge-pill bg-soft-danger text-danger me-2">
-                                            <i class="fa fa-arrow-down me-1"></i>-5%
-                                        </span>
-                                        <span class="text-nowrap text-xs text-muted">Since last month</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="col-xl-3 col-sm-6 col-12" id="sales">
-                        <a href="{% url 'saleslist' %}">
-                            <div class="card shadow border-0">
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col">
-                                            <span class="h6 font-semibold text-muted text-sm d-block mb-2">Sales</span>
-                                            <span class="h3 font-bold mb-0">{{sales.count}}</span>
-                                        </div>
-                                        <div class="col-auto">
-                                            <div class="icon icon-shape bg-warning text-white text-lg rounded-circle">
-                                                <i class="fa fa-shopping-cart"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="mt-2 mb-0 text-sm">
-                                        <span class="badge badge-pill bg-soft-success text-success me-2">
-                                            <i class="fa fa-arrow-up me-1"></i>10%
-                                        </span>
-                                        <span class="text-nowrap text-xs text-muted">Since last month</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                </div>
-                {% include 'store/charts.html' %}
-            </div>
-        </main>
-    </div>
+<div class="page-header">
+  <div>
+    <h1>Dashboard</h1>
+    <p class="sub">{% now "l, d F Y" %}</p>
+  </div>
+  <div class="page-actions">
+    <a class="btn btn-primary" href="{% url 'sale-create' %}"><i class="fa-solid fa-cash-register me-1"></i> New sale</a>
+  </div>
 </div>
+
+<div class="row g-3 mb-3">
+  <div class="col-6 col-xl-3">
+    <a class="stat-link" href="{% url 'saleslist' %}"><div class="card stat">
+      <div class="label">Revenue today</div>
+      <div class="value">{{ revenue_today|money }}</div>
+      <div class="hint">{{ sales_today }} sale{{ sales_today|pluralize }}</div>
+    </div></a>
+  </div>
+  <div class="col-6 col-xl-3">
+    <a class="stat-link" href="{% url 'saleslist' %}"><div class="card stat">
+      <div class="label">Revenue this month</div>
+      <div class="value">{{ revenue_month|money }}</div>
+      <div class="hint">Completed sales only</div>
+    </div></a>
+  </div>
+  <div class="col-6 col-xl-3">
+    <a class="stat-link" href="{% url 'productslist' %}"><div class="card stat">
+      <div class="label">Products</div>
+      <div class="value">{{ products_count|intcomma }}</div>
+      <div class="hint">{{ units_in_stock|intcomma }} units, {{ stock_value|money }}</div>
+    </div></a>
+  </div>
+  <div class="col-6 col-xl-3">
+    <a class="stat-link" href="{% url 'deliveries' %}"><div class="card stat">
+      <div class="label">Pending deliveries</div>
+      <div class="value">{{ pending_deliveries|intcomma }}</div>
+      <div class="hint">{{ profiles_count }} active staff, {{ vendors_count }} vendor{{ vendors_count|pluralize }}</div>
+    </div></a>
+  </div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-lg-8">
+    <div class="card h-100">
+      <div class="card-header">Sales, last 30 days</div>
+      <div class="card-body"><canvas id="salesChart" height="110" aria-label="Sales per day"></canvas></div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card h-100">
+      <div class="card-header">Products by category</div>
+      <div class="card-body">
+        {% if chart_data.categories %}
+          <canvas id="categoryChart" height="220" aria-label="Products by category"></canvas>
+        {% else %}
+          {% include "partials/empty.html" with icon="fa-tags" text="No categories yet." %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="card table-card h-100">
+      <div class="card-header d-flex justify-content-between">
+        <span>Low stock</span><small class="text-muted fw-normal">{{ low_stock_threshold }} units or fewer</small>
+      </div>
+      {% if low_stock %}
+      <table class="table table-hover align-middle">
+        <tbody>
+          {% for item in low_stock %}
+          <tr>
+            <td><a href="{% url 'product-detail' item.slug %}">{{ item.name }}</a><div class="small text-muted">{{ item.category.name }}</div></td>
+            <td class="num">{% if item.quantity == 0 %}<span class="status bad">Out of stock</span>{% else %}<span class="status warn">{{ item.quantity }} left</span>{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        {% include "partials/empty.html" with icon="fa-circle-check" text="Everything is well stocked." %}
+      {% endif %}
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card table-card h-100">
+      <div class="card-header d-flex justify-content-between"><span>Recent sales</span><a class="small fw-normal" href="{% url 'saleslist' %}">View all</a></div>
+      {% if recent_sales %}
+      <table class="table table-hover align-middle">
+        <tbody>
+          {% for sale in recent_sales %}
+          <tr>
+            <td><a href="{% url 'sale-detail' sale.pk %}">{{ sale.receipt_number }}</a><div class="small text-muted">{{ sale.customer.get_full_name }}</div></td>
+            <td class="text-muted small">{{ sale.date_added|naturaltime }}</td>
+            <td class="num">{% if sale.is_voided %}<span class="status bad">Voided</span>{% else %}{{ sale.grand_total|money }}{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        {% include "partials/empty.html" with icon="fa-receipt" text="No sales yet." %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+{{ chart_data|json_script:"chart-data" }}
 {% endblock content %}
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  (function () {
+    var data = JSON.parse(document.getElementById('chart-data').textContent);
+    var accent = '#1f6f4a';
+    Chart.defaults.font.family = 'Inter, system-ui, sans-serif';
+    Chart.defaults.color = '#5f6b7a';
+
+    new Chart(document.getElementById('salesChart'), {
+      type: 'bar',
+      data: {
+        labels: data.sale_labels,
+        datasets: [{ label: 'Sales', data: data.sale_values, backgroundColor: accent, borderRadius: 3, maxBarThickness: 18 }]
+      },
+      options: {
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false }, ticks: { maxTicksLimit: 10 } },
+          y: { beginAtZero: true, grid: { color: '#eef0f3' } }
+        }
+      }
+    });
+
+    var catCanvas = document.getElementById('categoryChart');
+    if (catCanvas) {
+      new Chart(catCanvas, {
+        type: 'doughnut',
+        data: {
+          labels: data.categories,
+          datasets: [{
+            data: data.category_counts,
+            backgroundColor: ['#1f6f4a', '#3b8f68', '#5fae88', '#8ccaa9', '#b9e2cc', '#2f5d7c', '#4f7fa0', '#7aa3c0', '#a7c5da', '#c9a227', '#d9b95b', '#e8d398'],
+            borderWidth: 0
+          }]
+        },
+        options: { cutout: '62%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 10 } } } }
+      });
+    }
+  })();
+</script>
+{% endblock javascripts %}

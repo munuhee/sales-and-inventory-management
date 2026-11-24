@@ -1,120 +1,43 @@
-{% extends "store/base.html" %}{% load static %}{% load render_table from django_tables2 %}{% load querystring from django_tables2 %}{% block title %}Purchases{%endblock title%}
-
+{% extends "store/base.html" %}
+{% load formatting %}
+{% block title %}Purchase orders{% endblock %}
 {% block content %}
-<!-- Header Section -->
-<div class="container my-4">
-    <div class="card shadow-sm rounded p-3">
-        <div class="row align-items-center">
-            <div class="col-md-6">
-                <h4 class="display-6 mb-0 text-success">Purchases</h4>
-            </div>
-            <div class="col-md-6 d-flex justify-content-end gap-2">
-                <a class="btn btn-success btn-sm rounded-pill shadow-sm" href="{% url 'purchase-create' %}">
-                    <i class="fa-solid fa-plus"></i> Add Purchase Order
-                </a>
-                <a class="btn btn-success btn-sm rounded-pill shadow-sm" href="{% url 'purchases-export' %}">
-                    <i class="fa-solid fa-download"></i> Export to Excel
-                </a>
-            </div>
-        </div>
-    </div>
+<div class="page-header">
+  <div><h1>Purchase orders</h1><p class="sub">Stock is added when an order is marked Successful.</p></div>
+  <div class="page-actions">
+    <a class="btn btn-light" href="{% url 'purchases-export' %}"><i class="fa-solid fa-file-excel me-1"></i> Export</a>
+    <a class="btn btn-primary" href="{% url 'purchase-create' %}"><i class="fa-solid fa-plus me-1"></i> New order</a>
+  </div>
 </div>
-
-<div class="container">
-    <style>
-      .table th, .table td {
-          text-align: center;
-      }
-    </style>
-    <table class="table table-sm table-striped table-bordered">
-        <thead class="thead-light">
-            <tr>
-                <th scope="col">ID <i class="fa-solid fa-sort"></i></th>
-                <th scope="col">Name <i class="fa-solid fa-sort"></i></th>
-                <th scope="col">Quantity <i class="fa-solid fa-sort"></i></th>
-                <th scope="col">Price <i class="fa-solid fa-sort"></i></th>
-                <th scope="col">Delivery Status <i class="fa-solid fa-sort"></i></th>
-                <th scope="col">Delivery Date <i class="fa-solid fa-sort"></i></th>
-                <th scope="col">Vendor <i class="fa-solid fa-sort"></i></th>
-                <th scope="col">Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for purchase in purchases %}
-            <tr>
-                <th scope="row">{{ purchase.id }}</th>
-                <td>{{ purchase.item.name }}</td>
-                <td>{{ purchase.quantity }}</td>
-                <td>{{ purchase.total_value }}</td>
-                <td>
-                    {% if purchase.delivery_status == 'P' %}
-                        <span class="badge badge-pill bg-soft-danger text-danger me-2">
-                            Pending
-                        </span>
-                    {% else %}
-                        <span class="badge badge-pill bg-soft-success text-success me-2">
-                            Successful
-                        </span>
-                    {% endif %}
-                </td>
-                <td>{{ purchase.delivery_date }}</td>
-                <td>{{ purchase.vendor.name }}</td>
-                <td>
-                    <a class="text-info" href="{% url 'purchase-update' purchase.id %}">
-                        <i class="fa-solid fa-pen"></i>
-                    </a>
-                    <a class="text-danger float-end" href="{% url 'purchase-delete' purchase.id %}">
-                        <i class="fa-solid fa-trash"></i>
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <div class="mt-4">
-        {% if is_paginated %}
-        <nav aria-label="Page navigation">
-            <ul class="pagination justify-content-center">
-                {% if page_obj.has_previous %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
-                    </a>
-                </li>
-                {% else %}
-                <li class="page-item disabled">
-                    <span class="page-link" aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
-                    </span>
-                </li>
-                {% endif %}
-                {% for i in paginator.page_range %}
-                {% if page_obj.number == i %}
-                <li class="page-item active" aria-current="page">
-                    <span class="page-link">{{ i }} <span class="visually-hidden">(current)</span></span>
-                </li>
-                {% else %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ i }}">{{ i }}</a>
-                </li>
-                {% endif %}
-                {% endfor %}
-                {% if page_obj.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
-                    </a>
-                </li>
-                {% else %}
-                <li class="page-item disabled">
-                    <span class="page-link" aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
-                    </span>
-                </li>
-                {% endif %}
-            </ul>
-        </nav>
-        {% endif %}
-    </div>
+<div class="card table-card">
+  <div class="toolbar">{% include "partials/search.html" with placeholder="Search item, vendor, description" %}</div>
+  {% if purchases %}
+  <div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead><tr><th>Item</th><th>Vendor</th><th class="num">Qty</th><th class="num">Unit price</th><th class="num">Total</th><th>Ordered</th><th>Delivery</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      {% for purchase in purchases %}
+      <tr>
+        <td><a href="{% url 'purchase-detail' purchase.pk %}">{{ purchase.item.name }}</a></td>
+        <td>{{ purchase.vendor.name }}</td>
+        <td class="num">{{ purchase.quantity }}</td>
+        <td class="num">{{ purchase.price|money }}</td>
+        <td class="num">{{ purchase.total_value|money }}</td>
+        <td>{{ purchase.order_date|date:"d M Y" }}</td>
+        <td>{{ purchase.delivery_date|date:"d M Y"|default:"" }}</td>
+        <td>{% if purchase.received %}<span class="status ok">Received</span>{% else %}<span class="status warn">Pending</span>{% endif %}</td>
+        <td class="row-actions">
+          <a href="{% url 'purchase-update' purchase.pk %}" title="Edit"><i class="fa-solid fa-pen"></i></a>
+          <a class="danger" href="{% url 'purchase-delete' purchase.pk %}" title="Delete"><i class="fa-solid fa-trash"></i></a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% include "partials/pagination.html" %}
+  {% else %}
+    {% include "partials/empty.html" with icon="fa-cart-flatbed" text="No purchase orders yet." %}
+  {% endif %}
 </div>
-{% endblock %}
+{% endblock content %}

@@ -1,0 +1,8 @@
+<div class="empty-state">
+  <i class="fa-solid {{ icon|default:'fa-inbox' }}"></i>
+  {% if q %}
+    <div>Nothing matches "{{ q }}".</div>
+  {% else %}
+    <div>{{ text|default:"Nothing here yet." }}</div>
+  {% endif %}
+</div>

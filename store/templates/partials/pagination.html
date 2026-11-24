@@ -1,0 +1,28 @@
+{% if is_paginated %}
+<nav class="d-flex flex-wrap justify-content-between align-items-center gap-2 px-3 py-2 border-top" aria-label="Pages">
+  <small class="text-muted">
+    {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ paginator.count }}
+  </small>
+  <ul class="pagination pagination-sm mb-0">
+    {% if page_obj.has_previous %}
+      <li class="page-item"><a class="page-link" href="{% querystring page=page_obj.previous_page_number %}" aria-label="Previous">&lsaquo;</a></li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">&lsaquo;</span></li>
+    {% endif %}
+    {% for i in page_obj.paginator.get_elided_page_range %}
+      {% if i == page_obj.number %}
+        <li class="page-item active" aria-current="page"><span class="page-link">{{ i }}</span></li>
+      {% elif i == page_obj.paginator.ELLIPSIS %}
+        <li class="page-item disabled"><span class="page-link">{{ i }}</span></li>
+      {% else %}
+        <li class="page-item"><a class="page-link" href="{% querystring page=i %}">{{ i }}</a></li>
+      {% endif %}
+    {% endfor %}
+    {% if page_obj.has_next %}
+      <li class="page-item"><a class="page-link" href="{% querystring page=page_obj.next_page_number %}" aria-label="Next">&rsaquo;</a></li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">&rsaquo;</span></li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}

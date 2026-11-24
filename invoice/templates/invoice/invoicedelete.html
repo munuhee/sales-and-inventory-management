@@ -1,16 +1,6 @@
-{% extends "store/base.html" %} {% block title %}Confirm delete{% endblock %}
-{% block content %}
-<div class="container pt-5">
-    <form method="POST">
-        {% csrf_token %}
-        <fieldset class="form-group">
-            <legend class="border-bottom mb-4">Delete Item</legend>
-            <h5>Are you sure you want to delete the invoice "{{ object.slug }}"</h5>
-        </fieldset>
-        <div class="form-group">
-            <button class="btn btn-outline-danger btn-sm" type="submit">Yes, Delete</button>
-            <a class="btn btn-outline-success btn-sm" href="{% url 'invoicelist' %}">Cancel</a>
-        </div>
-    </form>
-</div>
-{% endblock content %}
+{% extends "store/confirm_delete.html" %}
+{% block title %}Delete invoice{% endblock %}
+{% block heading %}Delete invoice {{ object.invoice_number }}?{% endblock %}
+{% block message %}{{ object.customer_name }}, total due {{ object.grand_total }}.{% endblock %}
+{% block confirm_label %}Delete{% endblock %}
+{% block cancel_url %}{% url 'invoicelist' %}{% endblock %}

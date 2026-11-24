@@ -1,117 +1,43 @@
 {% extends "store/base.html" %}
-{% load static %}
-{% load render_table from django_tables2 %}
-{% load querystring from django_tables2 %}
-{% block title %}Sales{% endblock title %}
+{% load formatting %}
+{% block title %}Sales{% endblock %}
 {% block content %}
-<!-- Header Section -->
-<div class="container my-4">
-    <div class="card shadow-sm rounded p-3">
-        <div class="row align-items-center">
-            <div class="col-md-6">
-                <h4 class="display-6 mb-0 text-success">Sales</h4>
-            </div>
-            <div class="col-md-6 d-flex justify-content-end gap-2">
-                <a class="btn btn-success btn-sm rounded-pill shadow-sm" href="{% url 'sale-create' %}">
-                    <i class="fa-solid fa-plus"></i> Add Sale Order
-                </a>
-                <a class="btn btn-primary btn-sm rounded-pill shadow-sm" href="{% url 'sales-export' %}">
-                    <i class="fa-solid fa-download"></i> Export to Excel
-                </a>
-            </div>
-        </div>
-    </div>
+<div class="page-header">
+  <div><h1>Sales</h1><p class="sub">{{ paginator.count }} sale{{ paginator.count|pluralize }}</p></div>
+  <div class="page-actions">
+    {% if can_manage %}<a class="btn btn-light" href="{% url 'sales-export' %}"><i class="fa-solid fa-file-excel me-1"></i> Export</a>{% endif %}
+    <a class="btn btn-primary" href="{% url 'sale-create' %}"><i class="fa-solid fa-plus me-1"></i> New sale</a>
+  </div>
 </div>
-<div class="container px-3">
-    <style>
-        .table th, .table td {
-            text-align: center;
-        }
-        .btn-custom {
-            padding: 8px 20px;
-            margin: 4px;
-        }
-    </style>
-    <table class="table table-bordered table-striped table-hover table-sm">
-        <thead class="thead-light">
-            <tr>
-                <th>ID</th>
-                <th>Date</th>
-                <th>Customer</th>
-                <th>Sub Total</th>
-                <th>Grand Total</th>
-                <th>Tax Amount</th>
-                <th>Tax Percentage</th>
-                <th>Amount Paid</th>
-                <th>Amount Change</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for sale in sales %}
-            <tr>
-                <td>{{ sale.id }}</td>
-                <td>{{ sale.date_added|date:"Y-m-d H:i:s" }}</td>
-                <td>{{ sale.customer }}</td>
-                <td>{{ sale.sub_total }}</td>
-                <td>{{ sale.grand_total }}</td>
-                <td>{{ sale.tax_amount }}</td>
-                <td>{{ sale.tax_percentage }}</td>
-                <td>{{ sale.amount_paid }}</td>
-                <td>{{ sale.amount_change }}</td>
-                <td>
-                    <a class="btn btn-outline-info btn-sm" href="{% url 'sale-detail' sale.id %}">
-                        <i class="fa-solid fa-eye"></i> View Details
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <div class="d-flex justify-content-center mt-4">
-        {% if is_paginated %}
-        <nav aria-label="Page navigation">
-            <ul class="pagination">
-                {% if page_obj.has_previous %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
-                    </a>
-                </li>
-                {% else %}
-                <li class="page-item disabled">
-                    <span class="page-link" aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
-                    </span>
-                </li>
-                {% endif %}
-                {% for i in paginator.page_range %}
-                {% if page_obj.number == i %}
-                <li class="page-item active">
-                    <span class="page-link">{{ i }} <span class="sr-only">(current)</span></span>
-                </li>
-                {% else %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ i }}">{{ i }}</a>
-                </li>
-                {% endif %}
-                {% endfor %}
-                {% if page_obj.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
-                    </a>
-                </li>
-                {% else %}
-                <li class="page-item disabled">
-                    <span class="page-link" aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
-                    </span>
-                </li>
-                {% endif %}
-            </ul>
-        </nav>
-        {% endif %}
-    </div>
+<div class="card table-card">
+  <div class="toolbar">{% include "partials/search.html" with placeholder="Receipt number, customer or phone" %}</div>
+  {% if sales %}
+  <div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead><tr><th>Receipt</th><th>Date</th><th>Customer</th><th class="num">Items</th><th class="num">Total</th><th class="num">Paid</th><th>Served by</th><th></th></tr></thead>
+    <tbody>
+      {% for sale in sales %}
+      <tr>
+        <td><a href="{% url 'sale-detail' sale.pk %}">{{ sale.receipt_number }}</a></td>
+        <td>{{ sale.date_added|date:"d M Y, H:i" }}</td>
+        <td>{{ sale.customer.get_full_name }}</td>
+        <td class="num">{{ sale.units|default:0 }}</td>
+        <td class="num">{{ sale.grand_total|money }}</td>
+        <td class="num">{{ sale.amount_paid|money }}</td>
+        <td>{{ sale.served_by.username|default:"" }}</td>
+        <td class="row-actions">
+          {% if sale.is_voided %}<span class="status bad">Voided</span>{% else %}
+          <a href="{% url 'sale-receipt' sale.pk %}" target="_blank" rel="noopener" title="Print receipt"><i class="fa-solid fa-print"></i></a>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% include "partials/pagination.html" %}
+  {% else %}
+    {% include "partials/empty.html" with icon="fa-receipt" text="No sales yet." %}
+  {% endif %}
 </div>
 {% endblock content %}

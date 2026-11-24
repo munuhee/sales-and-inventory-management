@@ -1,0 +1,71 @@
+{% extends "documents/document_base.html" %}
+{% load formatting %}
+{% block doc_title %}Invoice {{ invoice.invoice_number }}{% endblock %}
+{% block footer_ref %}Invoice {{ invoice.invoice_number }}{% endblock %}
+{% block body %}
+<header class="doc-header">
+  <div>
+    <p class="brand-name">{{ business.name }}</p>
+    <div class="brand-lines">
+      {% if business.address %}{{ business.address }}<br>{% endif %}
+      {% if business.po_box %}{{ business.po_box }}<br>{% endif %}
+      {% if business.phone %}Tel {{ business.phone }}{% endif %}{% if business.phone and business.email %} · {% endif %}{% if business.email %}{{ business.email }}{% endif %}
+      {% if business.tax_pin %}<br>PIN {{ business.tax_pin }}{% endif %}
+    </div>
+  </div>
+  <div class="doc-kind">
+    <h1>Invoice</h1>
+    <table class="meta">
+      <tr><td>Invoice no.</td><td>{{ invoice.invoice_number }}</td></tr>
+      <tr><td>Date</td><td>{{ invoice.date|date:"d M Y" }}</td></tr>
+      <tr><td>Amount due</td><td>{{ invoice.grand_total|money }}</td></tr>
+    </table>
+  </div>
+</header>
+
+<section class="parties">
+  <div class="party">
+    <div class="label">Bill to</div>
+    <div class="name">{{ invoice.customer_name }}</div>
+    <div class="lines">{{ invoice.contact_number }}</div>
+  </div>
+  <div class="party"></div>
+</section>
+
+<table class="lines">
+  <thead>
+    <tr>
+      <th class="idx">#</th>
+      <th>Description</th>
+      <th class="num">Qty</th>
+      <th class="num">Unit price</th>
+      <th class="num">Amount</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="idx">1</td>
+      <td>{{ invoice.item.name }}{% if invoice.item.category %}<div class="item-sub">{{ invoice.item.category.name }}</div>{% endif %}</td>
+      <td class="num">{{ invoice.quantity|qty }}</td>
+      <td class="num">{{ invoice.price_per_item|money:False }}</td>
+      <td class="num">{{ invoice.total|money:False }}</td>
+    </tr>
+  </tbody>
+</table>
+
+<section class="summary">
+  <div class="notes">
+    <p>Please quote the invoice number with your payment.</p>
+  </div>
+  <table class="totals">
+    <tr><td>Subtotal</td><td class="amt">{{ invoice.total|money }}</td></tr>
+    <tr><td>Shipping and handling</td><td class="amt">{{ invoice.shipping|money }}</td></tr>
+    <tr class="grand"><td>Total due</td><td class="amt">{{ invoice.grand_total|money }}</td></tr>
+  </table>
+</section>
+
+<footer class="closing">
+  <div class="thanks">Thank you for your business</div>
+  Printed {{ printed_at|date:"d M Y, H:i" }}
+</footer>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "store/base.html" %}
+{% block content %}
+<div class="card form-narrow mt-2">
+  <div class="card-body">
+    <h1 class="h5 mb-2">{% block heading %}Delete this record?{% endblock %}</h1>
+    <p class="text-muted mb-4">{% block message %}This cannot be undone.{% endblock %}</p>
+    <form method="post" class="d-flex gap-2">
+      {% csrf_token %}
+      {% block extra_fields %}{% endblock %}
+      <button class="btn btn-danger" type="submit">{% block confirm_label %}Delete{% endblock %}</button>
+      <a class="btn btn-light" href="{% block cancel_url %}{% endblock %}">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock content %}

@@ -1,31 +1,34 @@
-{% extends 'store/base.html' %}
-
+{% extends "store/base.html" %}
+{% load formatting %}
+{% block title %}{{ category.name }}{% endblock %}
 {% block content %}
-<div class="container p-4">
-    <div class="row mb-4">
-        <div class="col-md-8 offset-md-2">
-            <div class="card shadow-sm border-light">
-                <div class="card-body">
-                    <h2 class="card-title mb-3">
-                        <i class="fas fa-tag me-2"></i> {{ category.name }}
-                    </h2>
-                    <p class="card-text">
-                        <strong>Slug:</strong> {{ category.slug }}
-                    </p>
-                    <div class="d-flex justify-content-between mt-4">
-                        <a href="{% url 'category-update' category.pk %}" class="btn btn-warning">
-                            <i class="fas fa-edit me-2"></i> Edit
-                        </a>
-                        <a href="{% url 'category-delete' category.pk %}" class="btn btn-danger">
-                            <i class="fas fa-trash-alt me-2"></i> Delete
-                        </a>
-                        <a href="{% url 'category-list' %}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left me-2"></i> Back to list
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<a class="back-link" href="{% url 'category-list' %}"><i class="fa-solid fa-arrow-left"></i> Categories</a>
+<div class="page-header">
+  <div><h1>{{ category.name }}</h1></div>
+  {% if can_manage %}
+  <div class="page-actions">
+    <a class="btn btn-light" href="{% url 'category-update' category.pk %}"><i class="fa-solid fa-pen me-1"></i> Rename</a>
+    <a class="btn btn-outline-danger" href="{% url 'category-delete' category.pk %}"><i class="fa-solid fa-trash me-1"></i> Delete</a>
+  </div>
+  {% endif %}
 </div>
-{% endblock %}
+<div class="card table-card">
+  {% if items %}
+  <table class="table table-hover align-middle">
+    <thead><tr><th>Product</th><th class="num">In stock</th><th class="num">Price</th><th>Vendor</th></tr></thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td><a href="{% url 'product-detail' item.slug %}">{{ item.name }}</a></td>
+        <td class="num">{{ item.quantity }}</td>
+        <td class="num">{{ item.price|money }}</td>
+        <td>{{ item.vendor.name|default:"" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    {% include "partials/empty.html" with icon="fa-box" text="No products in this category." %}
+  {% endif %}
+</div>
+{% endblock content %}

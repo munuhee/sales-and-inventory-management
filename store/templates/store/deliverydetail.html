@@ -1,0 +1,18 @@
+{% extends "store/base.html" %}
+{% block title %}Delivery{% endblock %}
+{% block content %}
+<a class="back-link" href="{% url 'deliveries' %}"><i class="fa-solid fa-arrow-left"></i> Deliveries</a>
+<div class="page-header">
+  <div><h1>Delivery of {{ object.item.name|default:"removed item" }}</h1>
+  <p class="sub">{% if object.is_delivered %}<span class="status ok">Delivered</span>{% else %}<span class="status warn">Pending</span>{% endif %}</p></div>
+  <div class="page-actions"><a class="btn btn-light" href="{% url 'delivery-update' object.pk %}"><i class="fa-solid fa-pen me-1"></i> Edit</a></div>
+</div>
+<div class="card form-narrow"><div class="card-body">
+  <dl class="kv">
+    <dt>Customer</dt><dd>{{ object.customer_name|default:"Not set" }}</dd>
+    <dt>Phone</dt><dd>{{ object.phone_number|default:"Not set" }}</dd>
+    <dt>Location</dt><dd>{{ object.location|default:"Not set" }}</dd>
+    <dt>Date</dt><dd>{{ object.date|date:"d M Y, H:i" }}</dd>
+  </dl>
+</div></div>
+{% endblock content %}

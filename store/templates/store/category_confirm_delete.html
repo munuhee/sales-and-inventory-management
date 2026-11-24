@@ -1,19 +1,6 @@
-{% extends 'store/base.html' %}
-
-{% block content %}
-<div class="container m-3">
-    <h2 class="mb-4">Delete Category</h2>
-    <div class="alert alert-warning" role="alert">
-        <i class="fas fa-exclamation-triangle"></i> Are you sure you want to delete "{{ category.name }}"?
-    </div>
-    <form method="post" class="mt-4">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-danger">
-            <i class="fas fa-check"></i> Confirm
-        </button>
-        <a href="{% url 'category-list' %}" class="btn btn-secondary ms-2">
-            <i class="fas fa-times"></i> Cancel
-        </a>
-    </form>
-</div>
-{% endblock %}
+{% extends "store/confirm_delete.html" %}
+{% block title %}Delete category{% endblock %}
+{% block heading %}Delete {{ category.name }}?{% endblock %}
+{% block message %}Categories that still have products cannot be deleted.{% endblock %}
+{% block confirm_label %}Delete{% endblock %}
+{% block cancel_url %}{% url 'category-list' %}{% endblock %}

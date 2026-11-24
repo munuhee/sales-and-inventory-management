@@ -1,0 +1,1 @@
+{% if profile and profile.has_picture %}<img class="avatar {{ size }}" src="{{ profile.profile_picture.url }}" alt="">{% else %}<span class="avatar {{ size }}" aria-hidden="true">{{ profile.initials|default:"?" }}</span>{% endif %}

@@ -1,0 +1,6 @@
+<form class="search" method="get" role="search">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" name="q" value="{{ q }}" class="form-control form-control-sm" placeholder="{{ placeholder|default:'Search' }}" aria-label="{{ placeholder|default:'Search' }}">
+  {% for key, value in request.GET.items %}{% if key != 'q' and key != 'page' %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}{% endfor %}
+</form>
+{% if q %}<a class="btn btn-sm btn-link text-muted" href="{{ request.path }}">Clear</a>{% endif %}

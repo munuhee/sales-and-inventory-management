@@ -1,59 +1,23 @@
-{% extends 'store/base.html' %}
-{% block title %}Staff Page{% endblock %}
-
+{% extends "store/base.html" %}
+{% block title %}My profile{% endblock %}
 {% block content %}
-<div class="container">
-        <div class="card">
-            <div class="row p-3">
-                <div class="col-md-8">
-                    <table class="table table-borderless">
-                        <thead>
-                            <span class="h4">Profile Information</span class="h4">
-                            <a class="btn btn-outline-success btn-sm float-end" href="{% url 'user-profile-update' %}">Edit profile</a>
-                            <hr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <th scope="row">username</th>
-                                <td>{{ user.username }}</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">Staff role</th>
-                                <td>
-                                    <span class="badge badge-pill bg-soft-success text-success me-2">
-                                    {% if user.profile.role == 'AD' %}
-                                    Admin
-                                    {% elif user.profile.role == 'EX' %}
-                                    Executive
-                                    {% else %}
-                                    Operative
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row">First name</th>
-                                <td>{{ user.profile.first_name }}</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">Last name</th>
-                                <td>{{ user.profile.last_name }}</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">Email</th>
-                                <td>{{ user.email }}</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">Phone</th>
-                                <td>{{ user.profile.telephone }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="col-md-4">
-                    <img class="rounded-pill img-fluid" src="{{ user.profile.profile_picture.url }}" alt="profile-image">
-                </div>
-            </div>
-        </div>
+<div class="page-header">
+  <div class="d-flex align-items-center gap-3">
+    {% include "partials/avatar.html" with profile=user.profile size="avatar-lg" %}
+    <div><h1>{{ user.profile.display_name }}</h1><p class="sub">{% if user.is_superuser %}Admin{% else %}{{ user.profile.get_role_display }}{% endif %}</p></div>
+  </div>
+  <div class="page-actions">
+    <a class="btn btn-light" href="{% url 'password-change' %}"><i class="fa-solid fa-key me-1"></i> Change password</a>
+    <a class="btn btn-primary" href="{% url 'user-profile-update' %}"><i class="fa-solid fa-pen me-1"></i> Edit profile</a>
+  </div>
 </div>
-
-{% endblock %}
+<div class="card form-narrow"><div class="card-body">
+  <dl class="kv">
+    <dt>Username</dt><dd>{{ user.username }}</dd>
+    <dt>First name</dt><dd>{{ user.profile.first_name|default:"Not set" }}</dd>
+    <dt>Last name</dt><dd>{{ user.profile.last_name|default:"Not set" }}</dd>
+    <dt>Email</dt><dd>{{ user.email|default:"Not set" }}</dd>
+    <dt>Telephone</dt><dd>{{ user.profile.telephone|default:"Not set" }}</dd>
+  </dl>
+</div></div>
+{% endblock content %}

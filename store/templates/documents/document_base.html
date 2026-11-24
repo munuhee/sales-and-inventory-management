@@ -1,0 +1,175 @@
+{% load formatting %}<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{% block doc_title %}Document{% endblock %}</title>
+<style>
+  @page {
+    size: A4;
+    margin: 18mm 16mm 22mm 16mm;
+    @bottom-left {
+      content: "{% block footer_ref %}{% endblock %}";
+      font-family: "Helvetica Neue", Helvetica, Arial, "DejaVu Sans", sans-serif;
+      font-size: 7.5pt;
+      color: #8a94a3;
+    }
+    @bottom-right {
+      content: "Page " counter(page) " of " counter(pages);
+      font-family: "Helvetica Neue", Helvetica, Arial, "DejaVu Sans", sans-serif;
+      font-size: 7.5pt;
+      color: #8a94a3;
+    }
+  }
+
+  :root {
+    --ink: #1c2430;
+    --muted: #5f6b7a;
+    --faint: #8a94a3;
+    --rule: #dfe3e8;
+    --band: #f4f6f8;
+    --accent: #1f6f4a;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    color: var(--ink);
+    font-family: "Helvetica Neue", Helvetica, Arial, "DejaVu Sans", sans-serif;
+    font-size: 9.5pt;
+    line-height: 1.45;
+  }
+
+  .doc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 14pt;
+    border-bottom: 2pt solid var(--accent);
+  }
+  .brand-name {
+    font-size: 17pt;
+    font-weight: 700;
+    letter-spacing: -0.2pt;
+    margin: 0 0 4pt;
+  }
+  .brand-lines { color: var(--muted); font-size: 8.5pt; line-height: 1.5; }
+  .doc-kind {
+    text-align: right;
+  }
+  .doc-kind h1 {
+    margin: 0 0 6pt;
+    font-size: 20pt;
+    font-weight: 300;
+    letter-spacing: 3pt;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .meta { border-collapse: collapse; margin-left: auto; }
+  .meta td { padding: 1pt 0 1pt 12pt; font-size: 8.5pt; }
+  .meta td:first-child { color: var(--faint); text-align: right; }
+  .meta td:last-child { font-weight: 600; text-align: right; }
+
+  .parties {
+    display: flex;
+    gap: 24pt;
+    margin: 18pt 0 16pt;
+  }
+  .party { flex: 1; }
+  .label {
+    font-size: 7.5pt;
+    font-weight: 700;
+    letter-spacing: 0.8pt;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin-bottom: 4pt;
+  }
+  .party .name { font-weight: 600; font-size: 10.5pt; }
+  .party .lines { color: var(--muted); }
+
+  table.lines {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 4pt;
+  }
+  table.lines thead th {
+    background: var(--band);
+    color: var(--muted);
+    font-size: 7.5pt;
+    font-weight: 700;
+    letter-spacing: 0.6pt;
+    text-transform: uppercase;
+    text-align: left;
+    padding: 7pt 8pt;
+    border-bottom: 1pt solid var(--rule);
+  }
+  table.lines tbody td {
+    padding: 7pt 8pt;
+    border-bottom: 0.75pt solid var(--rule);
+    vertical-align: top;
+  }
+  table.lines tr { page-break-inside: avoid; }
+  table.lines .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  table.lines .idx { width: 22pt; color: var(--faint); }
+  .item-sub { color: var(--faint); font-size: 8pt; }
+
+  .summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-top: 14pt;
+    page-break-inside: avoid;
+  }
+  .notes { flex: 1; padding-right: 24pt; color: var(--muted); font-size: 8.5pt; }
+  table.totals { border-collapse: collapse; min-width: 210pt; }
+  table.totals td { padding: 3.5pt 0; font-variant-numeric: tabular-nums; }
+  table.totals td.amt { text-align: right; padding-left: 24pt; white-space: nowrap; }
+  table.totals tr.grand td {
+    border-top: 1.5pt solid var(--ink);
+    padding-top: 7pt;
+    font-size: 12pt;
+    font-weight: 700;
+  }
+  table.totals tr.sep td { border-top: 0.75pt solid var(--rule); padding-top: 6pt; }
+  table.totals tr.muted td { color: var(--muted); }
+
+  .panel {
+    margin-top: 16pt;
+    padding: 9pt 11pt;
+    background: var(--band);
+    border-radius: 3pt;
+    font-size: 8.5pt;
+    page-break-inside: avoid;
+  }
+  .panel strong { color: var(--ink); }
+
+  .closing {
+    margin-top: 26pt;
+    padding-top: 10pt;
+    border-top: 0.75pt solid var(--rule);
+    color: var(--muted);
+    font-size: 8.5pt;
+    text-align: center;
+  }
+  .closing .thanks { color: var(--ink); font-size: 10pt; font-weight: 600; margin-bottom: 2pt; }
+
+  .void-stamp {
+    position: fixed;
+    top: 95mm;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 88pt;
+    font-weight: 800;
+    letter-spacing: 12pt;
+    color: rgba(180, 35, 24, 0.12);
+    transform: rotate(-24deg);
+  }
+  .void-note { color: #b42318; font-weight: 600; }
+</style>
+</head>
+<body>
+{% block body %}{% endblock %}
+</body>
+</html>

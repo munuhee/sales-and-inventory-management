@@ -1,113 +1,41 @@
 {% extends "store/base.html" %}
-{% load render_table from django_tables2 %}
-{% load querystring from django_tables2 %}
-{% load static %}
-
-{% block title %}Invoices{% endblock title %}
-
+{% load formatting %}
+{% block title %}Invoices{% endblock %}
 {% block content %}
-<div class="container p-5">
-  <style>
-    .table th, .table td {
-        text-align: center;
-    }
-  </style>
-    <div class="mb-3">
-        <a class="btn btn-success btn-sm" href="{% url 'invoice-create' %}">
-            <i class="fa-solid fa-plus me-2"></i> Create Invoice
-        </a>
-        <a class="float-end btn btn-success btn-sm" href="{% querystring '_export'='xlsx' %}">
-            <i class="fa-solid fa-download me-2"></i> Export to Excel
-        </a>
-    </div>
-
-    <div class="m-2">
-        <table class="table table-sm table-striped table-bordered">
-            <thead class="thead-light">
-                <tr>
-                    <th scope="col"><a href="{% querystring table.prefixed_order_by_field=column.order_by_alias.next %}">ID <i class="fa-solid fa-sort"></i></a></th>
-                    <th scope="col">Customer Name <i class="fa-solid fa-sort"></i></th>
-                    <th scope="col">Phone Number <i class="fa-solid fa-sort"></i></th>
-                    <th scope="col">Item <i class="fa-solid fa-sort"></i></th>
-                    <th scope="col">Price per Item <i class="fa-solid fa-sort"></i></th>
-                    <th scope="col">Quantity <i class="fa-solid fa-sort"></i></th>
-                    <th scope="col">Total <i class="fa-solid fa-sort"></i></th>
-                    <th scope="col">Shipping <i class="fa-solid fa-sort"></i></th>
-                    <th scope="col">Grand Total <i class="fa-solid fa-sort"></i></th>
-                    <th scope="col">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for invoice in invoices %}
-                <tr>
-                    <th scope="row">{{ invoice.id }}</th>
-                    <td><a href="{% url 'invoice-detail' invoice.slug %}">{{ invoice.customer_name }}</a></td>
-                    <td>{{ invoice.contact_number }}</td>
-                    <td>{{ invoice.item.name }}</td>
-                    <td>{{ invoice.price_per_item }}</td>
-                    <td>{{ invoice.quantity }}</td>
-                    <td>{{ invoice.total }}</td>
-                    <td>{{ invoice.shipping }}</td>
-                    <td>{{ invoice.grand_total }}</td>
-                    <td>
-                        <a class="text-info" href="{% url 'invoice-update' invoice.slug %}">
-                            <i class="fa-solid fa-pen"></i>
-                        </a>
-                        <a class="text-danger float-end" href="{% url 'invoice-delete' invoice.pk %}">
-                            <i class="fa-solid fa-trash"></i>
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Pagination -->
-    <div class="mt-4">
-        {% if is_paginated %}
-        <nav aria-label="Page navigation">
-            <ul class="pagination justify-content-center">
-                {% if page_obj.has_previous %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
-                    </a>
-                </li>
-                {% else %}
-                <li class="page-item disabled">
-                    <span class="page-link" aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
-                    </span>
-                </li>
-                {% endif %}
-                {% for i in paginator.page_range %}
-                {% if page_obj.number == i %}
-                <li class="page-item active" aria-current="page">
-                    <span class="page-link">{{ i }} <span class="visually-hidden">(current)</span></span>
-                </li>
-                {% else %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ i }}">{{ i }}</a>
-                </li>
-                {% endif %}
-                {% endfor %}
-                {% if page_obj.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
-                    </a>
-                </li>
-                {% else %}
-                <li class="page-item disabled">
-                    <span class="page-link" aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
-                    </span>
-                </li>
-                {% endif %}
-            </ul>
-        </nav>
-        {% endif %}
-    </div>
+<div class="page-header">
+  <div><h1>Invoices</h1></div>
+  {% if can_manage %}<div class="page-actions"><a class="btn btn-primary" href="{% url 'invoice-create' %}"><i class="fa-solid fa-plus me-1"></i> New invoice</a></div>{% endif %}
+</div>
+<div class="card table-card">
+  <div class="toolbar">{% include "partials/search.html" with placeholder="Search customer, phone, item" %}</div>
+  {% if invoices %}
+  <div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead><tr><th>Invoice</th><th>Date</th><th>Customer</th><th>Item</th><th class="num">Qty</th><th class="num">Total due</th><th></th></tr></thead>
+    <tbody>
+      {% for invoice in invoices %}
+      <tr>
+        <td><a href="{% url 'invoice-detail' invoice.slug %}">{{ invoice.invoice_number }}</a></td>
+        <td>{{ invoice.date|date:"d M Y" }}</td>
+        <td>{{ invoice.customer_name }}<div class="small text-muted">{{ invoice.contact_number }}</div></td>
+        <td>{{ invoice.item.name }}</td>
+        <td class="num">{{ invoice.quantity|qty }}</td>
+        <td class="num">{{ invoice.grand_total|money }}</td>
+        <td class="row-actions">
+          <a href="{% url 'invoice-pdf' invoice.slug %}" target="_blank" rel="noopener" title="Print"><i class="fa-solid fa-print"></i></a>
+          {% if can_manage %}
+          <a href="{% url 'invoice-update' invoice.slug %}" title="Edit"><i class="fa-solid fa-pen"></i></a>
+          <a class="danger" href="{% url 'invoice-delete' invoice.pk %}" title="Delete"><i class="fa-solid fa-trash"></i></a>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% include "partials/pagination.html" %}
+  {% else %}
+    {% include "partials/empty.html" with icon="fa-file-invoice" text="No invoices yet." %}
+  {% endif %}
 </div>
 {% endblock content %}

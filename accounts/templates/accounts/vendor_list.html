@@ -1,134 +1,32 @@
-{% extends 'store/base.html' %}
-{% load static %}
-
+{% extends "store/base.html" %}
+{% block title %}Vendors{% endblock %}
 {% block content %}
-<!-- Header Section -->
-<div class="container my-4">
-    <div class="card shadow-sm rounded p-3">
-        <div class="row align-items-center">
-            <div class="col-md-6">
-                <h4 class="display-6 mb-0 text-success">Vendors</h4>
-            </div>
-            <div class="col-md-6 d-flex justify-content-end gap-2">
-                <a class="btn btn-success btn-sm rounded-pill shadow-sm" href="{% url 'vendor-create' %}">
-                    <i class="fa-solid fa-plus"></i> Add Vendor
-                </a>
-            </div>
-        </div>
-    </div>
+<div class="page-header">
+  <div><h1>Vendors</h1></div>
+  <div class="page-actions"><a class="btn btn-primary" href="{% url 'vendor-create' %}"><i class="fa-solid fa-plus me-1"></i> Add vendor</a></div>
 </div>
-
-<div class="container px-3">
-    <style>
-        .table th, .table td {
-            text-align: center;
-        }
-    </style>
-    <table class="table table-bordered table-striped">
-        <thead class="thead-light">
-            <tr>
-                <th>Name</th>
-                <th>Phone Number</th>
-                <th>Address</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for vendor in vendors %}
-            <tr>
-                <td>{{ vendor.name }}</td>
-                <td>{{ vendor.phone_number }}</td>
-                <td>{{ vendor.address }}</td>
-                <td>
-                    <a href="{% url 'vendor-update' vendor.pk %}" class="btn btn-outline-warning btn-sm">
-                        <i class="fas fa-edit me-2"></i>Edit
-                    </a>
-                    <a href="{% url 'vendor-delete' vendor.pk %}" class="btn btn-outline-danger btn-sm">
-                        <i class="fas fa-trash-alt me-2"></i>Delete
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <!-- Pagination controls -->
-    <nav aria-label="Page navigation example">
-        <ul class="pagination justify-content-center">
-            <!-- First Page Link -->
-            {% if vendors.has_previous %}
-            <li class="page-item">
-                <a class="page-link" href="?page=1" aria-label="First">
-                    <span aria-hidden="true">&laquo;&laquo;</span>
-                </a>
-            </li>
-            {% else %}
-            <li class="page-item disabled">
-                <span class="page-link" aria-label="First">
-                    <span aria-hidden="true">&laquo;&laquo;</span>
-                </span>
-            </li>
-            {% endif %}
-
-            <!-- Previous Page Link -->
-            {% if vendors.has_previous %}
-            <li class="page-item">
-                <a class="page-link" href="?page={{ vendors.previous_page_number }}" aria-label="Previous">
-                    <span aria-hidden="true">&laquo;</span>
-                </a>
-            </li>
-            {% else %}
-            <li class="page-item disabled">
-                <span class="page-link" aria-label="Previous">
-                    <span aria-hidden="true">&laquo;</span>
-                </span>
-            </li>
-            {% endif %}
-
-            <!-- Page Number Links -->
-            {% for num in vendors.paginator.page_range %}
-                {% if vendors.number == num %}
-                <li class="page-item active">
-                    <span class="page-link">{{ num }}</span>
-                </li>
-                {% else %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
-                </li>
-                {% endif %}
-            {% endfor %}
-
-            <!-- Next Page Link -->
-            {% if vendors.has_next %}
-            <li class="page-item">
-                <a class="page-link" href="?page={{ vendors.next_page_number }}" aria-label="Next">
-                    <span aria-hidden="true">&raquo;</span>
-                </a>
-            </li>
-            {% else %}
-            <li class="page-item disabled">
-                <span class="page-link" aria-label="Next">
-                    <span aria-hidden="true">&raquo;</span>
-                </span>
-            </li>
-            {% endif %}
-
-            <!-- Last Page Link -->
-            {% if vendors.has_next %}
-            <li class="page-item">
-                <a class="page-link" href="?page={{ vendors.paginator.num_pages }}" aria-label="Last">
-                    <span aria-hidden="true">&raquo;&raquo;</span>
-                </a>
-            </li>
-            {% else %}
-            <li class="page-item disabled">
-                <span class="page-link" aria-label="Last">
-                    <span aria-hidden="true">&raquo;&raquo;</span>
-                </span>
-            </li>
-            {% endif %}
-        </ul>
-    </nav>
-
+<div class="card table-card">
+  <div class="toolbar">{% include "partials/search.html" with placeholder="Search vendors" %}</div>
+  {% if vendors %}
+  <table class="table table-hover align-middle">
+    <thead><tr><th>Name</th><th>Phone</th><th>Address</th><th></th></tr></thead>
+    <tbody>
+      {% for vendor in vendors %}
+      <tr>
+        <td>{{ vendor.name }}</td>
+        <td>{{ vendor.phone_number|default:"" }}</td>
+        <td>{{ vendor.address|default:"" }}</td>
+        <td class="row-actions">
+          <a href="{% url 'vendor-update' vendor.pk %}" title="Edit"><i class="fa-solid fa-pen"></i></a>
+          <a class="danger" href="{% url 'vendor-delete' vendor.pk %}" title="Delete"><i class="fa-solid fa-trash"></i></a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% include "partials/pagination.html" %}
+  {% else %}
+    {% include "partials/empty.html" with icon="fa-industry" text="No vendors yet." %}
+  {% endif %}
 </div>
-{% endblock %}
+{% endblock content %}

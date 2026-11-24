@@ -1,0 +1,22 @@
+{% extends "store/base.html" %}
+{% load formatting %}
+{% block title %}Purchase order{% endblock %}
+{% block content %}
+<a class="back-link" href="{% url 'purchaseslist' %}"><i class="fa-solid fa-arrow-left"></i> Purchase orders</a>
+<div class="page-header">
+  <div><h1>{{ object.item.name }} from {{ object.vendor.name }}</h1>
+  <p class="sub">{% if object.received %}<span class="status ok">Received</span>{% else %}<span class="status warn">Pending</span>{% endif %}</p></div>
+  <div class="page-actions"><a class="btn btn-light" href="{% url 'purchase-update' object.pk %}"><i class="fa-solid fa-pen me-1"></i> Edit</a></div>
+</div>
+<div class="card form-narrow"><div class="card-body">
+  <dl class="kv">
+    <dt>Quantity</dt><dd>{{ object.quantity }}</dd>
+    <dt>Unit price</dt><dd>{{ object.price|money }}</dd>
+    <dt>Total</dt><dd>{{ object.total_value|money }}</dd>
+    <dt>Ordered</dt><dd>{{ object.order_date|date:"d M Y, H:i" }}</dd>
+    <dt>Delivery date</dt><dd>{{ object.delivery_date|date:"d M Y, H:i"|default:"Not set" }}</dd>
+    <dt>Added to stock</dt><dd>{{ object.stock_applied }} units</dd>
+    <dt>Notes</dt><dd>{{ object.description|default:"None" }}</dd>
+  </dl>
+</div></div>
+{% endblock content %}

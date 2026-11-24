@@ -1,0 +1,101 @@
+{% extends "documents/document_base.html" %}
+{% load formatting %}
+{% block doc_title %}Receipt {{ sale.receipt_number }}{% endblock %}
+{% block footer_ref %}Receipt {{ sale.receipt_number }}{% endblock %}
+{% block body %}
+{% if sale.is_voided %}<div class="void-stamp">VOID</div>{% endif %}
+
+<header class="doc-header">
+  <div>
+    <p class="brand-name">{{ business.name }}</p>
+    <div class="brand-lines">
+      {% if business.address %}{{ business.address }}<br>{% endif %}
+      {% if business.po_box %}{{ business.po_box }}<br>{% endif %}
+      {% if business.phone %}Tel {{ business.phone }}{% endif %}{% if business.phone and business.email %} · {% endif %}{% if business.email %}{{ business.email }}{% endif %}
+      {% if business.tax_pin %}<br>PIN {{ business.tax_pin }}{% endif %}
+    </div>
+  </div>
+  <div class="doc-kind">
+    <h1>Receipt</h1>
+    <table class="meta">
+      <tr><td>Receipt no.</td><td>{{ sale.receipt_number }}</td></tr>
+      <tr><td>Date</td><td>{{ sale.date_added|date:"d M Y, H:i" }}</td></tr>
+      <tr><td>Status</td><td>{% if sale.is_voided %}<span class="void-note">Voided</span>{% else %}Paid{% endif %}</td></tr>
+    </table>
+  </div>
+</header>
+
+<section class="parties">
+  <div class="party">
+    <div class="label">Billed to</div>
+    <div class="name">{{ sale.customer.get_full_name }}</div>
+    <div class="lines">
+      {% if sale.customer.phone %}{{ sale.customer.phone }}<br>{% endif %}
+      {% if sale.customer.email %}{{ sale.customer.email }}<br>{% endif %}
+      {% if sale.customer.address %}{{ sale.customer.address|linebreaksbr }}{% endif %}
+    </div>
+  </div>
+  <div class="party">
+    <div class="label">Served by</div>
+    <div class="name">{% if sale.served_by %}{{ sale.served_by.profile.display_name|default:sale.served_by.username }}{% else %}Staff{% endif %}</div>
+    <div class="lines">Payment received in full</div>
+  </div>
+</section>
+
+<table class="lines">
+  <thead>
+    <tr>
+      <th class="idx">#</th>
+      <th>Item</th>
+      <th class="num">Qty</th>
+      <th class="num">Unit price</th>
+      <th class="num">Amount</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for line in lines %}
+    <tr>
+      <td class="idx">{{ forloop.counter }}</td>
+      <td>{{ line.item.name }}{% if line.item.category %}<div class="item-sub">{{ line.item.category.name }}</div>{% endif %}</td>
+      <td class="num">{{ line.quantity|qty }}</td>
+      <td class="num">{{ line.price|money:False }}</td>
+      <td class="num">{{ line.total_detail|money:False }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<section class="summary">
+  <div class="notes">
+    {% if sale.is_voided %}
+      <p class="void-note">This sale was voided on {{ sale.voided_at|date:"d M Y, H:i" }}{% if sale.void_reason %}: {{ sale.void_reason }}{% endif %}. It is not a valid proof of payment.</p>
+    {% else %}
+      <p>Goods sold are subject to the store returns policy. Keep this receipt as proof of purchase.</p>
+    {% endif %}
+  </div>
+  <table class="totals">
+    <tr><td>Subtotal</td><td class="amt">{{ sale.sub_total|money }}</td></tr>
+    {% if sale.discount_amount %}
+    <tr><td>Loyalty discount ({{ sale.loyalty_points_redeemed }} pts)</td><td class="amt">&minus;{{ sale.discount_amount|money }}</td></tr>
+    {% endif %}
+    <tr><td>Tax ({{ sale.tax_percentage|percent }})</td><td class="amt">{{ sale.tax_amount|money }}</td></tr>
+    <tr class="grand"><td>Total</td><td class="amt">{{ sale.grand_total|money }}</td></tr>
+    <tr class="sep muted"><td>Amount paid</td><td class="amt">{{ sale.amount_paid|money }}</td></tr>
+    <tr class="muted"><td>Change</td><td class="amt">{{ sale.amount_change|money }}</td></tr>
+  </table>
+</section>
+
+{% if sale.loyalty_points_earned or sale.loyalty_points_redeemed %}
+<div class="panel">
+  <strong>Loyalty points.</strong>
+  {% if sale.loyalty_points_earned %}Earned {{ sale.loyalty_points_earned }} on this purchase.{% endif %}
+  {% if sale.loyalty_points_redeemed %}Redeemed {{ sale.loyalty_points_redeemed }}.{% endif %}
+  {% if points_balance is not None %}Balance after this purchase: <strong>{{ points_balance }}</strong> points.{% endif %}
+</div>
+{% endif %}
+
+<footer class="closing">
+  <div class="thanks">Thank you for your business</div>
+  {{ units }} item{{ units|pluralize }} · Printed {{ printed_at|date:"d M Y, H:i" }}
+</footer>
+{% endblock %}

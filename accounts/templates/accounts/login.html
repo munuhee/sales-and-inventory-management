@@ -1,139 +1,46 @@
-{% load crispy_forms_tags %}{% load static %}
-<html>
-  <head>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
-      rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
-      crossorigin="anonymous" />
-  </head>
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign in | {{ business.name }}</title>
+  <link rel="icon" href="{% static 'images/logo/favicon.png' %}" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
 <body>
-  <div class="login-page">
-    <style>
-    .login-page {
-      width: 360px;
-      padding: 8% 0 0;
-      margin: auto;
-    }
-    .form {
-      position: relative;
-      z-index: 1;
-      background: #FFFFFF;
-      max-width: 360px;
-      margin: 0 auto 100px;
-      padding: 45px;
-      text-align: center;
-      box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
-    }
-    .form input {
-      outline: 0;
-      background: #bbffbb;
-      width: 100%;
-      border: 0;
-      margin: 0 0 15px;
-      padding: 15px;
-      box-sizing: border-box;
-      font-size: 14px;
-    }
-    .form button {
-      text-transform: uppercase;
-      outline: 0;
-      background: #4CAF50;
-      width: 100%;
-      border: 0;
-      padding: 15px;
-      color: #FFFFFF;
-      font-size: 14px;
-      -webkit-transition: all 0.3 ease;
-      transition: all 0.3 ease;
-      cursor: pointer;
-    }
-    .form button:hover,.form button:active,.form button:focus {
-      background: #43A047;
-    }
-    .form .message {
-      margin: 15px 0 0;
-      color: #b3b3b3;
-      font-size: 12px;
-    }
-    .form .message a {
-      color: #4CAF50;
-      text-decoration: none;
-    }
-    .form .register-form {
-      display: none;
-    }
-    .container {
-      position: relative;
-      z-index: 1;
-      max-width: 300px;
-      margin: 0 auto;
-    }
-    .container:before, .container:after {
-      content: "";
-      display: block;
-      clear: both;
-    }
-    .container .info {
-      margin: 50px auto;
-      text-align: center;
-    }
-    .container .info h1 {
-      margin: 0 0 15px;
-      padding: 0;
-      font-size: 36px;
-      font-weight: 300;
-      color: #1a1a1a;
-    }
-    .container .info span {
-      color: #4d4d4d;
-      font-size: 12px;
-    }
-    .container .info span a {
-      color: #000000;
-      text-decoration: none;
-    }
-    .container .info span .fa {
-      color: #EF3B3A;
-    }
-    body {
-      background: #76b852; /* fallback for old browsers */
-      background: rgb(141,194,111);
-      background: linear-gradient(90deg, rgba(141,194,111,1) 0%, rgba(118,184,82,1) 50%);
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-    </style>
-    <div class="form">
-      <div>
-        <strong class="navbar-brand" style="font-size: 26px;">Inventory<span class="text-warning">ms</span></strong>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="brand"><span class="brand-mark"><i class="fa-solid fa-boxes-stacked"></i></span><span>{{ business.name }}</span></div>
+    <div class="card">
+      <div class="card-body p-4">
+        <h1 class="h5 mb-1">Sign in</h1>
+        <p class="text-muted small mb-4">Use your staff account.</p>
+        {% include "partials/messages.html" %}
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger py-2">{% for error in form.non_field_errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</div>
+        {% endif %}
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ next }}">
+          <div class="mb-3">
+            <label class="form-label" for="id_username">Username</label>
+            <input class="form-control" id="id_username" name="username" value="{{ form.username.value|default:'' }}" autocomplete="username" autofocus required>
+          </div>
+          <div class="mb-4">
+            <label class="form-label" for="id_password">Password</label>
+            <input class="form-control" id="id_password" name="password" type="password" autocomplete="current-password" required>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Sign in</button>
+        </form>
+        {% if allow_registration %}
+        <p class="text-center text-muted small mt-4 mb-0">New staff member? <a href="{% url 'user-register' %}">Request an account</a></p>
+        {% endif %}
       </div>
-      <div class="text-danger">
-        {% if messages %} {% for message in messages %}
-        <div class="alert alert-{{message.tags}}">
-            {{ message }}
-        </div>
-        {% endfor %} {% endif %}
-
-    {% if form.non_field_errors %}
-        <ul>
-            {% for error in form.non_field_errors %}
-                <li>{{ error }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
-  </div>
-      <form class="login-form" method="POST">
-        {% csrf_token %}
-        <p>{{ message }}</p>
-        <label>Username</label>
-        <span class="text-danger">{{ form.username.errors }}</span>
-        {{form.username}}
-        <label>Password</label>
-        <span class="text-danger">{{ form.password.errors }}</span>
-        {{form.password}}
-        <button  type="submit" name="button">login</button>
-        <p class="message">Not registered? <a href="{% url 'user-register' %}">Create an account</a></p>
-      </form>
     </div>
   </div>
+</div>
 </body>
 </html>
