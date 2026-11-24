@@ -3,12 +3,14 @@
   <img src="https://res.cloudinary.com/murste/image/upload/v1698907632/stevolve_x8ioeu.png" alt="Stephen Murichu's Logo" width="100" />
 </div>
 
-# Django-inventory-management
+# Django Sales and Inventory Management System (POS)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/license/mit)
 [![Python Version](https://img.shields.io/badge/Python-3.12-green)](https://www.python.org/downloads/)
 [![Django](https://img.shields.io/badge/Django-5.2_LTS-0C4B33)](https://www.djangoproject.com/)
 
-Point of sale, stock control, purchasing, invoicing and loyalty points for a retail shop, built with Django.
+An open-source **sales and inventory management system** built with **Python and Django**. It gives a retail shop a web-based **point of sale (POS)**, **stock control**, **purchase orders**, **PDF receipts and invoices**, **billing** and **customer loyalty points**, with role-based access for admins and staff.
+
+Free to use under the MIT license. Runs with Docker or a plain Python virtualenv, and includes demo data so you can try it in minutes.
 
 ## Table of Contents
 - [Features](#features)
@@ -50,7 +52,7 @@ Taken from the demo data (`seed_demo`).
 
 | Dashboard | Point of sale |
 | --- | --- |
-| ![Dashboard](docs/screenshots/dashboard.png) | ![Point of sale](docs/screenshots/point-of-sale.png) |
+| ![Django inventory management dashboard with sales chart and low stock alerts](docs/screenshots/dashboard.png) | ![Django point of sale (POS) screen](docs/screenshots/point-of-sale.png) |
 
 | Receipt (PDF) | Invoice (PDF) |
 | --- | --- |
