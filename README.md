@@ -1,8 +1,3 @@
-
-<div align="center">
-  <img src="https://res.cloudinary.com/murste/image/upload/v1698907632/stevolve_x8ioeu.png" alt="Stephen Murichu's Logo" width="100" />
-</div>
-
 # Django Sales and Inventory Management System (POS)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/license/mit)
 [![Python Version](https://img.shields.io/badge/Python-3.12-green)](https://www.python.org/downloads/)
