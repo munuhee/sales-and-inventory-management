@@ -124,3 +124,10 @@ ipython_config.py
 !.env.example
 staticfiles/
 *.swp
+
+# Terraform plans, local overrides and variable files can hold secrets
+*.tfvars
+*.tfvars.json
+tfplan
+backend_override.tf
+

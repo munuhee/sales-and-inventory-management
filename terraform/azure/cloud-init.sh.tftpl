@@ -1,0 +1,25 @@
+#!/bin/bash
+set -euo pipefail
+
+apt-get update
+apt-get install -y docker.io git
+systemctl enable --now docker
+
+git clone --depth 1 --branch "${repo_ref}" "${repo_url}" /opt/inventory
+cd /opt/inventory
+docker build -t inventory-app .
+
+docker network create web || true
+
+# The app is reachable only through Caddy on the private Docker network.
+docker run -d --name inventory --network web --restart unless-stopped \
+  -e SECRET_KEY='${secret_key}' \
+  -e ALLOWED_HOSTS='${domain_name}' \
+  -e CSRF_TRUSTED_ORIGINS='https://${domain_name}' \
+  -v inventory-data:/app/data \
+  inventory-app
+
+docker run -d --name caddy --network web --restart unless-stopped \
+  -p 80:80 -p 443:443 \
+  -v caddy-data:/data \
+  caddy:2 caddy reverse-proxy --from '${domain_name}' --to inventory:8000

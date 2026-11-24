@@ -20,6 +20,7 @@ Point of sale, stock control, purchasing, invoicing and loyalty points for a ret
 - [Configuration](#configuration)
 - [Upgrading an existing database](#upgrading-an-existing-database)
 - [Running the tests](#running-the-tests)
+- [CI and deployment](#ci-and-deployment)
 - [Authors](#authors)
 
 ## Features
@@ -30,7 +31,7 @@ Point of sale, stock control, purchasing, invoicing and loyalty points for a ret
 - **Voids, not deletes.** Voiding a sale returns the items to stock and reverses loyalty points. The sale stays on record.
 - **Loyalty points.** Customers earn points on every sale (1 point per Ksh 100 by default) and redeem them as a discount before tax. Every change is logged in a ledger; managers can make recorded corrections.
 - **Dashboard.** Revenue today and this month, stock value, low stock alerts, a 30-day sales chart and recent sales.
-- **Accounts and security.** Role based access, staff approval for self sign-ups, login throttling, immediate sign-out of deactivated staff, and secure production settings.
+- **Accounts and security.** Capability-based access by role, separately controlled sign-in access, approval workflow for self sign-ups, staff change history, login throttling, immediate sign-out of deactivated staff, and secure production settings: a Content Security Policy with no inline scripts, SRI hashes on every CDN asset, HttpOnly cookies, HSTS and cross-origin isolation headers.
 - **Exports.** Sales, purchases, products and deliveries to Excel (managers only).
 
 ## Roles
@@ -39,11 +40,13 @@ Point of sale, stock control, purchasing, invoicing and loyalty points for a ret
 | --- | --- |
 | **Operative** | Sell, print receipts, view stock and invoices, manage customers and deliveries |
 | **Executive** | Everything above, plus products, categories, purchase orders, vendors, invoices, bills, exports, voiding sales and point adjustments |
-| **Admin** | Everything, plus staff accounts, roles and approvals |
+| **Admin** | Everything in Executive, plus staff accounts, account approvals, and staff access management |
 
-New sign-ups wait for an Admin to approve them on the **Staff** page. Django superusers are always Admin.
+Staff sign-in status is separate from employment status. An account can be Active, Inactive, or On leave while sign-in can also be disabled directly. New self sign-ups remain Pending until approved on the **Staff** page. Admins can create Operative and Executive accounts; only a Django superuser can grant the Admin role or modify/delete an Admin account. Role, status, approval, and sign-in changes are recorded in the Staff access activity log. Django superusers are always Admin; the first one is created from the terminal (see [Create the first admin](#create-the-first-admin)).
 
 ## Screenshots
+
+Taken from the demo data (`seed_demo`).
 
 | Dashboard | Point of sale |
 | --- | --- |
@@ -54,32 +57,88 @@ New sign-ups wait for an Admin to approve them on the **Staff** page. Django sup
 | ![Receipt](docs/screenshots/receipt.png) | ![Invoice](docs/screenshots/invoice.png) |
 
 <details>
-  <summary>More screenshots</summary>
+  <summary><b>Sales and customers</b></summary>
 
-  **Sale detail.** A summary for staff, with Print, Download and Void actions.
-  ![Sale detail](docs/screenshots/sale-detail.png)
-
-  **Sales**
+  **Sales**, with voided sales flagged
   ![Sales](docs/screenshots/sales.png)
 
-  **Products,** with low stock and out-of-stock flags
-  ![Products](docs/screenshots/products.png)
+  **Sale detail.** A summary for staff, with Print, Download and Void actions. The receipt itself only appears as the PDF.
+  ![Sale detail](docs/screenshots/sale-detail.png)
 
-  **Customer loyalty history**
+  **Customers**
+  ![Customers](docs/screenshots/customers.png)
+
+  **Customer loyalty history**, with the points ledger and manager adjustments
   ![Customer loyalty](docs/screenshots/customer-loyalty.png)
 
-  **Purchase orders**
+  **Deliveries**
+  ![Deliveries](docs/screenshots/deliveries.png)
+</details>
+
+<details>
+  <summary><b>Inventory and purchasing</b></summary>
+
+  **Products**, with low stock and out-of-stock flags
+  ![Products](docs/screenshots/products.png)
+
+  **Product detail**
+  ![Product detail](docs/screenshots/product-detail.png)
+
+  **New product**
+  ![New product](docs/screenshots/product-form.png)
+
+  **Categories**
+  ![Categories](docs/screenshots/categories.png)
+
+  **Purchase orders.** Stock is added only when an order is received.
   ![Purchase orders](docs/screenshots/purchases.png)
 
-  **Staff and approvals**
+  **New purchase order**
+  ![New purchase order](docs/screenshots/purchase-form.png)
+
+  **Vendors**
+  ![Vendors](docs/screenshots/vendors.png)
+</details>
+
+<details>
+  <summary><b>Finance</b></summary>
+
+  **Invoices**
+  ![Invoices](docs/screenshots/invoices.png)
+
+  **Invoice detail**, with Print and Download PDF
+  ![Invoice detail](docs/screenshots/invoice-detail.png)
+
+  **Bills**
+  ![Bills](docs/screenshots/bills.png)
+</details>
+
+<details>
+  <summary><b>Staff, roles and sign-in</b></summary>
+
+  **Staff management**, with a pending sign-up waiting for approval
   ![Staff](docs/screenshots/staff.png)
+
+  **Editing a staff member's role and access**
+  ![Edit staff](docs/screenshots/staff-edit.png)
+
+  **My profile**
+  ![Profile](docs/screenshots/profile.png)
+
+  **The cashier's view.** Operatives only see the pages their role allows.
+  ![Cashier dashboard](docs/screenshots/cashier-dashboard.png)
 
   **Sign in**
   ![Sign in](docs/screenshots/login.png)
 
-  **Mobile**
+  **Request an account.** New accounts wait for an Admin to approve them.
+  ![Request an account](docs/screenshots/register.png)
+</details>
 
-  <img src="docs/screenshots/mobile.png" alt="Mobile dashboard" width="320">
+<details>
+  <summary><b>Mobile</b></summary>
+
+  <img src="docs/screenshots/mobile.png" alt="Mobile dashboard" width="300"> <img src="docs/screenshots/mobile-menu.png" alt="Mobile menu" width="300">
 </details>
 
 ## Installation
@@ -132,6 +191,49 @@ The container runs migrations, then serves the app with Gunicorn. Add `-e DEBUG=
 
 `seed_demo` creates the sign-ins `admin`, `manager` and `cashier`, all with the password `demo-pass-123`. It refuses to run when `DEBUG` is off.
 
+### Create the first admin
+
+A new database has no users, and sign-ups made on the "Request an account" page stay pending until an Admin approves them. So before anyone else can get in, create the first Admin from the terminal:
+
+```bash
+python manage.py createsuperuser
+```
+
+A superuser is always **Active** with the **Admin** role, so it can sign in straight away. Open **Staff** to approve requests and set each person's role.
+
+The same command works wherever the app runs:
+
+```bash
+# Docker (use the name or ID shown by "docker ps")
+docker exec -it <container> python manage.py createsuperuser
+
+# Azure App Service: open SSH from the portal (Development Tools > SSH).
+# The session starts in the app folder, so run
+python manage.py createsuperuser
+
+# Terraform VM: SSH in from your admin_cidr range, then
+sudo docker exec -it inventory python manage.py createsuperuser
+```
+
+For scripted setups, pass the details as environment variables instead of answering prompts:
+
+```bash
+DJANGO_SUPERUSER_USERNAME=admin \
+DJANGO_SUPERUSER_EMAIL=admin@example.com \
+DJANGO_SUPERUSER_PASSWORD='a-long-unique-password' \
+python manage.py createsuperuser --noinput
+```
+
+**Locked out?** `python manage.py changepassword <username>` resets a password. To make an existing account the Admin, run:
+
+```bash
+python manage.py shell -c "from django.contrib.auth.models import User; u = User.objects.get(username='<username>'); u.is_superuser = u.is_staff = True; u.save()"
+```
+
+Saving the user as a superuser also activates their profile and gives them the Admin role.
+
+To stop public sign-ups entirely, set `ALLOW_REGISTRATION=False`. Admins then add staff themselves from the **Staff** page.
+
 ## Configuration
 
 All settings come from environment variables (or a `.env` file). See [.env.example](.env.example) for the full list.
@@ -167,6 +269,20 @@ PDF tests are skipped if WeasyPrint's system libraries are missing. They run in 
 ```bash
 docker run --rm -e DEBUG=True sales-and-inventory-management python manage.py test
 ```
+
+## CI and deployment
+
+[CI](.github/workflows/ci.yml) runs on every push and pull request to `main`, with two jobs:
+
+- **Lint:** `flake8` with the settings in [.flake8](.flake8).
+- **Tests:** `manage.py check`, a check for missing migrations, and the full test suite (PDF tests included).
+
+Deployment is separate from CI. Use the Docker image above, or the Terraform modules:
+
+- [terraform/azure](terraform/azure): an Ubuntu VM that builds the app image, keeps the database on a Docker volume and serves it through Caddy with automatic HTTPS. SSH is open only to `admin_cidr`, and only ports 80 and 443 are public. Point `domain_name` at the `public_ip` output.
+- [terraform/docker](terraform/docker): the same image on the local Docker host, published on `127.0.0.1:8080` with the database on a named volume.
+
+Wherever it runs, set `SECRET_KEY` and the database settings, then [create the first admin](#create-the-first-admin).
 
 ## Authors
 

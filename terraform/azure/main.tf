@@ -1,8 +1,14 @@
 terraform {
+  required_version = ">= 1.5"
+
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
       version = "~> 3.0"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.6"
     }
   }
 }
@@ -11,13 +17,12 @@ provider "azurerm" {
   features {}
 }
 
-# 1. Grupa zasobów
 resource "azurerm_resource_group" "rg" {
-  name     = "rg-devsecops-${var.environment}"
-  location = "West Europe"
+  name     = "rg-inventory-${var.environment}"
+  location = var.location
 }
 
-# 2. Sieć
+# Network ------------------------------------------------------------------
 resource "azurerm_virtual_network" "vnet" {
   name                = "vnet-${var.environment}"
   address_space       = ["10.0.0.0/16"]
@@ -32,15 +37,14 @@ resource "azurerm_subnet" "subnet" {
   address_prefixes     = ["10.0.1.0/24"]
 }
 
-# Publiczne IP
 resource "azurerm_public_ip" "public_ip" {
   name                = "pip-${var.environment}"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   allocation_method   = "Static"
+  sku                 = "Standard"
 }
 
-# Interfejs sieciowy
 resource "azurerm_network_interface" "nic" {
   name                = "nic-${var.environment}"
   location            = azurerm_resource_group.rg.location
@@ -54,35 +58,44 @@ resource "azurerm_network_interface" "nic" {
   }
 }
 
-# Security Group - port 22 (SSH) i 8443 (Django App dla https)
+# Firewall -----------------------------------------------------------------
+# SSH only from the admin range. The web ports are public by design: the app
+# is served by Caddy, which redirects HTTP to HTTPS and terminates TLS. The
+# app container itself is never exposed.
 resource "azurerm_network_security_group" "nsg" {
   name                = "nsg-${var.environment}"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
+}
 
-  security_rule {
-    name                       = "SSH"
-    priority                   = 1001
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "22"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
+resource "azurerm_network_security_rule" "ssh" {
+  name                        = "SSH-admin-only"
+  priority                    = 1001
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_range      = "22"
+  source_address_prefix       = var.admin_cidr
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.rg.name
+  network_security_group_name = azurerm_network_security_group.nsg.name
+}
 
-  security_rule {
-    name                       = "DjangoPort"
-    priority                   = 1002
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "8443"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
+# Public website: HTTPS, plus HTTP for the redirect and the ACME challenge.
+#trivy:ignore:AVD-AZU-0047
+resource "azurerm_network_security_rule" "web" {
+  name                        = "Web-public"
+  priority                    = 1002
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_ranges     = ["80", "443"]
+  source_address_prefix       = "Internet"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.rg.name
+  network_security_group_name = azurerm_network_security_group.nsg.name
 }
 
 resource "azurerm_network_interface_security_group_association" "nsg_assoc" {
@@ -90,20 +103,25 @@ resource "azurerm_network_interface_security_group_association" "nsg_assoc" {
   network_security_group_id = azurerm_network_security_group.nsg.id
 }
 
-# 3. Maszyna Wirtualna (Immutable Infrastructure - konfiguracja przy starcie)
+# Application secret -------------------------------------------------------
+resource "random_password" "django_secret_key" {
+  length  = 64
+  special = false
+}
+
+# Virtual machine ----------------------------------------------------------
 resource "azurerm_linux_virtual_machine" "vm" {
-  name                = "vm-${var.environment}"
-  resource_group_name = azurerm_resource_group.rg.name
-  location            = azurerm_resource_group.rg.location
-  size                = "Standard_B1s"
-  admin_username      = "adminuser"
-  network_interface_ids = [
-    azurerm_network_interface.nic.id,
-  ]
+  name                            = "vm-${var.environment}"
+  resource_group_name             = azurerm_resource_group.rg.name
+  location                        = azurerm_resource_group.rg.location
+  size                            = "Standard_B1s"
+  admin_username                  = "adminuser"
+  disable_password_authentication = true
+  network_interface_ids           = [azurerm_network_interface.nic.id]
 
   admin_ssh_key {
     username   = "adminuser"
-    public_key = file("~/.ssh/id_rsa.pub") # Tu GitHub Actions dodac klucz
+    public_key = var.ssh_public_key
   }
 
   os_disk {
@@ -118,22 +136,21 @@ resource "azurerm_linux_virtual_machine" "vm" {
     version   = "latest"
   }
 
-  # CLOUD-INIT
-  # Instaluje Dockera i uruchamia kontener z aplikacją.
-  custom_data = base64encode(<<-EOF
-    #!/bin/bash
-    apt-get update
-    apt-get install -y docker.io git
-    systemctl start docker
-    systemctl enable docker
-    
-    # Pobranie repozytorium
-    git clone https://github.com/ZBI-project/sales-and-inventory-management-ZBI /app
-    cd /app
-    
-    # Instalacja zależności i uruchomienie (wersja uproszczona bez Docker Hub)
-    docker build -t django-app .
-    docker run -d -p 8443:8443 --name sales-app django-app
-  EOF
-  )
+  # Builds the app image, keeps the database on a Docker volume and puts
+  # Caddy in front for automatic HTTPS.
+  custom_data = base64encode(templatefile("${path.module}/cloud-init.sh.tftpl", {
+    repo_url    = var.repo_url
+    repo_ref    = var.repo_ref
+    domain_name = var.domain_name
+    secret_key  = random_password.django_secret_key.result
+  }))
+}
+
+output "public_ip" {
+  description = "Point the DNS record for domain_name at this address."
+  value       = azurerm_public_ip.public_ip.ip_address
+}
+
+output "url" {
+  value = "https://${var.domain_name}"
 }
