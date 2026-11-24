@@ -95,7 +95,7 @@ jobs:
       # Konfiguracja: scan-type: 'fs' (FileSystem)
       # -------------------------------------------------------
       - name: Run Trivy Vulnerability Scanner
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@0.35.0
         with:
           scan-type: 'fs'        # KLUCZOWE: Skanuj pliki, nie obrazy Dockera
           scan-ref: '.'          # Skanuj obecny katalog
