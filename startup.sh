@@ -1,4 +1,6 @@
 #!/bin/bash
-python manage.py migrate
+# Azure App Service startup command.
+set -e
+python manage.py migrate --noinput
 python manage.py collectstatic --noinput
-gunicorn --bind=0.0.0.0 --timeout 600 InventoryMS.wsgi
+gunicorn --bind=0.0.0.0 --timeout 120 --workers "${GUNICORN_WORKERS:-3}" InventoryMS.wsgi

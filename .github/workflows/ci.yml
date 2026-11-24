@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     
     env:
-      SECRET_KEY: ${{ secrets.DJANGO_CI_KEY }}
+      SECRET_KEY: ${{ secrets.DJANGO_CI_KEY || 'ci-only-not-secret' }}
       DEBUG: 'False'
       DB_NAME: 'db.sqlite3'
 
@@ -30,7 +30,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.10'
+          python-version: '3.12'
           cache: 'pip'
 
       - name: Install dependencies
@@ -49,6 +49,12 @@ jobs:
       - name: Django System Check
         run: python manage.py check
 
+      - name: Install PDF libraries
+        run: sudo apt-get update && sudo apt-get install -y libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0
+
+      - name: Run tests
+        run: python manage.py test
+
       # UNIT & INTEGRATION TESTS 
 
   # ---------------------------------------------------
@@ -66,7 +72,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.10'
+          python-version: '3.12'
 
       # 1. SAST: Bandit (uruchamiany bezpośrednio)
       - name: Install and Run Bandit (SAST)
@@ -127,6 +133,7 @@ jobs:
        #   SECURE_SSL_REDIRECT: "False"
         run: |
           pip install -r requirements.txt
+          export DEBUG=True SECRET_KEY=ci-only-not-secret
           python manage.py migrate
           python manage.py runserver 0.0.0.0:8000 &
           sleep 10 

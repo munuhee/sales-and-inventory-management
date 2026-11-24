@@ -1,24 +1,23 @@
-# Django Packages
-Django==5.1
+# Django
+Django==5.2.19
 django-autoslug==1.9.9
-django-crispy-forms==2.3
-django-extensions==3.2.3
-django-filter==24.3
-django-imagekit==5.0.0
-django-phonenumber-field==8.0.0
-django-tables2==2.7.0
+django-crispy-forms==2.7
+crispy-bootstrap5==2026.9
+django-extensions==4.1
+django-filter==26.2
+django-imagekit==6.1.1
+django-phonenumber-field==9.0.0
+django-tables2==3.0.1
 
-# Bootstrap Packages
-crispy-bootstrap5==2024.2
-
-# Utility Packages
+# Documents and exports
+weasyprint==70.0
 openpyxl==3.1.5
-phonenumbers==8.13.43
-requests==2.32.3
-tablib==3.6.1
+tablib==3.10.0
+phonenumbers==9.0.44
+Pillow==13.0.0
 
-gunicorn==23.0.0
-whitenoise==6.11.0
-psycopg2-binary==2.9.11
-
-python-dotenv==1.2.1
+# Serving
+gunicorn==27.0.1
+whitenoise==6.12.0
+psycopg2-binary==2.9.13
+python-dotenv==1.2.4

@@ -117,3 +117,10 @@ ipython_config.py
 **/.terraform/*
 *.tfstate
 *.tfstate.backup
+
+# Local configuration and build output
+.env
+.env.*
+!.env.example
+staticfiles/
+*.swp
