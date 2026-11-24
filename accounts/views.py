@@ -310,9 +310,26 @@ class CustomerDetailView(RoleRequiredMixin, DetailView):
     context_object_name = 'customer'
 
     def get_context_data(self, **kwargs):
+        from django.db.models import Count, Max, Sum
+        from transactions.models import LoyaltyTransaction, Sale
+
         context = super().get_context_data(**kwargs)
-        context['ledger'] = self.object.loyalty_transactions.select_related('sale', 'created_by')[:50]
-        context['recent_sales'] = self.object.sale_set.order_by('-date_added')[:10]
+        customer = self.object
+        context['ledger'] = customer.loyalty_transactions.select_related('sale', 'created_by')[:50]
+        context['recent_sales'] = customer.sale_set.order_by('-date_added')[:10]
+
+        completed = customer.sale_set.filter(status=Sale.STATUS_COMPLETED).aggregate(
+            count=Count('pk'), total=Sum('grand_total'), last=Max('date_added'),
+        )
+        earned = customer.loyalty_transactions.filter(kind=LoyaltyTransaction.EARN).aggregate(n=Sum('points'))['n']
+        redeemed = customer.loyalty_transactions.filter(kind=LoyaltyTransaction.REDEEM).aggregate(n=Sum('points'))['n']
+        context['summary'] = {
+            'sales_count': completed['count'],
+            'total_spent': completed['total'] or 0,
+            'last_visit': completed['last'],
+            'points_earned': earned or 0,
+            'points_redeemed': abs(redeemed or 0),
+        }
         if is_manager(self.request.user):
             context['adjust_form'] = kwargs.get('adjust_form') or LoyaltyAdjustmentForm()
         return context

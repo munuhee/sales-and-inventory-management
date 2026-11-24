@@ -2,8 +2,8 @@
 {% load formatting %}
 {% block title %}{{ object.name }}{% endblock %}
 {% block content %}
-<a class="back-link" href="{% url 'productslist' %}"><i class="fa-solid fa-arrow-left"></i> Products</a>
-<div class="page-header">
+<a class="back-link detail-back-link" href="{% url 'productslist' %}"><i class="fa-solid fa-arrow-left"></i> Products</a>
+<div class="page-header detail-header">
   <div><h1>{{ object.name }}</h1><p class="sub">{{ object.category.name }}</p></div>
   {% if can_manage %}
   <div class="page-actions">

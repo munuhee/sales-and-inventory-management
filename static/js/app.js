@@ -68,6 +68,19 @@
     }, Promise.resolve());
   }
 
+  // Bootstrap puts modal backdrops on <body>, outside the swapped content, so
+  // an open dialog would leave a grey overlay behind after navigating.
+  function closeOverlays() {
+    document.querySelectorAll('.modal.show').forEach(function (el) {
+      var instance = window.bootstrap && window.bootstrap.Modal.getInstance(el);
+      if (instance) instance.dispose();
+    });
+    document.querySelectorAll('.modal-backdrop').forEach(function (el) { el.remove(); });
+    document.body.classList.remove('modal-open');
+    document.body.style.removeProperty('overflow');
+    document.body.style.removeProperty('padding-right');
+  }
+
   function swapResponse(response, options) {
     if (response.redirected && new URL(response.url).origin !== window.location.origin) {
       window.location.assign(response.url);
@@ -84,6 +97,13 @@
       if (!current || !incoming) {
         window.location.assign(response.url || options.url);
         return false;
+      }
+      closeOverlays();
+      var currentSidebar = document.querySelector('.app-sidebar');
+      var incomingSidebar = doc.querySelector('.app-sidebar');
+      if (currentSidebar && incomingSidebar) {
+        currentSidebar.replaceWith(incomingSidebar);
+        sidebar = incomingSidebar;
       }
       current.replaceWith(incoming);
       document.title = doc.title || document.title;
@@ -132,6 +152,8 @@
 
   document.addEventListener('submit', function (event) {
     if (!document.querySelector('.app-main')) return;
+    // A page script (for example the point of sale) already handled this form.
+    if (event.defaultPrevented) return;
     var form = event.target;
     if (!(form instanceof HTMLFormElement) || form.hasAttribute('data-no-ajax')) return;
     var url = new URL(form.action || window.location.href, window.location.href);

@@ -130,7 +130,12 @@ class Command(BaseCommand):
             # About a month of sales.
             sales = []
             for days_ago in range(29, -1, -1):
-                for _ in range(rng.randint(2, 6)):
+                # Times increase through the day, in the order the sales are
+                # made, so receipts and the loyalty ledger stay chronological.
+                count = rng.randint(2, 6)
+                opening = timezone.now() - timedelta(days=days_ago, hours=10)
+                times = sorted(opening + timedelta(minutes=rng.randint(0, 9 * 60)) for _ in range(count))
+                for when in times:
                     picks = rng.sample(items, rng.randint(1, 4))
                     lines = []
                     for item in picks:
@@ -153,7 +158,6 @@ class Command(BaseCommand):
                     # Realistic cash: round up to the next 50 or 100.
                     step = Decimal('100') if sale.grand_total > 1000 else Decimal('50')
                     paid = ((sale.grand_total / step).to_integral_value(rounding='ROUND_CEILING')) * step
-                    when = timezone.now() - timedelta(days=days_ago, hours=rng.randint(0, 9), minutes=rng.randint(0, 59))
                     Sale.objects.filter(pk=sale.pk).update(
                         date_added=when, amount_paid=paid, amount_change=paid - sale.grand_total,
                     )

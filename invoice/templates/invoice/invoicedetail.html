@@ -2,8 +2,8 @@
 {% load formatting %}
 {% block title %}Invoice {{ object.invoice_number }}{% endblock %}
 {% block content %}
-<a class="back-link" href="{% url 'invoicelist' %}"><i class="fa-solid fa-arrow-left"></i> Invoices</a>
-<div class="page-header">
+<a class="back-link detail-back-link" href="{% url 'invoicelist' %}"><i class="fa-solid fa-arrow-left"></i> Invoices</a>
+<div class="page-header detail-header">
   <div><h1>Invoice {{ object.invoice_number }}</h1><p class="sub">{{ object.date|date:"d M Y" }} · {{ object.customer_name }}</p></div>
   <div class="page-actions">
     <a class="btn btn-primary" href="{% url 'invoice-pdf' object.slug %}" target="_blank" rel="noopener"><i class="fa-solid fa-print me-1"></i> Print invoice</a>

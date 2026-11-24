@@ -2,8 +2,8 @@
 {% load formatting %}
 {% block title %}Sale {{ sale.receipt_number }}{% endblock %}
 {% block content %}
-<a class="back-link" href="{% url 'saleslist' %}"><i class="fa-solid fa-arrow-left"></i> Sales</a>
-<div class="page-header">
+<a class="back-link detail-back-link" href="{% url 'saleslist' %}"><i class="fa-solid fa-arrow-left"></i> Sales</a>
+<div class="page-header detail-header">
   <div>
     <h1>Sale {{ sale.receipt_number }}</h1>
     <p class="sub">

@@ -269,9 +269,12 @@
       return response.json().catch(function () { return { status: 'error', message: 'Unexpected server response.' }; });
     }).then(function (data) {
       if (data.status !== 'success') { showError(data.message || 'The sale could not be saved.'); return; }
-      document.getElementById('done-receipt').textContent = 'Receipt ' + data.receipt_number + ' · total ' + fmt(toCents(data.grand_total));
-      document.getElementById('done-change').textContent = 'Change ' + fmt(toCents(data.change));
-      document.getElementById('done-points').textContent = data.points_earned ? data.points_earned + ' loyalty points earned.' : '';
+      document.getElementById('done-receipt').textContent = data.receipt_number;
+      document.getElementById('done-total').textContent = fmt(toCents(data.grand_total));
+      document.getElementById('done-change').textContent = fmt(toCents(data.change));
+      var points = document.getElementById('done-points');
+      points.textContent = data.points_earned ? data.points_earned + ' loyalty points earned' : '';
+      points.hidden = !data.points_earned;
       document.getElementById('done-print').href = data.receipt_url;
       document.getElementById('done-view').href = data.redirect;
       modal.show();

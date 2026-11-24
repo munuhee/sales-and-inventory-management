@@ -2,8 +2,8 @@
 {% load formatting %}
 {% block title %}{{ category.name }}{% endblock %}
 {% block content %}
-<a class="back-link" href="{% url 'category-list' %}"><i class="fa-solid fa-arrow-left"></i> Categories</a>
-<div class="page-header">
+<a class="back-link detail-back-link" href="{% url 'category-list' %}"><i class="fa-solid fa-arrow-left"></i> Categories</a>
+<div class="page-header detail-header">
   <div><h1>{{ category.name }}</h1></div>
   {% if can_manage %}
   <div class="page-actions">

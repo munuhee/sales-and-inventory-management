@@ -11,7 +11,7 @@
   <div><div class="eyebrow">Point of sale</div><h1>New sale</h1><p class="sub">Build the cart, select a customer, then take payment.</p></div>
 </div>
 
-<form id="sale-form" class="pos-form" novalidate>
+<form id="sale-form" class="pos-form" novalidate data-no-ajax>
   {% csrf_token %}
   <div class="row g-3 pos-layout">
     <div class="col-lg-8">
@@ -94,13 +94,20 @@
 <div class="modal fade" id="done-modal" tabindex="-1" aria-labelledby="done-title" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
-      <div class="modal-body p-4 text-center">
-        <div class="mb-2"><i class="fa-solid fa-circle-check fa-2x text-accent"></i></div>
-        <h2 class="h5" id="done-title">Sale completed</h2>
-        <p class="text-muted mb-1" id="done-receipt"></p>
-        <p class="pos-total mb-1" id="done-change"></p>
-        <p class="text-muted small" id="done-points"></p>
-        <div class="d-flex flex-wrap justify-content-center gap-2 mt-3">
+      <div class="modal-body pos-done-body">
+        <div class="pos-done-heading">
+          <span class="pos-done-icon"><i class="fa-solid fa-check"></i></span>
+          <span class="pos-done-kicker">Payment recorded</span>
+          <h2 id="done-title">Sale completed</h2>
+          <p>Your transaction has been saved successfully.</p>
+        </div>
+        <div class="pos-done-summary">
+          <div class="pos-done-receipt"><span>Receipt</span><strong id="done-receipt"></strong></div>
+          <div class="pos-done-total"><span>Sale total</span><strong id="done-total"></strong></div>
+          <div class="pos-done-change"><span id="done-change-label">Change returned</span><strong id="done-change"></strong></div>
+        </div>
+        <p class="pos-done-points" id="done-points" hidden></p>
+        <div class="pos-done-actions">
           <a class="btn btn-primary" id="done-print" target="_blank" rel="noopener"><i class="fa-solid fa-print me-1"></i> Print receipt</a>
           <a class="btn btn-light" id="done-view">View sale</a>
           <button class="btn btn-light" type="button" id="done-new">New sale</button>

@@ -1,62 +1,100 @@
 {% extends "store/base.html" %}
-{% load formatting crispy_forms_tags %}
+{% load formatting humanize crispy_forms_tags %}
 {% block title %}{{ customer.get_full_name }}{% endblock %}
 {% block content %}
-<a class="back-link" href="{% url 'customer_list' %}"><i class="fa-solid fa-arrow-left"></i> Customers</a>
-<div class="page-header">
-  <div><h1>{{ customer.get_full_name }}</h1><p class="sub">{{ customer.phone|default:"" }}{% if customer.phone and customer.email %} · {% endif %}{{ customer.email|default:"" }}</p></div>
-  <div class="page-actions"><a class="btn btn-light" href="{% url 'customer_update' customer.pk %}"><i class="fa-solid fa-pen me-1"></i> Edit</a></div>
+<a class="back-link detail-back-link" href="{% url 'customer_list' %}"><i class="fa-solid fa-arrow-left"></i> Customers</a>
+<div class="page-header detail-header">
+  <div class="customer-head">
+    <span class="avatar avatar-lg" aria-hidden="true">{{ customer.first_name|slice:":1"|upper }}{{ customer.last_name|slice:":1"|upper }}</span>
+    <div>
+      <h1>{{ customer.get_full_name }}</h1>
+      <p class="sub">
+        {% if customer.phone %}<span><i class="fa-solid fa-phone"></i> {{ customer.phone }}</span>{% endif %}
+        {% if customer.email %}<span><i class="fa-solid fa-envelope"></i> {{ customer.email }}</span>{% endif %}
+        {% if not customer.phone and not customer.email %}No contact details{% endif %}
+      </p>
+    </div>
+  </div>
+  <div class="page-actions">
+    <a class="btn btn-outline-secondary" href="{% url 'customer_update' customer.pk %}"><i class="fa-solid fa-pen me-1"></i> Edit</a>
+    <a class="btn btn-primary" href="{% url 'sale-create' %}"><i class="fa-solid fa-cash-register me-1"></i> New sale</a>
+  </div>
 </div>
-<div class="row g-3">
-  <div class="col-lg-4">
-    <div class="card stat mb-3">
+
+<div class="row g-3 mb-3">
+  <div class="col-6 col-xl-3">
+    <div class="card customer-metric">
       <div class="label">Loyalty points</div>
-      <div class="value">{{ customer.loyalty_points }}</div>
+      <div class="value">{{ customer.loyalty_points|intcomma }}</div>
       <div class="hint">Worth {{ customer.loyalty_value|money }} at checkout</div>
     </div>
-    {% if adjust_form %}
-    <div class="card">
-      <div class="card-header">Adjust points</div>
-      <div class="card-body">
-        <form method="post" action="{% url 'customer_loyalty_adjust' customer.pk %}">
-          {% csrf_token %}
-          {{ adjust_form|crispy }}
-          <button class="btn btn-light" type="submit">Record adjustment</button>
-        </form>
-      </div>
-    </div>
-    {% endif %}
   </div>
+  <div class="col-6 col-xl-3">
+    <div class="card customer-metric">
+      <div class="label">Total spent</div>
+      <div class="value">{{ summary.total_spent|money }}</div>
+      <div class="hint">{{ summary.sales_count }} completed sale{{ summary.sales_count|pluralize }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="card customer-metric">
+      <div class="label">Points earned</div>
+      <div class="value">{{ summary.points_earned|intcomma }}</div>
+      <div class="hint">{{ summary.points_redeemed|intcomma }} redeemed, all time</div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="card customer-metric">
+      <div class="label">Last visit</div>
+      <div class="value">{% if summary.last_visit %}{{ summary.last_visit|date:"d M Y" }}{% else %}None yet{% endif %}</div>
+      <div class="hint">{% if summary.last_visit %}{{ summary.last_visit|timesince }} ago{% else %}No completed sales{% endif %}</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 align-items-start">
   <div class="col-lg-8">
-    <div class="card table-card mb-3">
-      <div class="card-header">Points history</div>
+    <div class="card table-card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Points history</span>
+        <small class="text-muted fw-normal">Newest first</small>
+      </div>
       {% if ledger %}
-      <table class="table align-middle">
-        <thead><tr><th>Date</th><th>Activity</th><th class="num">Points</th><th class="num">Balance</th></tr></thead>
-        <tbody>
-          {% for entry in ledger %}
-          <tr>
-            <td>{{ entry.created_at|date:"d M Y" }}</td>
-            <td>{{ entry.get_kind_display }}{% if entry.sale %} · <a href="{% url 'sale-detail' entry.sale.pk %}">{{ entry.sale.receipt_number }}</a>{% endif %}{% if entry.note and not entry.sale %}<div class="small text-muted">{{ entry.note }}</div>{% endif %}</td>
-            <td class="num">{% if entry.points > 0 %}+{% endif %}{{ entry.points }}</td>
-            <td class="num">{{ entry.balance_after }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead><tr><th>Date</th><th>Activity</th><th class="num">Points</th><th class="num">Balance</th></tr></thead>
+          <tbody>
+            {% for entry in ledger %}
+            <tr>
+              <td class="text-nowrap">{{ entry.created_at|date:"d M Y" }}<div class="small text-muted">{{ entry.created_at|date:"H:i" }}</div></td>
+              <td>
+                {{ entry.get_kind_display }}{% if entry.sale %} <a href="{% url 'sale-detail' entry.sale.pk %}">{{ entry.sale.receipt_number }}</a>{% endif %}
+                {% if entry.note and not entry.sale %}<div class="small text-muted">{{ entry.note }}{% if entry.created_by %}, by {{ entry.created_by.username }}{% endif %}</div>{% endif %}
+              </td>
+              <td class="num {% if entry.points > 0 %}points-up{% elif entry.points < 0 %}points-down{% endif %}">{% if entry.points > 0 %}+{% endif %}{{ entry.points }}</td>
+              <td class="num">{{ entry.balance_after }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
       {% else %}
         {% include "partials/empty.html" with icon="fa-star" text="No points activity yet." %}
       {% endif %}
     </div>
-    <div class="card table-card">
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card table-card mb-3">
       <div class="card-header">Recent sales</div>
       {% if recent_sales %}
       <table class="table table-hover align-middle">
+        <thead><tr><th>Receipt</th><th>Date</th><th class="num">Total</th></tr></thead>
         <tbody>
           {% for sale in recent_sales %}
           <tr>
             <td><a href="{% url 'sale-detail' sale.pk %}">{{ sale.receipt_number }}</a></td>
-            <td>{{ sale.date_added|date:"d M Y" }}</td>
+            <td class="text-muted text-nowrap">{{ sale.date_added|date:"d M" }}</td>
             <td class="num">{% if sale.is_voided %}<span class="status bad">Voided</span>{% else %}{{ sale.grand_total|money }}{% endif %}</td>
           </tr>
           {% endfor %}
@@ -66,6 +104,20 @@
         {% include "partials/empty.html" with icon="fa-receipt" text="No sales yet." %}
       {% endif %}
     </div>
+
+    {% if adjust_form %}
+    <div class="card">
+      <div class="card-header">Adjust points</div>
+      <div class="card-body">
+        <p class="small text-muted mb-3">For corrections only. Each adjustment is recorded in the points history with your name.</p>
+        <form method="post" action="{% url 'customer_loyalty_adjust' customer.pk %}">
+          {% csrf_token %}
+          {{ adjust_form|crispy }}
+          <button class="btn btn-outline-primary w-100" type="submit">Record adjustment</button>
+        </form>
+      </div>
+    </div>
+    {% endif %}
   </div>
 </div>
 {% endblock content %}
