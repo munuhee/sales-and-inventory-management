@@ -6,135 +6,167 @@
 # Django-inventory-management
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/license/mit)
 [![Python Version](https://img.shields.io/badge/Python-3.12-green)](https://www.python.org/downloads/)
+[![Django](https://img.shields.io/badge/Django-5.2_LTS-0C4B33)](https://www.djangoproject.com/)
+
+Point of sale, stock control, purchasing, invoicing and loyalty points for a retail shop, built with Django.
 
 ## Table of Contents
-- [Django-inventory-management](#django-inventory-management)
-  - [Table of Contents](#table-of-contents)
-  - [Description](#description)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-    - [Clone the Repository](#clone-the-repository)
-    - [With Docker](#with-docker)
-    - [Without Docker](#without-docker)
-      - [On Linux](#on-linux)
-      - [On Windows](#on-windows)
-  - [Screenshots](#screenshots)
-  - [Authors](#authors)
+- [Features](#features)
+- [Roles](#roles)
+- [Screenshots](#screenshots)
+- [Installation](#installation)
+  - [With Docker](#with-docker)
+  - [Without Docker](#without-docker)
+- [Configuration](#configuration)
+- [Upgrading an existing database](#upgrading-an-existing-database)
+- [Running the tests](#running-the-tests)
+- [Authors](#authors)
 
-## Description
-This Django application offers a solution for managing business operations with an emphasis on user experience and modern web technologies. It integrates Bootstrap for front-end design and employs Ajax for dynamic sales creation. The application features models for user profiles, vendors, customers, and transactions, including billing, invoicing, and inventory management.
+## Features
 
-## Prerequisites
-- **Python installed**: Ensure Python is installed on your system. You can download it from the official [Python website](https://www.python.org/).
-- **Understand Python and Django**: Basic understanding of Python programming and familiarity with Django web framework.
+- **Point of sale.** Search items and customers, see stock while you sell, redeem loyalty points, and get the change worked out. The server prices every sale from the database inside a locked transaction, so totals can't be tampered with and two tills can't oversell the same stock.
+- **Receipts and invoices as PDF.** Professional A4 documents rendered with [WeasyPrint](https://weasyprint.org/). **Print** opens the PDF in the browser's viewer; **Download** saves it. A voided sale's receipt carries a VOID watermark.
+- **Stock that stays correct.** Purchase orders add stock only when they are received. Editing or deleting an order adjusts stock by the difference. Stock can never go negative.
+- **Voids, not deletes.** Voiding a sale returns the items to stock and reverses loyalty points. The sale stays on record.
+- **Loyalty points.** Customers earn points on every sale (1 point per Ksh 100 by default) and redeem them as a discount before tax. Every change is logged in a ledger; managers can make recorded corrections.
+- **Dashboard.** Revenue today and this month, stock value, low stock alerts, a 30-day sales chart and recent sales.
+- **Accounts and security.** Role based access, staff approval for self sign-ups, login throttling, immediate sign-out of deactivated staff, and secure production settings.
+- **Exports.** Sales, purchases, products and deliveries to Excel (managers only).
+
+## Roles
+
+| Role | Can do |
+| --- | --- |
+| **Operative** | Sell, print receipts, view stock and invoices, manage customers and deliveries |
+| **Executive** | Everything above, plus products, categories, purchase orders, vendors, invoices, bills, exports, voiding sales and point adjustments |
+| **Admin** | Everything, plus staff accounts, roles and approvals |
+
+New sign-ups wait for an Admin to approve them on the **Staff** page. Django superusers are always Admin.
+
+## Screenshots
+
+| Dashboard | Point of sale |
+| --- | --- |
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Point of sale](docs/screenshots/point-of-sale.png) |
+
+| Receipt (PDF) | Invoice (PDF) |
+| --- | --- |
+| ![Receipt](docs/screenshots/receipt.png) | ![Invoice](docs/screenshots/invoice.png) |
+
+<details>
+  <summary>More screenshots</summary>
+
+  **Sale detail.** A summary for staff, with Print, Download and Void actions.
+  ![Sale detail](docs/screenshots/sale-detail.png)
+
+  **Sales**
+  ![Sales](docs/screenshots/sales.png)
+
+  **Products,** with low stock and out-of-stock flags
+  ![Products](docs/screenshots/products.png)
+
+  **Customer loyalty history**
+  ![Customer loyalty](docs/screenshots/customer-loyalty.png)
+
+  **Purchase orders**
+  ![Purchase orders](docs/screenshots/purchases.png)
+
+  **Staff and approvals**
+  ![Staff](docs/screenshots/staff.png)
+
+  **Sign in**
+  ![Sign in](docs/screenshots/login.png)
+
+  **Mobile**
+
+  <img src="docs/screenshots/mobile.png" alt="Mobile dashboard" width="320">
+</details>
 
 ## Installation
-
-Follow these steps to install the necessary dependencies and set up the application:
-
-### Clone the Repository
 
 ```bash
 git clone https://github.com/munuhee/sales-and-inventory-management.git
 cd sales-and-inventory-management
+cp .env.example .env    # then edit it
 ```
 
 ### With Docker
 
-1. **Build the Docker Image**
+The image includes the system libraries WeasyPrint needs.
 
-    ```bash
-    docker build -t sales-and-inventory-management:1.0 .
-    ```
+```bash
+docker build -t sales-and-inventory-management .
+docker run -d -p 8000:8000 \
+  -e SECRET_KEY="change-me" \
+  -e ALLOWED_HOSTS="localhost,127.0.0.1" \
+  sales-and-inventory-management
+```
 
-2. **Run the Docker Container**
-
-    ```bash
-    docker run -d -p 8000:8000 sales-and-inventory-management:1.0
-    ```
+The container runs migrations, then serves the app with Gunicorn. Add `-e DEBUG=True` for a local trial.
 
 ### Without Docker
 
-#### On Linux
-
-1. **Set Up the Virtual Environment**
+1. Create a virtual environment and install the dependencies:
 
     ```bash
     python3 -m venv venv
-    source venv/bin/activate
-    ```
-
-2. **Install Dependencies**
-
-    ```bash
+    source venv/bin/activate          # Windows: venv\Scripts\activate
     pip install -r requirements.txt
     ```
 
-3. **Apply Migrations and Run the Server**
+2. Install the system libraries WeasyPrint needs to render PDFs:
+    - **Debian/Ubuntu:** `sudo apt install libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0`
+    - **macOS:** `brew install pango`
+    - **Windows:** install the GTK3 runtime, see the [WeasyPrint guide](https://doc.courtbouillon.org/weasyprint/stable/first_steps.html#windows).
+
+    Everything except PDF generation works without them.
+
+3. Set up the database and run the server:
 
     ```bash
     python manage.py migrate
+    python manage.py seed_demo        # optional demo data, empty database only
+    python manage.py createsuperuser  # or use the demo accounts
     python manage.py runserver
     ```
 
-#### On Windows
+`seed_demo` creates the sign-ins `admin`, `manager` and `cashier`, all with the password `demo-pass-123`. It refuses to run when `DEBUG` is off.
 
-1. **Set Up the Virtual Environment**
+## Configuration
 
-    ```bash
-    python -m venv venv
-    venv\Scripts\activate
-    ```
+All settings come from environment variables (or a `.env` file). See [.env.example](.env.example) for the full list.
 
-2. **Install Dependencies**
+| Variable | Purpose |
+| --- | --- |
+| `DEBUG` | `True` for development. Defaults to `False`. |
+| `SECRET_KEY` | Required when `DEBUG` is off. |
+| `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS` | Comma separated. On Azure App Service the site host is added automatically. |
+| `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | PostgreSQL. SQLite is used when `DB_HOST` is empty. The `AZURE_POSTGRESQL_*` names also work. |
+| `ALLOW_REGISTRATION` | Show the "Request an account" page. Defaults to `True`. |
+| `BUSINESS_NAME`, `BUSINESS_ADDRESS`, `BUSINESS_PHONE`, `BUSINESS_TAX_PIN`, `BUSINESS_CURRENCY` | Printed on receipts and invoices. |
+| `LOYALTY_EARN_PER`, `LOYALTY_POINT_VALUE`, `LOYALTY_MIN_REDEEM`, `LOYALTY_ENABLED` | Loyalty programme rules. |
 
-    ```bash
-    pip install -r requirements.txt
-    ```
+## Upgrading an existing database
 
-3. **Apply Migrations and Run the Server**
+Run `python manage.py migrate`. The migrations:
 
-    ```bash
-    python manage.py migrate
-    python manage.py runserver
-    ```
+- convert money fields from floats to exact decimals, and phone numbers to text;
+- mark existing staff accounts **Active** so nobody is locked out (only new sign-ups need approval), and make superusers Admin;
+- clamp any negative stock or loyalty balance to zero;
+- record each customer's existing points as an opening balance in the loyalty ledger;
+- repair invoice and bill links that had empty slugs.
 
-## Screenshots
+## Running the tests
 
-<details>
-  <summary>Click to view screenshots</summary>
+```bash
+python manage.py test
+```
 
-  ![screenshot_1](https://github.com/user-attachments/assets/9bb2f5f9-d456-4681-b5de-8d82a3ef97d8)
+PDF tests are skipped if WeasyPrint's system libraries are missing. They run in CI and in the Docker image:
 
-  ![screenshot_2](https://github.com/user-attachments/assets/d6e14ba3-8827-41c1-9cdb-8f24add83f4d)
-
-  ![screenshot_3](https://github.com/user-attachments/assets/6be5060e-974b-4289-bcdf-b852771833f8)
-
-  ![screenshot_4](https://github.com/user-attachments/assets/5b176c44-82dd-4080-8259-0976029a496f)
-
-  ![screenshot_5](https://github.com/user-attachments/assets/c9ab8f77-bf2a-4b1e-bc66-986101d4991b)
-
-  ![screenshot_6](https://github.com/user-attachments/assets/3db3ca87-28a8-4fee-8cc7-fcc9481076f4)
-
-  ![screenshot_7](https://github.com/user-attachments/assets/1197a79f-8e11-41e1-a8a8-4ea5f0ac0391)
-
-  ![screenshot_8](https://github.com/user-attachments/assets/a340d85b-76dc-4618-b530-97cd620ef649)
-
-  ![screenshot_9](https://github.com/user-attachments/assets/751fe028-6115-424e-b69c-0fedfa9f321f)
-
-  ![screenshot_10](https://github.com/user-attachments/assets/d3905ec2-c843-468c-bdd4-799955854fd6)
-
-  ![screenshot_11](https://github.com/user-attachments/assets/99bb9f1c-4688-4049-b31e-5de1bd817304)
-
-  ![screenshot_12](https://github.com/user-attachments/assets/a0ea68c0-2969-42e4-81cd-fbf6efffd569)
-
-  ![screenshot_13](https://github.com/user-attachments/assets/9fbd7b1c-d60c-456a-957c-4a033cf76d89)
-
-  ![screenshot_14](https://github.com/user-attachments/assets/b6eabb9a-119a-418d-af56-b44d316bf6be)
-
-  ![screenshot_15](https://github.com/user-attachments/assets/ec117dfd-e0ee-46ff-9486-b5262f58b901)
-
-</details>
+```bash
+docker run --rm -e DEBUG=True sales-and-inventory-management python manage.py test
+```
 
 ## Authors
 
