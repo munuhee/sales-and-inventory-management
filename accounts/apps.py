@@ -8,4 +8,4 @@ class AccountsConfig(AppConfig):
 
     def ready(self):
         """Import signals for the Accounts app."""
-        import accounts.signals
+        from . import signals  # noqa: F401
