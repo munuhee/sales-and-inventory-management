@@ -21,7 +21,11 @@ COPY . .
 # Collect static files at build time (the key is only used for this step).
 RUN SECRET_KEY=build-only-not-secret python manage.py collectstatic --noinput
 
-RUN useradd --create-home --uid 1000 app && chown -R app:app /app
+# SQLite lives in /app/data so it can be mounted as a volume. Ignored when
+# PostgreSQL (DB_HOST) is configured.
+ENV SQLITE_PATH=/app/data/db.sqlite3
+RUN useradd --create-home --uid 1000 app && mkdir -p /app/data && chown -R app:app /app
+VOLUME ["/app/data"]
 USER app
 
 EXPOSE 8000

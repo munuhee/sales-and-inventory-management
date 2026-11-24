@@ -118,3 +118,26 @@ class ItemSearchTests(TestCase):
         self.assertEqual(self.client.get(reverse('get_items')).status_code, 302)
         self.client.force_login(make_user('op'))
         self.assertEqual(self.client.post(reverse('get_items')).status_code, 405)
+
+
+class SecurityHeaderTests(TestCase):
+    def test_html_pages_get_a_strict_policy(self):
+        response = self.client.get(reverse('user-login'))
+        csp = response.headers['Content-Security-Policy']
+        self.assertNotIn('unsafe-inline', csp)
+        self.assertNotIn('unsafe-eval', csp)
+        self.assertIn("frame-ancestors 'none'", csp)
+        self.assertIn('camera=()', response.headers['Permissions-Policy'])
+        self.assertEqual(response.headers['Cross-Origin-Resource-Policy'], 'same-origin')
+
+    def test_csrf_cookie_is_http_only(self):
+        response = self.client.get(reverse('user-login'))
+        self.assertTrue(response.cookies['csrftoken']['httponly'])
+
+    def test_pages_have_no_inline_scripts_or_styles(self):
+        self.client.force_login(make_user('headers', role='AD'))
+        for name in ('dashboard', 'sale-create', 'user-profile'):
+            content = self.client.get(reverse(name)).content.decode()
+            self.assertNotIn('<script>', content, name)
+            self.assertNotIn('<style', content, name)
+            self.assertNotIn('style="', content, name)

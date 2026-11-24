@@ -1,0 +1,5 @@
+/* Standalone 403, 404 and 500 pages. */
+body{background:#f5f6f8;font-family:Inter,system-ui,sans-serif;color:#1c2430}
+.box{max-width:440px;margin:18vh auto;padding:0 1rem;text-align:center}
+.code{font-size:.8rem;letter-spacing:.1em;color:#8a94a3;font-weight:600}
+a.btn{background:#1f6f4a;border-color:#1f6f4a}

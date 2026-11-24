@@ -105,6 +105,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'accounts.middleware.ActiveProfileMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'InventoryMS.middleware.SecurityHeadersMiddleware',
 ]
 
 ROOT_URLCONF = 'InventoryMS.urls'
@@ -152,7 +153,8 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            # SQLITE_PATH lets containers keep the database on a volume.
+            'NAME': os.environ.get('SQLITE_PATH') or BASE_DIR / 'db.sqlite3',
         }
     }
 
@@ -208,6 +210,9 @@ STORAGES = {
     },
 }
 
+# Static files are only used by our own pages, so no wildcard CORS header.
+WHITENOISE_ALLOW_ALL_ORIGINS = False
+
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
 
@@ -255,6 +260,29 @@ if not DEBUG:
     X_FRAME_OPTIONS = 'DENY'
 
 SESSION_COOKIE_HTTPONLY = True
+# Page scripts read the token from the form field, never from the cookie.
+CSRF_COOKIE_HTTPONLY = True
+
+# ---------------------------------------------------------------------------
+# Browser security headers (InventoryMS.middleware.SecurityHeadersMiddleware)
+# Scripts and styles only from this site and the pinned CDNs (all with SRI
+# hashes). No inline scripts, styles or style attributes anywhere.
+# ---------------------------------------------------------------------------
+CONTENT_SECURITY_POLICY = os.environ.get('CONTENT_SECURITY_POLICY', '; '.join([
+    "default-src 'self'",
+    "script-src 'self' https://cdn.jsdelivr.net https://code.jquery.com",
+    "style-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com",
+    "font-src 'self' https://cdnjs.cloudflare.com",
+    "img-src 'self' data:",
+    "connect-src 'self'",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+]))
+PERMISSIONS_POLICY = 'camera=(), microphone=(), geolocation=(), payment=(), usb=()'
+CROSS_ORIGIN_EMBEDDER_POLICY = os.environ.get('CROSS_ORIGIN_EMBEDDER_POLICY', 'require-corp')
+CROSS_ORIGIN_RESOURCE_POLICY = 'same-origin'
 
 LOGGING = {
     'version': 1,

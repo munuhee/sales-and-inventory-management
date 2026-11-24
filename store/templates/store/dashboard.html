@@ -1,11 +1,12 @@
 {% extends "store/base.html" %}
-{% load formatting humanize %}
+{% load formatting humanize static %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
-<div class="page-header">
+<div class="page-header dashboard-heading">
   <div>
-    <h1>Dashboard</h1>
-    <p class="sub">{% now "l, d F Y" %}</p>
+    <div class="eyebrow">Your business at a glance</div>
+    <h1>Welcome back, {{ request.user.profile.display_name|default:request.user.username }}</h1>
+    <p class="sub">{% now "l, d F Y" %}<span class="heading-separator">·</span> Here’s what’s happening today.</p>
   </div>
   <div class="page-actions">
     <a class="btn btn-primary" href="{% url 'sale-create' %}"><i class="fa-solid fa-cash-register me-1"></i> New sale</a>
@@ -14,29 +15,29 @@
 
 <div class="row g-3 mb-3">
   <div class="col-6 col-xl-3">
-    <a class="stat-link" href="{% url 'saleslist' %}"><div class="card stat">
-      <div class="label">Revenue today</div>
+    <a class="stat-link" href="{% url 'saleslist' %}"><div class="card stat stat-revenue">
+      <div class="stat-top"><div class="label">Revenue today</div><span class="stat-icon"><i class="fa-solid fa-arrow-trend-up"></i></span></div>
       <div class="value">{{ revenue_today|money }}</div>
       <div class="hint">{{ sales_today }} sale{{ sales_today|pluralize }}</div>
     </div></a>
   </div>
   <div class="col-6 col-xl-3">
-    <a class="stat-link" href="{% url 'saleslist' %}"><div class="card stat">
-      <div class="label">Revenue this month</div>
+    <a class="stat-link" href="{% url 'saleslist' %}"><div class="card stat stat-month">
+      <div class="stat-top"><div class="label">Revenue this month</div><span class="stat-icon"><i class="fa-regular fa-calendar"></i></span></div>
       <div class="value">{{ revenue_month|money }}</div>
       <div class="hint">Completed sales only</div>
     </div></a>
   </div>
   <div class="col-6 col-xl-3">
-    <a class="stat-link" href="{% url 'productslist' %}"><div class="card stat">
-      <div class="label">Products</div>
+    <a class="stat-link" href="{% url 'productslist' %}"><div class="card stat stat-products">
+      <div class="stat-top"><div class="label">Products</div><span class="stat-icon"><i class="fa-solid fa-boxes-stacked"></i></span></div>
       <div class="value">{{ products_count|intcomma }}</div>
       <div class="hint">{{ units_in_stock|intcomma }} units, {{ stock_value|money }}</div>
     </div></a>
   </div>
   <div class="col-6 col-xl-3">
-    <a class="stat-link" href="{% url 'deliveries' %}"><div class="card stat">
-      <div class="label">Pending deliveries</div>
+    <a class="stat-link" href="{% url 'deliveries' %}"><div class="card stat stat-deliveries">
+      <div class="stat-top"><div class="label">Pending deliveries</div><span class="stat-icon"><i class="fa-solid fa-truck-fast"></i></span></div>
       <div class="value">{{ pending_deliveries|intcomma }}</div>
       <div class="hint">{{ profiles_count }} active staff, {{ vendors_count }} vendor{{ vendors_count|pluralize }}</div>
     </div></a>
@@ -111,44 +112,6 @@
 {% endblock content %}
 
 {% block javascripts %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<script>
-  (function () {
-    var data = JSON.parse(document.getElementById('chart-data').textContent);
-    var accent = '#1f6f4a';
-    Chart.defaults.font.family = 'Inter, system-ui, sans-serif';
-    Chart.defaults.color = '#5f6b7a';
-
-    new Chart(document.getElementById('salesChart'), {
-      type: 'bar',
-      data: {
-        labels: data.sale_labels,
-        datasets: [{ label: 'Sales', data: data.sale_values, backgroundColor: accent, borderRadius: 3, maxBarThickness: 18 }]
-      },
-      options: {
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { grid: { display: false }, ticks: { maxTicksLimit: 10 } },
-          y: { beginAtZero: true, grid: { color: '#eef0f3' } }
-        }
-      }
-    });
-
-    var catCanvas = document.getElementById('categoryChart');
-    if (catCanvas) {
-      new Chart(catCanvas, {
-        type: 'doughnut',
-        data: {
-          labels: data.categories,
-          datasets: [{
-            data: data.category_counts,
-            backgroundColor: ['#1f6f4a', '#3b8f68', '#5fae88', '#8ccaa9', '#b9e2cc', '#2f5d7c', '#4f7fa0', '#7aa3c0', '#a7c5da', '#c9a227', '#d9b95b', '#e8d398'],
-            borderWidth: 0
-          }]
-        },
-        options: { cutout: '62%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 10 } } } }
-      });
-    }
-  })();
-</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" integrity="sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4" crossorigin="anonymous"></script>
+<script src="{% static 'js/dashboard.js' %}"></script>
 {% endblock javascripts %}
