@@ -1,59 +1,23 @@
-# Django core imports
 from django.urls import path
-from django.conf import settings
-from django.conf.urls.static import static
 
-# Local app imports
-from .views import (
-    PurchaseListView,
-    PurchaseDetailView,
-    PurchaseCreateView,
-    PurchaseUpdateView,
-    PurchaseDeleteView,
-    SaleListView,
-    SaleDetailView,
-    SaleCreateView,
-    SaleDeleteView,
+from . import views
 
-    export_sales_to_excel,
-    export_purchases_to_excel
-)
-
-# URL patterns
 urlpatterns = [
-    # Purchase URLs
-    path('purchases/', PurchaseListView.as_view(), name='purchaseslist'),
-    path(
-         'purchase/<slug:slug>/', PurchaseDetailView.as_view(),
-         name='purchase-detail'
-     ),
-    path(
-         'new-purchase/', PurchaseCreateView.as_view(),
-         name='purchase-create'
-     ),
-    path(
-         'purchase/<int:pk>/update/', PurchaseUpdateView.as_view(),
-         name='purchase-update'
-     ),
-    path(
-         'purchase/<int:pk>/delete/', PurchaseDeleteView.as_view(),
-         name='purchase-delete'
-     ),
+    # Purchases
+    path('purchases/', views.PurchaseListView.as_view(), name='purchaseslist'),
+    path('purchase/<int:pk>/', views.PurchaseDetailView.as_view(), name='purchase-detail'),
+    path('new-purchase/', views.PurchaseCreateView.as_view(), name='purchase-create'),
+    path('purchase/<int:pk>/update/', views.PurchaseUpdateView.as_view(), name='purchase-update'),
+    path('purchase/<int:pk>/delete/', views.PurchaseDeleteView.as_view(), name='purchase-delete'),
 
-    # Sale URLs
-    path('sales/', SaleListView.as_view(), name='saleslist'),
-    path('sale/<int:pk>/', SaleDetailView.as_view(), name='sale-detail'),
-    path('new-sale/', SaleCreateView, name='sale-create'),
-    path(
-         'sale/<slug:slug>/delete/', SaleDeleteView.as_view(),
-         name='sale-delete'
-     ),
+    # Sales
+    path('sales/', views.SaleListView.as_view(), name='saleslist'),
+    path('sale/<int:pk>/', views.SaleDetailView.as_view(), name='sale-detail'),
+    path('sale/<int:pk>/receipt.pdf', views.sale_receipt_pdf, name='sale-receipt'),
+    path('sale/<int:pk>/void/', views.SaleVoidView.as_view(), name='sale-delete'),
+    path('new-sale/', views.sale_create_view, name='sale-create'),
 
-    # Sales and purchases export
-    path('sales/export/', export_sales_to_excel, name='sales-export'),
-    path('purchases/export/', export_purchases_to_excel,
-         name='purchases-export'),
+    # Exports
+    path('sales/export/', views.export_sales_to_excel, name='sales-export'),
+    path('purchases/export/', views.export_purchases_to_excel, name='purchases-export'),
 ]
-
-# Static media files configuration for development
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

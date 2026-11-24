@@ -1,368 +1,327 @@
-# Standard library imports
 import json
 import logging
 
-# Django core imports
-from django.http import JsonResponse, HttpResponse
-from django.urls import reverse
-from django.shortcuts import render
-from django.db import transaction
-
-# Class-based views
+from django.contrib import messages
+from django.contrib.messages.views import SuccessMessageMixin
+from django.core.exceptions import ValidationError
+from django.db.models import Count, Sum
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse, reverse_lazy
+from django.utils import timezone
 from django.views.generic import DetailView, ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
-
-# Authentication and permissions
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-
-# Third-party packages
 from openpyxl import Workbook
 
-# Local app imports
-from store.models import Item
 from accounts.models import Customer
-from .models import Sale, Purchase, SaleDetail
-from .forms import PurchaseForm
+from accounts.permissions import (
+    ManagerRequiredMixin, RoleRequiredMixin, role_required, EXECUTIVE, OPERATIVE,
+)
+from InventoryMS.pdf import render_pdf_response
+from store.mixins import ProtectedDeleteMixin, SearchMixin
 
+from . import loyalty
+from .forms import PurchaseForm, VoidSaleForm
+from .models import Sale, Purchase
+from .services import create_sale, void_sale
 
 logger = logging.getLogger(__name__)
 
-
-def is_ajax(request):
-    return request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
+XLSX = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 
 
-@login_required
-def export_sales_to_excel(request):
-    # Create a workbook and select the active worksheet.
-    workbook = Workbook()
-    worksheet = workbook.active
-    worksheet.title = 'Sales'
+def _naive(value):
+    """Excel cannot store time zones: export local wall clock time."""
+    if value is None:
+        return None
+    if timezone.is_aware(value):
+        value = timezone.localtime(value)
+    return value.replace(tzinfo=None)
 
-    # Define the column headers
-    columns = [
-        'ID', 'Date', 'Customer', 'Sub Total',
-        'Grand Total', 'Tax Amount', 'Tax Percentage',
-        'Amount Paid', 'Amount Change'
-    ]
-    worksheet.append(columns)
 
-    # Fetch sales data
-    sales = Sale.objects.all()
-
-    for sale in sales:
-        # Convert timezone-aware datetime to naive datetime
-        if sale.date_added.tzinfo is not None:
-            date_added = sale.date_added.replace(tzinfo=None)
-        else:
-            date_added = sale.date_added
-
-        worksheet.append([
-            sale.id,
-            date_added,
-            sale.customer.phone,
-            sale.sub_total,
-            sale.grand_total,
-            sale.tax_amount,
-            sale.tax_percentage,
-            sale.amount_paid,
-            sale.amount_change
-        ])
-
-    # Set up the response to send the file
-    response = HttpResponse(
-        content_type=(
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
-    )
-    response['Content-Disposition'] = 'attachment; filename=sales.xlsx'
+def _xlsx_response(workbook, filename):
+    response = HttpResponse(content_type=XLSX)
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
     workbook.save(response)
-
     return response
 
 
-@login_required
-def export_purchases_to_excel(request):
-    # Create a workbook and select the active worksheet.
+# ---------------------------------------------------------------------------
+# Exports (managers only: they contain every sale and purchase)
+# ---------------------------------------------------------------------------
+@role_required(EXECUTIVE)
+def export_sales_to_excel(request):
     workbook = Workbook()
-    worksheet = workbook.active
-    worksheet.title = 'Purchases'
+    sheet = workbook.active
+    sheet.title = 'Sales'
+    sheet.append([
+        'Receipt', 'Date', 'Customer', 'Phone', 'Served by', 'Status',
+        'Sub Total', 'Loyalty Discount', 'Tax %', 'Tax Amount', 'Grand Total',
+        'Amount Paid', 'Change', 'Points Earned', 'Points Redeemed',
+    ])
+    sales = Sale.objects.select_related('customer', 'served_by').order_by('date_added')
+    for sale in sales.iterator(chunk_size=500):
+        sheet.append([
+            sale.receipt_number,
+            _naive(sale.date_added),
+            sale.customer.get_full_name(),
+            sale.customer.phone or '',
+            sale.served_by.username if sale.served_by else '',
+            sale.get_status_display(),
+            sale.sub_total,
+            sale.discount_amount,
+            sale.tax_percentage,
+            sale.tax_amount,
+            sale.grand_total,
+            sale.amount_paid,
+            sale.amount_change,
+            sale.loyalty_points_earned,
+            sale.loyalty_points_redeemed,
+        ])
+    return _xlsx_response(workbook, 'sales.xlsx')
 
-    # Define the column headers
-    columns = [
+
+@role_required(EXECUTIVE)
+def export_purchases_to_excel(request):
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = 'Purchases'
+    sheet.append([
         'ID', 'Item', 'Description', 'Vendor', 'Order Date',
         'Delivery Date', 'Quantity', 'Delivery Status',
-        'Price per item (Ksh)', 'Total Value'
-    ]
-    worksheet.append(columns)
-
-    # Fetch purchases data
-    purchases = Purchase.objects.all()
-
-    for purchase in purchases:
-        # Convert timezone-aware datetime to naive datetime
-        delivery_tzinfo = purchase.delivery_date.tzinfo
-        order_tzinfo = purchase.order_date.tzinfo
-
-        if delivery_tzinfo or order_tzinfo is not None:
-            delivery_date = purchase.delivery_date.replace(tzinfo=None)
-            order_date = purchase.order_date.replace(tzinfo=None)
-        else:
-            delivery_date = purchase.delivery_date
-            order_date = purchase.order_date
-        worksheet.append([
+        'Price per item', 'Total Value',
+    ])
+    purchases = Purchase.objects.select_related('item', 'vendor').order_by('order_date')
+    for purchase in purchases.iterator(chunk_size=500):
+        sheet.append([
             purchase.id,
             purchase.item.name,
-            purchase.description,
+            purchase.description or '',
             purchase.vendor.name,
-            order_date,
-            delivery_date,
+            _naive(purchase.order_date),
+            _naive(purchase.delivery_date),
             purchase.quantity,
             purchase.get_delivery_status_display(),
             purchase.price,
-            purchase.total_value
+            purchase.total_value,
         ])
-
-    # Set up the response to send the file
-    response = HttpResponse(
-        content_type=(
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
-    )
-    response['Content-Disposition'] = 'attachment; filename=purchases.xlsx'
-    workbook.save(response)
-
-    return response
+    return _xlsx_response(workbook, 'purchases.xlsx')
 
 
-class SaleListView(LoginRequiredMixin, ListView):
-    """
-    View to list all sales with pagination.
-    """
-
+# ---------------------------------------------------------------------------
+# Sales
+# ---------------------------------------------------------------------------
+class SaleListView(RoleRequiredMixin, SearchMixin, ListView):
     model = Sale
     template_name = "transactions/sales_list.html"
     context_object_name = "sales"
-    paginate_by = 10
-    ordering = ['date_added']
+    paginate_by = 20
+    search_fields = ('customer__first_name', 'customer__last_name', 'customer__phone')
+
+    def get_queryset(self):
+        queryset = (
+            super().get_queryset()
+            .select_related('customer', 'served_by')
+            .annotate(units=Sum('saledetail_set__quantity'), lines=Count('saledetail_set'))
+            .order_by('-date_added')
+        )
+        query = self.get_search_query()
+        receipt = query.upper().removeprefix('IMS')
+        if receipt.isdigit():
+            queryset = Sale.objects.filter(pk=int(receipt)).select_related(
+                'customer', 'served_by'
+            ).annotate(units=Sum('saledetail_set__quantity'), lines=Count('saledetail_set'))
+        return queryset
 
 
-class SaleDetailView(LoginRequiredMixin, DetailView):
-    """
-    View to display details of a specific sale.
-    """
+class SaleDetailView(RoleRequiredMixin, DetailView):
+    """Sale summary for staff. The printable receipt is a separate PDF."""
 
     model = Sale
     template_name = "transactions/saledetail.html"
 
+    def get_queryset(self):
+        return Sale.objects.select_related('customer', 'served_by', 'voided_by')
 
-def SaleCreateView(request):
-    context = {
-        "active_icon": "sales",
-        "customers": [c.to_select2() for c in Customer.objects.all()]
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['lines'] = self.object.saledetail_set.select_related('item', 'item__category')
+        context['loyalty_entries'] = self.object.loyalty_transactions.all()
+        return context
+
+
+def receipt_context(sale):
+    """Everything the receipt document needs. Reprints always match the original."""
+    from django.conf import settings
+    from .models import LoyaltyTransaction
+
+    lines = list(sale.saledetail_set.select_related('item', 'item__category'))
+    # Balance right after this sale, from the ledger, so a reprint months
+    # later still shows what the customer had at the till.
+    entry = (
+        sale.loyalty_transactions
+        .filter(kind__in=[LoyaltyTransaction.EARN, LoyaltyTransaction.REDEEM])
+        .order_by('-id').first()
+    )
+    return {
+        'sale': sale,
+        'lines': lines,
+        'units': sum(line.quantity for line in lines),
+        'points_balance': entry.balance_after if entry else None,
+        'printed_at': timezone.now(),
+        'business': settings.BUSINESS,
     }
 
+
+@role_required(OPERATIVE)
+def sale_receipt_pdf(request, pk):
+    """Receipt as PDF: inline for printing, ?download=1 to save it."""
+    sale = get_object_or_404(
+        Sale.objects.select_related('customer', 'served_by', 'served_by__profile'), pk=pk
+    )
+    context = receipt_context(sale)
+    return render_pdf_response(
+        'documents/receipt.html', context,
+        filename=f'receipt-{sale.receipt_number}.pdf',
+        request=request,
+        download=request.GET.get('download') == '1',
+    )
+
+
+def _bad_request(message, status=400):
+    return JsonResponse({'status': 'error', 'message': message}, status=status)
+
+
+@role_required(OPERATIVE)
+def sale_create_view(request):
+    """
+    Point of sale. GET renders the till; POST takes JSON:
+        {customer, items: [{id, quantity}], tax_percentage, amount_paid,
+         redeem_points}
+    Everything else is computed on the server.
+    """
     if request.method == 'POST':
-        if is_ajax(request=request):
-            try:
-                # Load the JSON data from the request body
-                data = json.loads(request.body)
-                logger.info(f"Received data: {data}")
+        if request.content_type != 'application/json':
+            return _bad_request('Expected a JSON request.')
+        try:
+            data = json.loads(request.body or b'{}')
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            return _bad_request('Invalid JSON in request body.')
+        if not isinstance(data, dict):
+            return _bad_request('Invalid request.')
+        try:
+            sale = create_sale(
+                user=request.user,
+                customer_id=data.get('customer'),
+                items=data.get('items'),
+                tax_percentage=data.get('tax_percentage', 0),
+                amount_paid=data.get('amount_paid', 0),
+                redeem_points=data.get('redeem_points', 0),
+            )
+        except ValidationError as exc:
+            return _bad_request(' '.join(exc.messages))
+        except Exception:
+            logger.exception('Sale creation failed')
+            return _bad_request('The sale could not be saved. Please try again.', status=500)
 
-                # Validate required fields
-                required_fields = [
-                    'customer', 'sub_total', 'grand_total',
-                    'amount_paid', 'amount_change', 'items'
-                ]
-                for field in required_fields:
-                    if field not in data:
-                        raise ValueError(f"Missing required field: {field}")
+        logger.info('Sale %s created by %s', sale.receipt_number, request.user)
+        return JsonResponse({
+            'status': 'success',
+            'message': f'Sale {sale.receipt_number} completed.',
+            'sale_id': sale.pk,
+            'receipt_number': sale.receipt_number,
+            'grand_total': str(sale.grand_total),
+            'change': str(sale.amount_change),
+            'points_earned': sale.loyalty_points_earned,
+            'redirect': reverse('sale-detail', kwargs={'pk': sale.pk}),
+            'receipt_url': reverse('sale-receipt', kwargs={'pk': sale.pk}),
+        })
 
-                # Create sale attributes
-                sale_attributes = {
-                    "customer": Customer.objects.get(id=int(data['customer'])),
-                    "sub_total": float(data["sub_total"]),
-                    "grand_total": float(data["grand_total"]),
-                    "tax_amount": float(data.get("tax_amount", 0.0)),
-                    "tax_percentage": float(data.get("tax_percentage", 0.0)),
-                    "amount_paid": float(data["amount_paid"]),
-                    "amount_change": float(data["amount_change"]),
-                }
-
-                # Use a transaction to ensure atomicity
-                with transaction.atomic():
-                    # Create the sale
-                    new_sale = Sale.objects.create(**sale_attributes)
-                    logger.info(f"Sale created: {new_sale}")
-
-                    # Create sale details and update item quantities
-                    items = data["items"]
-                    if not isinstance(items, list):
-                        raise ValueError("Items should be a list")
-
-                    for item in items:
-                        if not all(
-                            k in item for k in [
-                                "id", "price", "quantity", "total_item"
-                            ]
-                        ):
-                            raise ValueError("Item is missing required fields")
-
-                        item_instance = Item.objects.get(id=int(item["id"]))
-                        if item_instance.quantity < int(item["quantity"]):
-                            raise ValueError(f"Not enough stock for item: {item_instance.name}")
-
-                        detail_attributes = {
-                            "sale": new_sale,
-                            "item": item_instance,
-                            "price": float(item["price"]),
-                            "quantity": int(item["quantity"]),
-                            "total_detail": float(item["total_item"])
-                        }
-                        SaleDetail.objects.create(**detail_attributes)
-                        logger.info(f"Sale detail created: {detail_attributes}")
-
-                        # Reduce item quantity
-                        item_instance.quantity -= int(item["quantity"])
-                        item_instance.save()
-
-                return JsonResponse(
-                    {
-                        'status': 'success',
-                        'message': 'Sale created successfully!',
-                        'redirect': '/transactions/sales/'
-                    }
-                )
-
-            except json.JSONDecodeError:
-                return JsonResponse(
-                    {
-                        'status': 'error',
-                        'message': 'Invalid JSON format in request body!'
-                    }, status=400)
-            except Customer.DoesNotExist:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'Customer does not exist!'
-                    }, status=400)
-            except Item.DoesNotExist:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'Item does not exist!'
-                    }, status=400)
-            except ValueError as ve:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': f'Value error: {str(ve)}'
-                    }, status=400)
-            except TypeError as te:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': f'Type error: {str(te)}'
-                    }, status=400)
-            except Exception as e:
-                logger.error(f"Exception during sale creation: {e}")
-                return JsonResponse(
-                    {
-                        'status': 'error',
-                        'message': (
-                            f'There was an error during the creation: {str(e)}'
-                        )
-                    }, status=500)
-
+    cfg = loyalty.config()
+    context = {
+        'active_icon': 'sales',
+        'customers': Customer.objects.only('id', 'first_name', 'last_name', 'phone', 'loyalty_points'),
+        'loyalty': {
+            'enabled': cfg['enabled'],
+            'earn_per': str(cfg['earn_per']),
+            'point_value': str(cfg['point_value']),
+            'min_redeem': cfg['min_redeem'],
+        },
+    }
     return render(request, "transactions/sale_create.html", context=context)
 
 
-class SaleDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
-    """
-    View to delete a sale.
-    """
+class SaleVoidView(ManagerRequiredMixin, DetailView):
+    """Void a sale: restores stock and reverses loyalty points."""
 
     model = Sale
     template_name = "transactions/saledelete.html"
 
-    def get_success_url(self):
-        """
-        Redirect to the sales list after successful deletion.
-        """
-        return reverse("saleslist")
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.setdefault('form', VoidSaleForm())
+        return context
 
-    def test_func(self):
-        """
-        Allow deletion only for superusers.
-        """
-        return self.request.user.is_superuser
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = VoidSaleForm(request.POST)
+        if not form.is_valid():
+            return self.render_to_response(self.get_context_data(form=form))
+        try:
+            void_sale(self.object, user=request.user, reason=form.cleaned_data['reason'])
+        except ValidationError as exc:
+            messages.error(request, ' '.join(exc.messages))
+        else:
+            messages.success(request, f'Sale {self.object.receipt_number} voided. Stock restored.')
+        return redirect('sale-detail', pk=self.object.pk)
 
 
-class PurchaseListView(LoginRequiredMixin, ListView):
-    """
-    View to list all purchases with pagination.
-    """
-
+# ---------------------------------------------------------------------------
+# Purchases (managers)
+# ---------------------------------------------------------------------------
+class PurchaseListView(ManagerRequiredMixin, SearchMixin, ListView):
     model = Purchase
     template_name = "transactions/purchases_list.html"
     context_object_name = "purchases"
-    paginate_by = 10
+    paginate_by = 20
+    search_fields = ('item__name', 'vendor__name', 'description')
+
+    def get_queryset(self):
+        return super().get_queryset().select_related('item', 'vendor')
 
 
-class PurchaseDetailView(LoginRequiredMixin, DetailView):
-    """
-    View to display details of a specific purchase.
-    """
-
+class PurchaseDetailView(ManagerRequiredMixin, DetailView):
     model = Purchase
     template_name = "transactions/purchasedetail.html"
 
+    def get_queryset(self):
+        return Purchase.objects.select_related('item', 'vendor')
 
-class PurchaseCreateView(LoginRequiredMixin, CreateView):
-    """
-    View to create a new purchase.
-    """
 
+class PurchaseFormMixin(SuccessMessageMixin):
     model = Purchase
     form_class = PurchaseForm
     template_name = "transactions/purchases_form.html"
+    success_url = reverse_lazy("purchaseslist")
 
-    def get_success_url(self):
-        """
-        Redirect to the purchases list after successful form submission.
-        """
-        return reverse("purchaseslist")
-
-
-class PurchaseUpdateView(LoginRequiredMixin, UpdateView):
-    """
-    View to update an existing purchase.
-    """
-
-    model = Purchase
-    form_class = PurchaseForm
-    template_name = "transactions/purchases_form.html"
-
-    def get_success_url(self):
-        """
-        Redirect to the purchases list after successful form submission.
-        """
-        return reverse("purchaseslist")
+    def form_valid(self, form):
+        try:
+            return super().form_valid(form)
+        except ValidationError as exc:
+            form.add_error(None, exc)
+            return self.form_invalid(form)
 
 
-class PurchaseDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
-    """
-    View to delete a purchase.
-    """
+class PurchaseCreateView(ManagerRequiredMixin, PurchaseFormMixin, CreateView):
+    success_message = 'Purchase order saved.'
 
+
+class PurchaseUpdateView(ManagerRequiredMixin, PurchaseFormMixin, UpdateView):
+    success_message = 'Purchase order updated. Stock adjusted.'
+
+
+class PurchaseDeleteView(ManagerRequiredMixin, ProtectedDeleteMixin, DeleteView):
     model = Purchase
     template_name = "transactions/purchasedelete.html"
-
-    def get_success_url(self):
-        """
-        Redirect to the purchases list after successful deletion.
-        """
-        return reverse("purchaseslist")
-
-    def test_func(self):
-        """
-        Allow deletion only for superusers.
-        """
-        return self.request.user.is_superuser
+    success_url = reverse_lazy("purchaseslist")
+    success_message = 'Purchase order deleted. Any received stock was removed.'

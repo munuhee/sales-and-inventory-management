@@ -1,16 +1,12 @@
 import django_tables2 as tables
+
 from .models import Invoice
 
-class InvoiceTable(tables.Table):
-    """
-    Table representation for the Invoice model.
-    """
 
+class InvoiceTable(tables.Table):
     class Meta:
         model = Invoice
-        template_name = "django_tables2/semantic.html"
         fields = (
             'date', 'customer_name', 'contact_number', 'item',
-            'price_per_item', 'quantity', 'total'
+            'price_per_item', 'quantity', 'shipping', 'total', 'grand_total',
         )
-        order_by = 'date'

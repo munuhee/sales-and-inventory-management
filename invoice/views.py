@@ -1,107 +1,86 @@
-# Django core imports
-from django.urls import reverse
+from django import forms
+from django.conf import settings
+from django.contrib.messages.views import SuccessMessageMixin
+from django.shortcuts import get_object_or_404
+from django.urls import reverse_lazy
+from django.utils import timezone
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
-# Authentication and permissions
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-
-# Class-based views
-from django.views.generic import (
-    DetailView, CreateView, UpdateView, DeleteView
-)
-
-# Third-party packages
-from django_tables2 import SingleTableView
-from django_tables2.export.views import ExportMixin
-
-# Local app imports
+from accounts.permissions import ManagerRequiredMixin, RoleRequiredMixin, role_required, OPERATIVE
+from InventoryMS.pdf import render_pdf_response
+from store.mixins import ProtectedDeleteMixin, SearchMixin
 from .models import Invoice
-from .tables import InvoiceTable
+
+INVOICE_FIELDS = ['customer_name', 'contact_number', 'item', 'price_per_item', 'quantity', 'shipping']
 
 
-class InvoiceListView(LoginRequiredMixin, ExportMixin, SingleTableView):
-    """
-    View for listing invoices with table export functionality.
-    """
+class InvoiceForm(forms.ModelForm):
+    class Meta:
+        model = Invoice
+        fields = INVOICE_FIELDS
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            css = 'form-select' if isinstance(field.widget, forms.Select) else 'form-control'
+            field.widget.attrs.setdefault('class', css)
+
+
+class InvoiceListView(RoleRequiredMixin, SearchMixin, ListView):
     model = Invoice
-    table_class = InvoiceTable
     template_name = 'invoice/invoicelist.html'
     context_object_name = 'invoices'
-    paginate_by = 10
-    table_pagination = False  # Disable table pagination
+    paginate_by = 20
+    search_fields = ('customer_name', 'contact_number', 'item__name')
+
+    def get_queryset(self):
+        return super().get_queryset().select_related('item')
 
 
-class InvoiceDetailView(DetailView):
-    """
-    View for displaying invoice details.
-    """
+class InvoiceDetailView(RoleRequiredMixin, DetailView):
+    """Invoice summary. The printable invoice is the PDF."""
     model = Invoice
     template_name = 'invoice/invoicedetail.html'
 
-    def get_success_url(self):
-        """
-        Return the URL to redirect to after a successful action.
-        """
-        return reverse('invoice-detail', kwargs={'slug': self.object.pk})
+    def get_queryset(self):
+        return Invoice.objects.select_related('item', 'item__category')
 
 
-class InvoiceCreateView(LoginRequiredMixin, CreateView):
-    """
-    View for creating a new invoice.
-    """
+@role_required(OPERATIVE)
+def invoice_pdf(request, slug):
+    """Invoice as PDF: inline for printing, ?download=1 to save it."""
+    invoice = get_object_or_404(Invoice.objects.select_related('item', 'item__category'), slug=slug)
+    context = {'invoice': invoice, 'business': settings.BUSINESS, 'printed_at': timezone.now()}
+    return render_pdf_response(
+        'documents/invoice.html', context,
+        filename=f'invoice-{invoice.invoice_number}.pdf',
+        request=request,
+        download=request.GET.get('download') == '1',
+    )
+
+
+class InvoiceCreateView(ManagerRequiredMixin, SuccessMessageMixin, CreateView):
     model = Invoice
+    form_class = InvoiceForm
     template_name = 'invoice/invoicecreate.html'
-    fields = [
-        'customer_name', 'contact_number', 'item',
-        'price_per_item', 'quantity', 'shipping'
-    ]
+    success_message = 'Invoice created.'
 
     def get_success_url(self):
-        """
-        Return the URL to redirect to after a successful creation.
-        """
-        return reverse('invoicelist')
+        return self.object.get_absolute_url()
 
 
-class InvoiceUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    """
-    View for updating an existing invoice.
-    """
+class InvoiceUpdateView(ManagerRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Invoice
+    form_class = InvoiceForm
     template_name = 'invoice/invoiceupdate.html'
-    fields = [
-        'customer_name', 'contact_number', 'item',
-        'price_per_item', 'quantity', 'shipping'
-    ]
+    success_message = 'Invoice updated.'
 
     def get_success_url(self):
-        """
-        Return the URL to redirect to after a successful update.
-        """
-        return reverse('invoicelist')
-
-    def test_func(self):
-        """
-        Determine if the user has permission to update the invoice.
-        """
-        return self.request.user.is_superuser
+        return self.object.get_absolute_url()
 
 
-class InvoiceDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
-    """
-    View for deleting an invoice.
-    """
+class InvoiceDeleteView(ManagerRequiredMixin, ProtectedDeleteMixin, DeleteView):
     model = Invoice
     template_name = 'invoice/invoicedelete.html'
-    success_url = '/products'  # Can be overridden in get_success_url()
-
-    def get_success_url(self):
-        """
-        Return the URL to redirect to after a successful deletion.
-        """
-        return reverse('invoicelist')
-
-    def test_func(self):
-        """
-        Determine if the user has permission to delete the invoice.
-        """
-        return self.request.user.is_superuser
+    success_url = reverse_lazy('invoicelist')
+    success_message = 'Invoice deleted.'

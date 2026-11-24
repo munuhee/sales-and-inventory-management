@@ -1,28 +1,19 @@
 import django_tables2 as tables
+
 from .models import Item, Delivery
 
 
 class ItemTable(tables.Table):
-    """
-    Table representation for Item model.
-    """
+    """Used for the products export."""
+
     class Meta:
         model = Item
-        template_name = "django_tables2/semantic.html"
-        fields = (
-            'id', 'name', 'category', 'quantity',
-            'selling_price', 'expiring_date', 'vendor'
-        )
-        order_by_field = 'sort'
+        fields = ('id', 'name', 'category', 'quantity', 'price', 'expiring_date', 'vendor')
 
 
 class DeliveryTable(tables.Table):
-    """
-    Table representation for Delivery model.
-    """
+    """Used for the deliveries export."""
+
     class Meta:
         model = Delivery
-        fields = (
-            'id', 'item', 'customer_name', 'phone_number',
-            'location', 'date', 'is_delivered'
-        )
+        fields = ('id', 'item', 'customer_name', 'phone_number', 'location', 'date', 'is_delivered')

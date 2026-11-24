@@ -1,89 +1,72 @@
-# Django core imports
-from django.urls import reverse
+from django import forms
+from django.contrib.messages.views import SuccessMessageMixin
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
-# Class-based views
-from django.views.generic import (
-    CreateView,
-    UpdateView,
-    DeleteView
-)
-
-# Authentication and permissions
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-
-# Third-party packages
-from django_tables2 import SingleTableView
-from django_tables2.export.views import ExportMixin
-
-# Local app imports
+from accounts.permissions import ManagerRequiredMixin
+from store.mixins import ProtectedDeleteMixin, SearchMixin
 from .models import Bill
-from .tables import BillTable
-from accounts.models import Profile
+
+BILL_FIELDS = [
+    'institution_name', 'phone_number', 'email', 'address',
+    'description', 'payment_details', 'amount', 'status',
+]
 
 
-class BillListView(LoginRequiredMixin, ExportMixin, SingleTableView):
-    """View for listing bills."""
+class BillForm(forms.ModelForm):
+    class Meta:
+        model = Bill
+        fields = BILL_FIELDS
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            if isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs.setdefault('class', 'form-check-input')
+            else:
+                field.widget.attrs.setdefault('class', 'form-control')
+
+
+class BillListView(ManagerRequiredMixin, SearchMixin, ListView):
     model = Bill
-    table_class = BillTable
     template_name = 'bills/bill_list.html'
     context_object_name = 'bills'
-    paginate_by = 10
-    SingleTableView.table_pagination = False
+    paginate_by = 20
+    search_fields = ('institution_name', 'description', 'payment_details')
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        status = self.request.GET.get('status')
+        if status == 'paid':
+            queryset = queryset.filter(status=True)
+        elif status == 'unpaid':
+            queryset = queryset.filter(status=False)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['status'] = self.request.GET.get('status', '')
+        return context
 
 
-class BillCreateView(LoginRequiredMixin, CreateView):
-    """View for creating a new bill."""
+class BillCreateView(ManagerRequiredMixin, SuccessMessageMixin, CreateView):
     model = Bill
+    form_class = BillForm
     template_name = 'bills/billcreate.html'
-    fields = [
-        'institution_name',
-        'phone_number',
-        'email',
-        'address',
-        'description',
-        'payment_details',
-        'amount',
-        'status'
-    ]
-
-    def get_success_url(self):
-        """Redirect to the list of bills after a successful update."""
-        return reverse('bill_list')
+    success_url = reverse_lazy('bill_list')
+    success_message = 'Bill added.'
 
 
-class BillUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    """View for updating an existing bill."""
+class BillUpdateView(ManagerRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Bill
+    form_class = BillForm
     template_name = 'bills/billupdate.html'
-    fields = [
-        'institution_name',
-        'phone_number',
-        'email',
-        'address',
-        'description',
-        'payment_details',
-        'amount',
-        'status'
-    ]
-
-    def test_func(self):
-        """Check if the user has the required permissions."""
-        return self.request.user.profile in Profile.objects.all()
-
-    def get_success_url(self):
-        """Redirect to the list of bills after a successful update."""
-        return reverse('bill_list')
+    success_url = reverse_lazy('bill_list')
+    success_message = 'Bill updated.'
 
 
-class BillDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
-    """View for deleting a bill."""
+class BillDeleteView(ManagerRequiredMixin, ProtectedDeleteMixin, DeleteView):
     model = Bill
     template_name = 'bills/billdelete.html'
-
-    def test_func(self):
-        """Check if the user is a superuser."""
-        return self.request.user.is_superuser
-
-    def get_success_url(self):
-        """Redirect to the list of bills after successful deletion."""
-        return reverse('bill_list')
+    success_url = reverse_lazy('bill_list')
+    success_message = 'Bill deleted.'

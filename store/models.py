@@ -1,22 +1,24 @@
 """
-Module: models.py
+Models for categories, items (stock) and deliveries.
 
-Contains Django models for handling categories, items, and deliveries.
-
-This module defines the following classes:
-- Category: Represents a category for items.
-- Item: Represents an item in the inventory.
-- Delivery: Represents a delivery of an item to a customer.
-
-Each class provides specific fields and methods for handling related data.
+Stock levels are only changed through ``Item.adjust_stock`` which locks the
+row and refuses to go below zero, so concurrent tills cannot oversell.
 """
+from decimal import Decimal
 
-from django.db import models
+from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator
+from django.db import models, transaction
+from django.db.models import F
 from django.urls import reverse
-from django.forms import model_to_dict
 from django_extensions.db.fields import AutoSlugField
 from phonenumber_field.modelfields import PhoneNumberField
+
 from accounts.models import Vendor
+
+
+class InsufficientStock(ValidationError):
+    pass
 
 
 class Category(models.Model):
@@ -27,12 +29,10 @@ class Category(models.Model):
     slug = AutoSlugField(unique=True, populate_from='name')
 
     def __str__(self):
-        """
-        String representation of the category.
-        """
-        return f"Category: {self.name}"
+        return self.name
 
     class Meta:
+        ordering = ['name']
         verbose_name_plural = 'Categories'
 
 
@@ -42,36 +42,60 @@ class Item(models.Model):
     """
     slug = AutoSlugField(unique=True, populate_from='name')
     name = models.CharField(max_length=50)
-    description = models.TextField(max_length=256)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    quantity = models.IntegerField(default=0)
-    price = models.FloatField(default=0)
+    description = models.TextField(max_length=256, blank=True)
+    category = models.ForeignKey(Category, on_delete=models.PROTECT)
+    quantity = models.PositiveIntegerField(default=0)
+    price = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        validators=[MinValueValidator(Decimal('0.00'))],
+    )
     expiring_date = models.DateTimeField(null=True, blank=True)
-    vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL, null=True)
+    vendor = models.ForeignKey(
+        Vendor, on_delete=models.SET_NULL, null=True, blank=True
+    )
 
     def __str__(self):
-        """
-        String representation of the item.
-        """
-        return (
-            f"{self.name} - Category: {self.category}, "
-            f"Quantity: {self.quantity}"
-        )
+        return self.name
 
     def get_absolute_url(self):
-        """
-        Returns the absolute URL for an item detail view.
-        """
-        return reverse('item-detail', kwargs={'slug': self.slug})
+        return reverse('product-detail', kwargs={'slug': self.slug})
+
+    @property
+    def in_stock(self):
+        return self.quantity > 0
 
     def to_json(self):
-        product = model_to_dict(self)
-        product['id'] = self.id
-        product['text'] = self.name
-        product['category'] = self.category.name
-        product['quantity'] = 1
-        product['total_product'] = 0
-        return product
+        """Shape used by the point of sale item search."""
+        return {
+            'id': self.id,
+            'text': self.name,
+            'name': self.name,
+            'category': self.category.name if self.category_id else '',
+            'price': str(self.price),
+            'stock': self.quantity,
+            'quantity': 1,
+            'total_item': str(self.price),
+        }
+
+    @classmethod
+    def adjust_stock(cls, item_id, delta):
+        """
+        Atomically add ``delta`` (may be negative) to an item's stock.
+        Raises InsufficientStock instead of letting stock go negative.
+        """
+        delta = int(delta)
+        if delta == 0:
+            return
+        with transaction.atomic():
+            item = cls.objects.select_for_update().get(pk=item_id)
+            if item.quantity + delta < 0:
+                raise InsufficientStock(
+                    f'Not enough stock for {item.name}: '
+                    f'{item.quantity} available, {-delta} needed.'
+                )
+            cls.objects.filter(pk=item_id).update(quantity=F('quantity') + delta)
 
     class Meta:
         ordering = ['name']
@@ -93,10 +117,11 @@ class Delivery(models.Model):
         default=False, verbose_name='Is Delivered'
     )
 
+    class Meta:
+        ordering = ['-date']
+        verbose_name_plural = 'Deliveries'
+
     def __str__(self):
-        """
-        String representation of the delivery.
-        """
         return (
             f"Delivery of {self.item} to {self.customer_name} "
             f"at {self.location} on {self.date}"

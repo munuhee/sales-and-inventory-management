@@ -25,11 +25,12 @@ class ItemForm(forms.ModelForm):
                     'rows': 2
                 }
             ),
-            'category': forms.Select(attrs={'class': 'form-control'}),
-            'quantity': forms.NumberInput(attrs={'class': 'form-control'}),
+            'category': forms.Select(attrs={'class': 'form-select'}),
+            'quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': 0, 'step': 1}),
             'price': forms.NumberInput(
                 attrs={
                     'class': 'form-control',
+                    'min': 0,
                     'step': '0.01'
                 }
             ),
@@ -37,9 +38,10 @@ class ItemForm(forms.ModelForm):
                 attrs={
                     'class': 'form-control',
                     'type': 'datetime-local'
-                }
+                },
+                format='%Y-%m-%dT%H:%M',
             ),
-            'vendor': forms.Select(attrs={'class': 'form-control'}),
+            'vendor': forms.Select(attrs={'class': 'form-select'}),
         }
 
 
@@ -74,10 +76,7 @@ class DeliveryForm(forms.ModelForm):
             'is_delivered'
         ]
         widgets = {
-            'item': forms.Select(attrs={
-                'class': 'form-control',
-                'placeholder': 'Select item',
-            }),
+            'item': forms.Select(attrs={'class': 'form-select'}),
             'customer_name': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Enter customer name',
@@ -92,11 +91,7 @@ class DeliveryForm(forms.ModelForm):
             }),
             'date': forms.DateTimeInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Select delivery date and time',
                 'type': 'datetime-local'
-            }),
-            'is_delivered': forms.CheckboxInput(attrs={
-                'class': 'form-check-input',
-                'label': 'Mark as delivered',
-            }),
+            }, format='%Y-%m-%dT%H:%M'),
+            'is_delivered': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }

@@ -6,6 +6,9 @@ from .models import Bill
 class BillAdmin(admin.ModelAdmin):
     """Admin interface for managing Bill instances."""
 
+    readonly_fields = ('date',)
+    list_filter = ('status',)
+    search_fields = ('institution_name', 'description')
     fields = (
         'date',
         'institution_name',
